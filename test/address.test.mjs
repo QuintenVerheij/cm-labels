@@ -12,6 +12,18 @@ const rows = [
   ['DE', 'Hauptstraße 12a', 'Hauptstraße', '12', 'a', ''],
   ['NL', 'Kerkstraat 1', 'Kerkstraat', '1', '', ''],
   ['FR', '12 rue de la Paix', 'rue de la Paix', '12', '', ''],
+  ['BE', 'Rue de la Loi 16 bte 4', 'Rue de la Loi', '16', '', 'bte 4'],
+  ['SE', 'Storgatan 5 lgh 1201', 'Storgatan', '5', '', 'lgh 1201'],
+  ['PL', 'ul. Długa 12 lok. 5', 'ul. Długa', '12', '', 'lok. 5'],
+  ['PL', 'ul. Długa 12 lokal 5', 'ul. Długa', '12', '', 'lokal 5'],
+  ['DE', 'Hauptstraße 12 Haus 3', 'Hauptstraße', '12', '', 'Haus 3'],
+  ['DE', 'Hauptstraße 12 Hof 3', 'Hauptstraße', '12', '', 'Hof 3'],
+  ['DE', 'Hauptstraße 12 Zimmer 4', 'Hauptstraße', '12', '', 'Zimmer 4'],
+  ['DE', 'Hauptstraße 12 Eingang 3', 'Hauptstraße', '12', '', 'Eingang 3'],
+  ['AT', 'Hauptstraße 12 Top 5', 'Hauptstraße', '12', '', 'Top 5'],
+  ['AT', 'Hauptstraße 12 Stiege 2 Top 5', 'Hauptstraße', '12', '', 'Stiege 2 Top 5'],
+  ['PL', 'ul. Długa 12 bt 5', 'ul. Długa', '12', '', 'bt 5'],
+  ['PT', 'Rua Augusta 12 Loja 3', 'Rua Augusta', '12', '', 'Loja 3'],
 ];
 
 for (const [iso, line, Street, Nr, Ext, Extra] of rows) {
@@ -20,6 +32,10 @@ for (const [iso, line, Street, Nr, Ext, Extra] of rows) {
     assert.deepEqual({ Street: r.Street, Nr: r.Nr, Ext: r.Ext, Extra: r.Extra }, { Street, Nr, Ext, Extra });
   });
 }
+
+test('splitStreet returns the Dutch street line fields', () => {
+  assert.deepEqual(splitStreet('NL', 'Kerkstraat 12A', []), { Street: 'Kerkstraat', Nr: '12', Ext: 'A', Extra: '', Fields: {} });
+});
 
 test('splitStreet does not split a six digit number', () => {
   const r = splitStreet('DE', 'Hauptstraße 123456', []);
