@@ -24,14 +24,10 @@ const csvPath = option('--csv') ?? path.join(root, 'shipping-costs.csv');
 
 function rateKey(r) { return [r.Iso, r.Method, r.MaxWeight, r.MaxValue].join(' | '); }
 
-// Rate rows that repeat a (Iso, Method, MaxWeight, MaxValue) key for now: key -> allowed row count.
-const tracked = 'Brievenbuspakje met track & trace (Tracked Letterbox packet)';
-const knownDuplicates = new Map(['AT', 'DK', 'LI'].map(iso => [rateKey({ Iso: iso, Method: tracked, MaxWeight: '500', MaxValue: '150.00' }), 2]));
-
 function findDuplicates(rates) {
   const groups = new Map();
   for (const r of rates) { const k = rateKey(r); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
-  return [...groups].filter(([k, rows]) => rows.length > 1 && rows.length !== knownDuplicates.get(k));
+  return [...groups].filter(([k, rows]) => rows.length > 1);
 }
 
 const { methods, countries } = loadConfig(root);

@@ -1,7 +1,7 @@
 ﻿TO: Denmark
 Letter	No	25,00 €	20	2,11 €	2,41 €	11
 Brievenbuspakje met track & trace (Tracked Letterbox packet)	Yes	150,00 €	500	10,95 €	11,45 €	11
-Brievenbuspakje met track & trace (Tracked Letterbox packet)	Yes	150,00 €	500	11,95 €	12,45 €	11
+Brievenbuspakje met track & trace (Tracked Letterbox packet)	Yes	150,00 €	1000	11,95 €	12,45 €	11
 Klein pakket aangetekend (Registered packet) R - Insured up to 50€	Yes	150,00 €	500	12,60 €	13,60 €	11
 Klein pakket aangetekend (Registered packet) - Insured up to 50€	Yes	150,00 €	1000	13,65 €	14,65 €	11
 Klein pakket aangetekend (Registered packet) - Insured up to 50€	Yes	150,00 €	2000	14,70 €	15,70 €	11
