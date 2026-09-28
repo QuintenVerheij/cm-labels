@@ -9,14 +9,17 @@ export const SuffixKey = s => String(s ?? '').replace(/[^A-Za-z0-9]/g, '').toUpp
 
 const THRESHOLD = 25;   // an untracked sale at or above this article value is suspicious: skip it
 
+// A keyword right after an article or preposition is part of a name ("Via della Scala", "Am Stock").
+const NotAfterArticle = '(?<!\\b(?:de|del|della|dello|delle|des|du|la|le|el|los|las|am|im|zum|zur|der|dem)\\s)';
+const After = '([\\s,.:]|\\d|$)';
 // A line with one of these words is extra (apartment, building, c/o), even when it ends in a number.
-const ExtraWords = /(^|[\s,.])(app(artement)?|appt?|apt|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\/o|p\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus)([\s,.:]|\d|$)/i;
+const ExtraWords = new RegExp('(^|[\\s,.])' + NotAfterArticle + '(app(artement)?|appt?|apt|apartment|unit|suite|bte|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\\/o|p\\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus)' + After, 'i');
 // Extra text -> PostNL's extra fields (35 characters each), split at key words, text kept as written.
 const ExtraFields = {
-  Verdieping: /(^|[\s,])(\d+\s*(e|er|re|[eè]me|º|°)?\s*)?([eé]tage|etg|piso|planta|stock|floor)([\s,.:]|\d|$)/i,
-  Flat: /(^|[\s,])(app(artement)?|appt?|apt|flat|whg|wohnung|int|interno|bus|bo[iî]te)([\s,.:]|\d|$)/i,
-  Trap: /(^|[\s,])(escalier|escalera|esc|scala|stiege)([\s,.:]|\d|$)/i,
-  Deur: /(^|[\s,])(porte|puerta|door|t[uü]r)([\s,.:]|\d|$)/i,
+  Verdieping: new RegExp('(^|[\\s,])' + NotAfterArticle + '(\\d+\\s*[º°ª]|\\d+\\s*\\.\\s*(th|tv|mf)(?=[\\s,.:]|$)|(\\d+\\s*(e|er|re|[eè]me)?\\s*\\.?\\s*)?([eé]tage|etg|piso|planta|stock|floor)' + After + ')', 'i'),
+  Flat: new RegExp('(^|[\\s,])' + NotAfterArticle + '(app(artement)?|appt?|apt|apartment|unit|suite|bte|flat|whg|wohnung|int|interno|bus|bo[iî]te)' + After, 'i'),
+  Trap: new RegExp('(^|[\\s,])' + NotAfterArticle + '(escalier|escalera|esc|scala|stiege)' + After, 'i'),
+  Deur: new RegExp('(^|[\\s,])' + NotAfterArticle + '(porte|puerta|door|t[uü]r)' + After, 'i'),
 };
 
 export function splitExtra(text) {
@@ -45,8 +48,10 @@ export function splitStreet(iso, street, extras) {
   const last = /^(?<street>.*?\D)[\s,]+(?<nr>\d{1,5})(?!\d)\s*\/?\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z.]))?(?<more>.*)$/;
   const lastGreedy = /^(?<street>.*\D)[\s,]+(?<nr>\d{1,5})(?!\d)\s*\/?\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z.]))?(?<more>.*)$/;
   const order = ['FR', 'LU'].includes(iso) ? [first, last] : [last, first];
-  const lines = [street, ...extras].filter(Boolean);
-  for (const re of order) {
+  const whole = [street, ...extras].filter(Boolean);
+  // The whole lines first; only when none fits, each line split at its commas ("Flat 2, 10 High Street").
+  const attempts = [whole, whole.flatMap(l => l.split(',').map(p => p.trim()).filter(Boolean))];
+  for (const [lines, re] of attempts.flatMap(l => order.map(r => [l, r]))) {
     for (let i = 0; i < lines.length; i++) {
       const w = lines[i].match(ExtraWords);
       if (w && w.index === 0) continue;
