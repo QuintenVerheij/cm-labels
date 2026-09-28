@@ -86,6 +86,7 @@ function splitNL(line) {
   const rest = '(?<rest>(?:\\s*[-/.]?\\s*[A-Za-z0-9]{1,6}){0,2})\\s*$';
   for (const street of ['(?<street>.+?)', '(?<street>.+)']) {
     const m = line.match(new RegExp(`^${street}\\s+(?<nr>\\d{1,5})${rest}`));
+    if (m && street === '(?<street>.+?)' && /^\s*\d+$/.test(m.groups.rest)) continue;
     if (m && SuffixKey(m.groups.rest).length <= 5) return { Street: m.groups.street.trim(), Number: m.groups.nr, Suffix: m.groups.rest.trim(), SuffixKey: SuffixKey(m.groups.rest) };
   }
   throw new Error(`no house number (+ suffix of at most 5 letters/digits) at the end of '${line}'`);
@@ -99,9 +100,9 @@ function trackedPlan(s, m, cfg) {
   if (!s.grams) throw new Error("no 'max. NNNg' in the method");
   if (!c || c.length < 3) throw new Error(`country '${s.country}' has no postcode pattern in countries.psd1 (EU only)`);
   [p.First, p.Last] = splitName(s.name);
-  const pcm = s.city.match(new RegExp(`^(?<pc>${c[2]})\\s+(?<town>.+)$`));
+  const pcm = s.city.match(new RegExp(`^(?:[A-Z]{1,2}-)?(?<pc>${c[2]})\\s+(?<town>.+)$`, 'i'));
   if (!pcm) throw new Error(`line '${s.city}' does not start with a ${s.iso} postcode`);
-  p.Postcode = pcm.groups.pc; p.Town = pcm.groups.town.trim();
+  p.Postcode = pcm.groups.pc.toUpperCase(); p.Town = pcm.groups.town.trim();
   if (s.iso === 'NL') {
     if (s.extras.length) p.warnings.push(`extra address line(s) '${s.extras.join(', ')}' are not sent: the NL form has no field for them`);
     Object.assign(p, splitNL(s.street));
@@ -121,8 +122,8 @@ function trackedPlan(s, m, cfg) {
 // country ("3028BX Rotterdam" -> POSTCODE 3028BX, CITY Rotterdam); without a match CITY is the whole line.
 function labelFields(s, cfg) {
   const re = cfg.countries[s.iso]?.[2];
-  const m = re && s.city.match(new RegExp(`^(?<pc>${re})\\s+(?<town>.+)$`));
-  return { NAME: s.name, ADDRESS: [...s.extras, s.street].filter(Boolean), POSTCODE: m ? m.groups.pc : '', CITY: m ? m.groups.town.trim() : s.city, COUNTRY: s.country, ID: String(s.id ?? '') };
+  const m = re && s.city.match(new RegExp(`^(?:[A-Z]{1,2}-)?(?<pc>${re})\\s+(?<town>.+)$`, 'i'));
+  return { NAME: s.name, ADDRESS: [...s.extras, s.street].filter(Boolean), POSTCODE: m ? m.groups.pc.toUpperCase() : '', CITY: m ? m.groups.town.trim() : s.city, COUNTRY: s.country, ID: String(s.id ?? '') };
 }
 
 // sales: from cardmarket.readSales. Returns the breakdown for the UI and the cart.

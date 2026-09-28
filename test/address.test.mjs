@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { splitStreet, splitExtra } from '../extension/lib/plan.js';
+import { splitStreet, splitExtra, planSales } from '../extension/lib/plan.js';
 
 const rows = [
   // [iso, street line, Street, Nr, Ext, Extra]
@@ -52,5 +52,37 @@ test('splitStreet puts the flat in the flat field', () => {
 for (const [text, field] of [['3º B', 'Verdieping'], ['3º Esq', 'Verdieping'], ['2. th.', 'Verdieping'], ['3. Stock', 'Verdieping'], ['bte 3', 'Flat']]) {
   test(`splitExtra "${text}" goes to ${field}`, () => {
     assert.deepEqual(splitExtra(text), { [field]: text });
+  });
+}
+
+const trackedCfg = {
+  byName: { Netherlands: 'NL', Belgium: 'BE', Germany: 'DE' },
+  countries: { NL: ['x', 'Netherlands', '\\d{4} ?[A-Z]{2}'], BE: ['x', 'Belgium', '\\d{4}'], DE: ['x', 'Germany', '\\d{5}'] },
+  methods: { Parcel: { Service: 'postnl', Product: 'Gemiddeld pakket', Option: '' } },
+};
+const trackedPlan = (country, street, city) => planSales([{
+  id: '1', methodName: 'Parcel', method: 'Parcel max. 2000 g', grams: 2000, tracked: true, value: 10,
+  lines: [{ kind: 'Name', text: 'Jan Jansen' }, { kind: 'Street', text: street }, { kind: 'City', text: city }, { kind: 'Country', text: country }],
+}], trackedCfg).tracked[0];
+
+test('splitNL keeps a number in the street name and takes the last number as house number', () => {
+  const p = trackedPlan('Netherlands', 'Plein 1944 12', '1234AB Utrecht');
+  assert.deepEqual({ Street: p.Street, Number: p.Number, Suffix: p.Suffix, error: p.error }, { Street: 'Plein 1944', Number: '12', Suffix: '', error: undefined });
+});
+
+test('splitNL keeps a dashed numeric suffix as suffix', () => {
+  const p = trackedPlan('Netherlands', 'Kerkstraat 12-3', '1234AB Utrecht');
+  assert.deepEqual({ Street: p.Street, Number: p.Number, SuffixKey: p.SuffixKey }, { Street: 'Kerkstraat', Number: '12', SuffixKey: '3' });
+});
+
+for (const [country, city, Postcode, Town] of [
+  ['Netherlands', '1234 ab Amsterdam', '1234AB', 'Amsterdam'],
+  ['Belgium', 'B-1000 Brussel', '1000', 'Brussel'],
+  ['Germany', 'D-10623 Berlin', '10623', 'Berlin'],
+]) {
+  test(`tracked plan accepts postcode line "${city}"`, () => {
+    const p = trackedPlan(country, 'Kerkstraat 1', city);
+    assert.equal(p.error, undefined);
+    assert.deepEqual({ Postcode: p.Postcode, Town: p.Town }, { Postcode, Town });
   });
 }
