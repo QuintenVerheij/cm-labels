@@ -244,13 +244,8 @@ export async function start({ saleId, list }) {
     } else {
       const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0), is = issues(p);
       html = `<div class="sum">${p.print.length} label(s) · ${nStamps} stamp(s) in ${p.stamps.length} code(s) · ${nLabels(p)} tracked${p.skipped.length ? ` · ${p.skipped.length} by hand` : ''}</div>
-<<<<<<< HEAD
-        <div class="muted">Loaded ${time(state.loadedAt)}. <a href="#" id="reload" style="color:inherit">Load again</a></div>
-        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="${esc(baseFromPath(location.pathname))}/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
-=======
         <div class="muted">${state.only ? `${runScope(state.only)}, loaded` : 'Loaded'} ${state.loadedAt.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} ${time(state.loadedAt)} (${runAge(state.loadedAt)}). <a href="#" id="reload" style="color:inherit">Load again</a></div>
-        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="/en/Magic/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
->>>>>>> 786b9fb (Delete buyer data when the run cache expires, and show a restored run's age and scope)
+        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="${esc(baseFromPath(location.pathname))}/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
         ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
         <div class="cards">
           <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>Codes</b><small>${p.stamps.length ? `${nStamps} stamp(s), ${p.stamps.length} code(s)` : 'none'}</small></span></label>
