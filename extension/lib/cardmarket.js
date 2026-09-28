@@ -6,6 +6,13 @@
 import { Tab, sleep } from './tabs.js';
 
 export const BASE = 'https://www.cardmarket.com/en/Magic';
+// Language and game base of a Cardmarket path ('/de/Pokemon/Orders/1' -> '.../de/Pokemon'); null for any other path.
+export const baseFromPath = path => {
+  const m = String(path).match(/^\/([A-Za-z]{2})\/([^/?#]+)(?:[/?#]|$)/);
+  return m ? `https://www.cardmarket.com/${m[1]}/${m[2]}` : null;
+};
+// The only pages the code can read: English labels, Magic.
+export const isReadablePath = path => baseFromPath(path) === BASE;
 export const LISTS = {
   Paid: { path: '/Orders/Sales/Paid', query: 'presaleStatus=2', allPages: true },   // incl. presale; all pages
 };
