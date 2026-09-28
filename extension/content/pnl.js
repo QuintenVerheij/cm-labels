@@ -21,6 +21,8 @@
     }
     return null;
   };
+  // A click is refused on the payment page and on any element whose text speaks of paying or ordering.
+  const NEVER_CLICK = /betal|bestel|afrekenen|pay|order/i;
   const suggestionSel = '.pnl-address-suggestion-item';
 
   function find(s) {
@@ -98,7 +100,14 @@
     q: (name, ...args) => Q[name](...args),
     test,
     exists: spec => !!find(spec),
-    click: spec => { const e = find(spec); if (!e) return false; e.click(); return true; },
+    click: spec => {
+      if (location.pathname.endsWith('/betalen')) return false;
+      const e = find(spec);
+      if (!e) return false;
+      if (NEVER_CLICK.test(e.getAttribute('aria-label') || e.innerText || e.textContent || '')) return false;
+      e.click();
+      return true;
+    },
     cookie: () => { const b = cookieBtn(); if (!b) return false; b.click(); return true; },
     fill,
     setSuffix: i => { const s = document.querySelector('select[formcontrolname=houseNumberSuffix]'); s.selectedIndex = i; s.dispatchEvent(new Event('change', { bubbles: true })); s.dispatchEvent(new FocusEvent('blur')); return s.selectedIndex; },

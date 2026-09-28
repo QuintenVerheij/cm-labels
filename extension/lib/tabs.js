@@ -51,10 +51,12 @@ export class Tab {
       if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}`);
     }
   }
-  // Click, wait up to 1 s for the result, repeat: a click right after load, before Angular is ready, does nothing.
+  // Test, click, wait up to 1 s for the result, repeat: a click right after load, before Angular is ready, does
+  // nothing. The test comes first in every round, so a click that worked late is never followed by another one.
   async clickUntil(spec, cond, { tries = 15, what = JSON.stringify(spec) } = {}) {
     for (let i = 0; i < tries; i++) {
       await this.poll();
+      if (await this.safe('test', false, cond)) return i;
       await this.safe('click', false, spec);
       for (const t = Date.now(); Date.now() - t < 1000; await sleep(100)) if (await this.safe('test', false, cond)) return i + 1;
     }
