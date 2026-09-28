@@ -5,7 +5,7 @@
 // Sale page: an "Add to PostNL cart" button at the same place puts this one sale in the PostNL cart.
 // The run lives in this page: keep it open while a run goes. Tab work goes through the background script.
 import { ext, openPage } from './ext.js';
-import { loadSales } from './cardmarket.js';
+import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { planSales } from './plan.js';
 import { buildCart } from './postnl.js';
 import { getSettings, saveRun, getRun, loadData } from './store.js';
@@ -57,6 +57,7 @@ const CSS = `
 `;
 
 export async function start({ saleId, list }) {
+  const readable = isReadablePath(location.pathname);
   const test = list && list !== 'Paid';   // Arrived / Unpaid: a test list (page 1): no printing
   const word = (list || 'Paid').toLowerCase();
   const settings = await getSettings();
@@ -224,7 +225,9 @@ export async function start({ saleId, list }) {
     for (const b of [btn, printBtn]) if (b) { b.setAttribute('aria-disabled', String(!!state.job)); b.style.pointerEvents = state.job ? 'none' : ''; b.style.opacity = state.job ? '.6' : ''; }
     const p = state.plan, last = state.lines[state.lines.length - 1];
     let html = '';
-    if (state.job) {
+    if (!readable) {
+      html = '<div>cm-labels works only on the English Magic pages (cardmarket.com/en/Magic).</div>';
+    } else if (state.job) {
       const [n, of, it] = state.progress || [0, 0];
       html = `<div class="sum">${esc(state.job)}…${it ? ` ${it.items}/${it.of}` : of ? ` ${n}/${of}` : ''}</div>${of ? `<div class="bar"><i style="width:${Math.round(100 * n / of)}%"></i></div>` : '<div class="bar"><i style="width:0%"></i></div>'}
         <div class="log">${esc(last || '')}</div><div class="muted">Keep this page open until the run is done.</div>`;
@@ -240,7 +243,7 @@ export async function start({ saleId, list }) {
       const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0), is = issues(p);
       html = `<div class="sum">${p.print.length} label(s) · ${nStamps} stamp(s) in ${p.stamps.length} code(s) · ${nLabels(p)} tracked${p.skipped.length ? ` · ${p.skipped.length} by hand` : ''}</div>
         <div class="muted">Loaded ${time(state.loadedAt)}. <a href="#" id="reload" style="color:inherit">Load again</a></div>
-        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="/en/Magic/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
+        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="${esc(baseFromPath(location.pathname))}/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
         ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
         <div class="cards">
           <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>Codes</b><small>${p.stamps.length ? `${nStamps} stamp(s), ${p.stamps.length} code(s)` : 'none'}</small></span></label>
@@ -263,12 +266,13 @@ export async function start({ saleId, list }) {
 
   btn.onclick = () => {
     panel.hidden = false;
-    if (saleId && !state.job && !state.cart) run('Adding this sale', addThisSale);
+    if (!readable) render();
+    else if (saleId && !state.job && !state.cart) run('Adding this sale', addThisSale);
     else render();
   };
-  if (printBtn) printBtn.onclick = () => { if (!state.job) { panel.hidden = false; run('Opening the print dialog', printThisSale); } };
+  if (printBtn) printBtn.onclick = () => { if (!readable) { panel.hidden = false; render(); } else if (!state.job) { panel.hidden = false; run('Opening the print dialog', printThisSale); } };
   // Paid page: show the last Paid load (same as the full page), if it is recent.
-  if (list) {
+  if (list && readable) {
     const last = await getRun();
     if (last?.list === list) { state.plan = last.plan; state.list = list; state.loadedAt = last.loadedAt; state.pick = { codes: last.plan.stamps.length > 0, labels: nLabels(last.plan) > 0 }; }
   }
