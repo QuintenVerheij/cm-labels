@@ -1,7 +1,8 @@
 // Cardmarket: normal page loads in hidden tabs, read by content/cm.js. No fetch(): bulk fetches from an
 // extension got a profile blocked by Cloudflare's WAF, while page loads a few at a time look like browsing.
 // The list tab reads the list page(s); three worker tabs read the sale pages with a short pause between pages.
-// At the first block page the whole run stops.
+// At the first block or rate-limit page the whole run stops, and so does a run whose sale pages time out
+// three times in a row on a challenge or an unknown page.
 import { Tab, sleep } from './tabs.js';
 
 export const BASE = 'https://www.cardmarket.com/en/Magic';
@@ -17,23 +18,29 @@ const WORKERS = 3;                                   // sale pages loading at th
 const pause = () => sleep(500);                      // between two page loads of one tab
 
 class Blocked extends Error {}
+// A page that never became usable; stuck: the last state was a challenge or not the page asked for.
+class PageTimeout extends Error { constructor(msg, stuck) { super(msg); this.stuck = stuck; } }
+const STUCK_LIMIT = 3;                               // stuck timeouts in a row that stop the run
 
 // Load url in the tab and wait until the page is usable: ready, past Cloudflare's normal check, and
-// done(state) true (when given). A block page throws Blocked.
+// done(state) true (when given). A block or rate-limit page throws Blocked.
 async function loadPage(tab, url, done = () => true, ms = 60000) {
   await tab.navigate(url);
+  const here = s => s.url.startsWith(url.split('?')[0]);
+  let s = null;
   for (const t = Date.now(); ; await sleep(400)) {
-    const s = await tab.safe('state', null);
+    s = await tab.safe('state', null);
     if (s?.block) throw new Blocked(`Cloudflare blocked this browser on Cardmarket (${url}). The run stopped; wait a while before you try again.`);
-    if (s && s.ready === 'complete' && !s.check && s.url.startsWith(url.split('?')[0]) && await done(s)) return s;
-    if (Date.now() - t > ms) throw new Error(`Cardmarket page did not load within ${ms / 1000} s: ${url}`);
+    if (s?.limited) throw new Blocked(`Cardmarket answered "Too Many Requests" (${url}). The run stopped; wait a while before you try again.`);
+    if (s && s.ready === 'complete' && !s.check && here(s) && await done(s)) return s;
+    if (Date.now() - t > ms) throw new PageTimeout(`Cardmarket page did not load within ${ms / 1000} s: ${url}`, !s || s.check || !here(s));
   }
 }
 
 // onProgress(done, total): after every sale page (for a progress bar); the log gets a line every 10.
 // only: sale ids (10 digits). When given, only those sale pages are read, not the ids on the list pages (the
 // first list page still loads, for the login check).
-export async function loadSales(list, { log, onLogin, windowId, onProgress = () => {}, only = null }) {
+export async function loadSales(list, { log, onLogin, windowId, onProgress = () => {}, only = null, saleMs = 45000 }) {
   const tab = await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId });
   const workers = [];
   try {
@@ -68,7 +75,7 @@ export async function loadSales(list, { log, onLogin, windowId, onProgress = () 
       log(`${list}: ${ids.length} sale(s)${LISTS[list].allPages ? ` on ${pages} page(s)` : ' on page 1'}. Reading the sale pages, ${WORKERS} at a time...`);
     }
 
-    const t = Date.now(), out = []; let next = 0, stop = null;
+    const t = Date.now(), out = []; let next = 0, stop = null, stuck = 0;
     onProgress(0, ids.length);
     workers.push(tab);
     for (let i = 1; i < Math.min(WORKERS, ids.length); i++) workers.push(await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId }));
@@ -77,10 +84,13 @@ export async function loadSales(list, { log, onLogin, windowId, onProgress = () 
         const id = ids[next++];
         await pause();
         try {
-          await loadPage(w, `${BASE}/Orders/${id}`, () => w.safe('hasSale', false, id), 45000);
+          await loadPage(w, `${BASE}/Orders/${id}`, () => w.safe('hasSale', false, id), saleMs);
           out.push(await w.call('sale', id));
+          stuck = 0;
         } catch (e) {
           if (e instanceof Blocked) { stop = e; break; }
+          stuck = e.stuck ? stuck + 1 : 0;
+          if (stuck >= STUCK_LIMIT) { stop = new Blocked(`${STUCK_LIMIT} Cardmarket pages in a row stayed on a Cloudflare check or an unknown page. The run stopped; wait a while before you try again.`); break; }
           out.push({ id, error: e.message });
         }
         onProgress(out.length, ids.length);
