@@ -6,7 +6,7 @@ import { planSales } from './lib/plan.js';
 import { buildCart } from './lib/postnl.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { defaultTemplate } from './lib/template.js';
-import { saveRun, getRun, getSettings, DEFAULTS } from './lib/store.js';
+import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, DEFAULTS } from './lib/store.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -40,6 +40,7 @@ async function run(name, fn) {
 const onlyIds = () => { const ids = [...new Set($('#only').value.match(/\b\d{10}\b/g) || [])]; return ids.length ? ids : null; };
 async function load(list, only) {
   Object.assign(state, { plan: null, cart: null, printed: null, list: null, only: null, loadedAt: null });
+  await clearRun();   // a failed load leaves no earlier run behind
   const cfg = await loadData();
   const me = await ext.tabs.getCurrent();
   const sales = await loadSales(list, {
@@ -57,6 +58,7 @@ async function load(list, only) {
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
 async function cart(withCodes, withLabels) {
+  settings = await getSettings();
   const stamps = withCodes ? state.plan.stamps : [];
   const tracked = withLabels ? state.plan.tracked.filter(t => !t.error) : [];
   const me = await ext.tabs.getCurrent();
@@ -114,7 +116,7 @@ function renderPlan() {
   const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}`;
   if (key !== lastKey) {
     lastKey = key;
-    $('#resulttitle').textContent = `Breakdown: ${state.only ? `${state.only.length} chosen order(s)` : 'paid orders'}, loaded ${state.loadedAt.toLocaleTimeString('nl-NL')}`;
+    $('#resulttitle').textContent = `Breakdown: ${runScope(state.only, 'paid orders')}, loaded ${state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })} (${runAge(state.loadedAt)})`;
     const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0);
     $('#chips').innerHTML = [`${p.count} sale(s)`, `${p.print.length} address label(s)`, `${nStamps} stamp(s)`, `${p.tracked.length} tracked`, `${p.skipped.length} by hand`].map(c => `<span class="chip">${c}</span>`).join('');
     $('#stamps').innerHTML = p.stamps.length ? `<thead><tr><th>Code</th><th>Country</th><th class="num">Weight</th><th class="num">Qty</th><th>Sales</th></tr></thead><tbody>${p.stamps.map(g => `<tr><td class="mono">${g.code}</td><td>${esc(g.country)}</td><td class="num">${g.weight} g</td><td class="num">${g.qty}</td><td class="mono">${g.ids.join(', ')}</td></tr>`).join('')}</tbody>` : '<tbody><tr><td class="hint">None.</td></tr></tbody>';
@@ -349,6 +351,7 @@ async function checkAccess() {
 $('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(`Permission request failed: ${e.message}`); } await checkAccess(); };
 
 await loadSettings();
+await purgeStale();
 // the last load (also one made in the Cardmarket page panel), if it is recent
 const last = await getRun();
 if (last) {

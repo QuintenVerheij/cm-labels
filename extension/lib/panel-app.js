@@ -8,7 +8,7 @@ import { ext, openPage } from './ext.js';
 import { loadSales } from './cardmarket.js';
 import { planSales } from './plan.js';
 import { buildCart } from './postnl.js';
-import { getSettings, saveRun, getRun, loadData } from './store.js';
+import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -59,7 +59,6 @@ const CSS = `
 export async function start({ saleId, list }) {
   const test = list && list !== 'Paid';   // Arrived / Unpaid: a test list (page 1): no printing
   const word = (list || 'Paid').toLowerCase();
-  const settings = await getSettings();
   const state = { job: null, plan: null, list: null, loadedAt: null, cart: null, error: null, progress: null, lines: [] };
   // progress comes from the onProgress callbacks of loadSales (every sale) and buildCart (every step of every
   // cart item: the bar moves per step, the text counts the finished items)
@@ -169,6 +168,8 @@ export async function start({ saleId, list }) {
   ];
 
   async function load() {
+    state.plan = null; state.only = null;
+    await clearRun();   // a failed load leaves no earlier run behind
     const cfg = await loadData();
     const me = await ext.tabs.getCurrent();
     const sales = await loadSales(list, { log, windowId: me.windowId, onLogin: () => {}, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
@@ -179,7 +180,8 @@ export async function start({ saleId, list }) {
   async function cart(stamps, tracked) {
     const me = await ext.tabs.getCurrent();
     state.cart = null;
-    state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; render(); } });
+    const { fallbackEmail } = await getSettings();
+    state.cart = await buildCart({ stamps, tracked, fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; render(); } });
   }
   async function print() {
     if (state.list !== 'Paid') return;   // printing only after a Paid load
@@ -239,7 +241,7 @@ export async function start({ saleId, list }) {
     } else {
       const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0), is = issues(p);
       html = `<div class="sum">${p.print.length} label(s) · ${nStamps} stamp(s) in ${p.stamps.length} code(s) · ${nLabels(p)} tracked${p.skipped.length ? ` · ${p.skipped.length} by hand` : ''}</div>
-        <div class="muted">Loaded ${time(state.loadedAt)}. <a href="#" id="reload" style="color:inherit">Load again</a></div>
+        <div class="muted">${state.only ? `${runScope(state.only)}, loaded` : 'Loaded'} ${state.loadedAt.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} ${time(state.loadedAt)} (${runAge(state.loadedAt)}). <a href="#" id="reload" style="color:inherit">Load again</a></div>
         ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="/en/Magic/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
         ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
         <div class="cards">
@@ -270,7 +272,7 @@ export async function start({ saleId, list }) {
   // Paid page: show the last Paid load (same as the full page), if it is recent.
   if (list) {
     const last = await getRun();
-    if (last?.list === list) { state.plan = last.plan; state.list = list; state.loadedAt = last.loadedAt; state.pick = { codes: last.plan.stamps.length > 0, labels: nLabels(last.plan) > 0 }; }
+    if (last?.list === list) { state.plan = last.plan; state.list = list; state.loadedAt = last.loadedAt; state.only = last.only || null; state.pick = { codes: last.plan.stamps.length > 0, labels: nLabels(last.plan) > 0 }; }
   }
   render();
 }
