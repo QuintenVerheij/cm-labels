@@ -13,7 +13,7 @@ const THRESHOLD = 25;   // an untracked sale at or above this article value is s
 const NotAfterArticle = '(?<!\\b(?:de|del|della|dello|delle|des|du|la|le|el|los|las|am|im|zum|zur|der|dem)\\s)';
 const After = '([\\s,.:]|\\d|$)';
 // A line with one of these words is extra (apartment, building, c/o), even when it ends in a number.
-const ExtraWords = new RegExp('(^|[\\s,.])' + NotAfterArticle + '(app(artement)?|appt?|apt|apartment|unit|suite|bte|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\\/o|p\\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus)' + After, 'i');
+const ExtraWords = new RegExp('(^|[\\s,.])' + NotAfterArticle + '(app(artement)?|appt?|apt|apartment|unit|suite|bte|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\\/o|p\\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus|bt|lokal|lok|lgh|haus|hof|zimmer|eingang|top|stiege|loja)' + After, 'i');
 // Extra text -> PostNL's extra fields (35 characters each), split at key words, text kept as written.
 const ExtraFields = {
   Verdieping: new RegExp('(^|[\\s,])' + NotAfterArticle + '(\\d+\\s*[º°ª]|\\d+\\s*\\.\\s*(th|tv|mf)(?=[\\s,.:]|$)|(\\d+\\s*(e|er|re|[eè]me)?\\s*\\.?\\s*)?([eé]tage|etg|piso|planta|stock|floor)' + After + ')', 'i'),
@@ -61,7 +61,7 @@ export function splitStreet(iso, street, extras) {
       if (!m) continue;
       // A word after the first number and another number later on: the first number belongs to the street
       // name ("Via 4 Novembre 10"), so the house number is the last one.
-      if (re === last && /\d/.test(m.groups.more) && /^[\s.,]*(?![A-Z]{2,3}(?![A-Za-z]))\p{L}{2,}/u.test(m.groups.more)) m = head.trim().match(lastGreedy) ?? m;
+      if (re === last && /^\p{L}+\.?(\s+(de|del|della|des|du|la|le|der|von|van))*$/u.test(m.groups.street.trim()) && /\d/.test(m.groups.more) && /^[\s.,]*(?![A-Z]{2,3}(?![A-Za-z]))\p{L}{2,}/u.test(m.groups.more)) m = head.trim().match(lastGreedy) ?? m;
       const extra = lines.filter((_, j) => j !== i);
       const more = [String(m.groups.more ?? '').replace(/^[\s,\-/]+|[\s,\-/]+$/g, ''), tail].filter(Boolean).join(' ');
       if (more) extra.push(more);
