@@ -32,6 +32,23 @@ test('click refuses an element whose text speaks of paying or ordering', () => {
   }
 });
 
+test('click presses an address suggestion whose text contains a deny-listed word', () => {
+  location.pathname = '/nl/verzenden'; clicked = 0;
+  const q = document.querySelectorAll;
+  document.querySelectorAll = () => [button('Norderstraße 5, Norderstedt'), button('Rue du Paysan')];
+  try {
+    assert.equal(window.__cmlPNL.click({ k: 'sugg', i: 0 }), true);
+    assert.equal(window.__cmlPNL.click({ k: 'sugg', i: 1 }), true);
+    assert.equal(clicked, 2);
+    element = button('Betalen');
+    assert.equal(window.__cmlPNL.click({ k: 'sel', v: 'button' }), false);
+    assert.equal(clicked, 2);
+    location.pathname = '/nl/verzenden/betalen';
+    assert.equal(window.__cmlPNL.click({ k: 'sugg', i: 0 }), false);
+    assert.equal(clicked, 2);
+  } finally { document.querySelectorAll = q; location.pathname = '/nl/verzenden'; }
+});
+
 const field = (label, proto = Object.prototype) => ({ labels: [{ innerText: label }], __proto__: proto });
 const withFields = (fields, fn) => { const q = document.querySelectorAll; document.querySelectorAll = sel => (sel === 'input,textarea' ? fields : []); try { return fn(); } finally { document.querySelectorAll = q; } };
 const byLabel = () => window.__cmlPNL.exists({ k: 'label', v: 'Straat' });
