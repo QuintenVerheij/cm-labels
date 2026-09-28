@@ -17,7 +17,7 @@ const PAGES = {
   },
 };
 
-function load(p, { tracked }) {
+function load(p, { tracked, body, pager, cf } = {}) {
   const flags = tracked ? 'Tracked' : p.flags === 'Tracked' ? 'No tracking' : p.flags;
   const spans = [el('Standard Letter'), el('max. 1,000 g', ['text-muted'])];
   const md = el('', [], { querySelectorAll: () => spans, querySelector: () => el(flags) });
@@ -30,9 +30,9 @@ function load(p, { tracked }) {
   const lines = [el('Jan Jansen', ['Name']), el('Kerkstraat 1', ['Street']), el('12345 Berlin', ['City']), el(p.country, ['Country'])];
   const sum = { getAttribute: n => (n === 'data-item-value' ? '12.50' : '3') };
   const document = {
-    querySelector: sel => (sel === '#ShippingAddress' ? {} : sel === '[data-item-value]' ? sum : null),
+    querySelector: sel => (sel === '#ShippingAddress' ? {} : sel === 'a[href*="site="]' ? (pager ? {} : null) : sel === '[data-item-value]' ? sum : null),
     querySelectorAll: sel => (sel === '#ShippingAddress > div' ? lines : sel === '#collapsibleOtherInfo dt' ? dts : []),
-    body: { textContent: `${p.pages} ${p.saleNo}`, innerText: '' },
+    body: { textContent: body ?? `${p.pages} ${p.saleNo}`, innerText: cf ?? '' },
     title: '', readyState: 'complete',
   };
   const window = {};
@@ -88,4 +88,21 @@ test('country names of both languages resolve to the same ISO code', () => {
   assert.equal(byName.Niederlande, 'NL');
   assert.equal(byName.Großbritannien, 'GB');
   assert.deepEqual(Object.keys(COUNTRY_DE).sort(), Object.keys(countries).sort());
+});
+
+test('a list page with a pager but no readable page count gives pages null, not 1', () => {
+  assert.equal(load(PAGES.de, { body: 'Seite eins', pager: true }).list().pages, null);
+  assert.equal(load(PAGES.en, { body: 'no count', pager: true }).list().pages, null);
+  assert.equal(load(PAGES.de, { body: 'no pager here' }).list().pages, 1);
+  assert.equal(load(PAGES.de, { pager: true }).list().pages, 3);
+});
+
+test('a German challenge or rate-limit phrase counts only on a German page', () => {
+  const de = load(PAGES.de, { cf: 'Einen Moment' }).state();
+  assert.equal(de.check, true);
+  assert.equal(load(PAGES.en, { cf: 'Einen Moment' }).state().check, false);
+  assert.equal(load(PAGES.de, { cf: 'Zu viele Anfragen' }).state().limited, true);
+  assert.equal(load(PAGES.en, { cf: 'Zu viele Anfragen' }).state().limited, false);
+  assert.equal(load(PAGES.de, { cf: 'Just a moment' }).state().check, true);
+  assert.equal(load(PAGES.en, { cf: 'Too Many Requests' }).state().limited, true);
 });

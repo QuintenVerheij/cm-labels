@@ -6,7 +6,7 @@
 // The run lives in this page: keep it open while a run goes. Tab work goes through the background script.
 import { ext, openPage } from './ext.js';
 import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
-import { langFromPath } from './locale.js';
+import { langFromPath, pageText } from './locale.js';
 import { planSales } from './plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData, saveLang } from './store.js';
@@ -72,9 +72,10 @@ export async function start({ saleId, list }) {
   // for that reason. Without such a button: the same colours, set here.
   // Cardmarket's button: the deepest element whose text contains the label (any element type, any case), then
   // up to its clickable element (a, button, role=button, .btn). The visible one wins: there can be a hidden copy.
-  const REF = /search in my shipments|confirm shipment/i;
+  const REFS = pageText('refButton', langFromPath(location.pathname));
+  const isRef = t => REFS.some(r => r.test(t));
   const norm = e => e.textContent.replace(/\s+/g, ' ').trim();
-  const leaves = [...document.querySelectorAll('main *')].filter(e => REF.test(norm(e)) && ![...e.children].some(c => REF.test(norm(c))));
+  const leaves = [...document.querySelectorAll('main *')].filter(e => isRef(norm(e)) && ![...e.children].some(c => isRef(norm(c))));
   const refs = [...new Set(leaves.map(e => e.closest('a, button, [role=button], .btn, label') || e))];
   const ref = refs.find(e => e.getClientRects().length) || refs[0];
   const h1 = document.querySelector('h1');
@@ -255,7 +256,7 @@ export async function start({ saleId, list }) {
         <div class="actions"><button class="btn" id="again">${state.cart || state.error ? 'Try again' : `Add to ${esc(originCart)}`}</button></div>`;
     } else if (!p) {
       const rows = document.querySelectorAll('div[data-url*="/Orders/"]').length;
-      const pages = +((document.body.textContent.match(/Page \d+ of (\d+)/) || [])[1] || 1);
+      const pages = +((pageText('pages', langFromPath(location.pathname)).map(r => document.body.textContent.match(r)).find(Boolean) || [])[1] || 1);
       html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${rows} paid sale(s) on this page${pages > 1 ? `, ${pages} pages` : ''}.</div>
         <div class="actions"><button class="btn" id="load">Load paid sales</button></div>`;
     } else {

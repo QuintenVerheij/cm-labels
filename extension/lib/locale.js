@@ -6,6 +6,14 @@ export const langFromPath = path => {
   return LANGS.includes(l) ? l : null;
 };
 
+// Texts of Cardmarket's own page that the panel reads, per language. The de entries are guesses: no German page was
+// available to check them.
+export const PAGE_TEXT = {
+  en: { refButton: /search in my shipments|confirm shipment/i, pages: /Page \d+ of (\d+)/ },
+  de: { refButton: /in meinen sendungen suchen|sendung bestätigen/i, pages: /Seite \d+ von (\d+)/ },
+};
+export const pageText = (key, lang) => [...new Set([PAGE_TEXT[lang], PAGE_TEXT.en])].filter(Boolean).map(t => t[key]);
+
 // German country names by ISO code: the names of the Cardmarket help centre (locale=de). CA is not in that list:
 // "Kanada" is a best guess.
 export const COUNTRY_DE = {

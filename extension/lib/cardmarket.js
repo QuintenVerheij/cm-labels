@@ -86,7 +86,8 @@ export async function loadSales(list, { lang = 'en', log, onLogin = () => {}, wi
     } else {
       const first = await tab.call('list');
       ids = first.ids;
-      const pages = first.pages;
+      if (first.pages == null) log('Warning: the list has more than one page but its page count could not be read. Only page 1 is loaded.');
+      const pages = first.pages ?? 1;
       for (let p = 2; p <= pages; p++) {
         await pause();
         await loadPage(tab, listUrl(list, p, lang), st => st.url.includes(`site=${p}`));

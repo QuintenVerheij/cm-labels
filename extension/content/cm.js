@@ -39,19 +39,17 @@
   };
   const lang = () => (location.href.match(/cardmarket\.com\/(en|de)\//) || [])[1] || 'en';
   const labels = () => [...new Set([LABELS[lang()], LABELS.en])];
-  const anyLang = key => Object.values(LABELS).map(l => l[key]);
   const firstMatch = (key, text) => { for (const l of labels()) { const m = text.match(l[key]); if (m) return m; } return null; };
 
-  // Cloudflare localises its pages by the browser, not by the URL, so the markup decides and the text of every
-  // language is only a fallback.
+  // Cloudflare's markup decides; its text is only a fallback, read with the page's own language and English.
   // 'block' = Cloudflare refused this browser (stop everything); 'limited' = rate limit page (429);
   // 'check' = the normal "Just a moment" check.
   const has = sel => !!document.querySelector(sel);
-  const isBlock = h => has('#cf-wrapper') || has('#cf-error-details') || anyLang('block').some(r => r.test(h));
-  const isLimited = h => anyLang('limited').some(r => r.test(h));
+  const isBlock = h => has('#cf-wrapper') || has('#cf-error-details') || labels().map(l => l.block).some(r => r.test(h));
+  const isLimited = h => labels().map(l => l.limited).some(r => r.test(h));
   const isCheck = h => has('#challenge-form') || has('#challenge-running') || has('#challenge-stage') || has('[id^="cf-chl"]')
     || (has('script[src*="/cdn-cgi/challenge-platform"]') && (document.body?.innerText || '').trim().length < 200)
-    || anyLang('check').some(r => r.test(h));
+    || labels().map(l => l.check).some(r => r.test(h));
 
   function state() {
     const h = head();
@@ -68,7 +66,8 @@
   function list() {
     const ids = [...new Set([...document.querySelectorAll('div[data-url*="/Orders/"]')].map(d => (d.getAttribute('data-url').match(/Orders\/(\d{10})/) || [])[1]).filter(Boolean))];
     const m = (firstMatch('pages', document.body.textContent) || [])[1];
-    return { ids, pages: m ? +m : 1 };
+    // A pager without a readable page count: null, so the caller does not take the page for the only one.
+    return { ids, pages: m ? +m : has('a[href*="site="]') ? null : 1 };
   }
 
   // The loaded sale page -> the fields the plan needs. The shipping blocks are Bootstrap collapses: read the

@@ -86,3 +86,33 @@ test('the list tab and every worker tab open with the worker hash', async () => 
   assert.equal(openOpts.length, 3);
   for (const o of openOpts) assert.equal(o.hash, '#cml-worker');
 });
+
+// A tab that records the URLs it navigates to; the list page reports listPages.
+function recordingTabs(listPages) {
+  const urls = [];
+  Tab.open = async () => ({
+    id: 1, url: '',
+    async navigate(url) { this.url = url; urls.push(url); },
+    async activate() {}, async close() {},
+    async safe(name, fb) { return name === 'state' ? page(this.url) : name === 'hasSale' ? true : fb; },
+    async call(name, id) { return name === 'list' ? { ids: [ID], pages: listPages } : { id, lines: [] }; },
+  });
+  return urls;
+}
+
+test('a German run requests /de/Magic/ URLs', async () => {
+  const urls = recordingTabs(1);
+  const out = await loadSales('Paid', { lang: 'de', log() {}, onLogin() {}, saleMs: 200 });
+  assert.equal(out.length, 1);
+  assert.equal(urls.length, 2);
+  assert.ok(urls.every(u => u.startsWith('https://www.cardmarket.com/de/Magic/')), urls.join(', '));
+});
+
+test('a list page count that could not be read logs a warning and loads page 1 only', async () => {
+  const urls = recordingTabs(null);
+  const logs = [];
+  const out = await loadSales('Paid', { log: m => logs.push(m), onLogin() {}, saleMs: 200 });
+  assert.equal(out.length, 1);
+  assert.ok(logs.some(m => /page count could not be read/.test(m)), logs.join(', '));
+  assert.ok(urls.every(u => !u.includes('site=')));
+});
