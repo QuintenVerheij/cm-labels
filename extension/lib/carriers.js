@@ -1,8 +1,4 @@
-// Carriers: who sells the postage for a cart item, and so whose cart it goes in. Every shipping method names its
-// carrier (Carrier in methods.psd1); planSales copies it onto each stamp group and tracked label. The app page and
-// the Cardmarket panel build carts only through buildCart here, which groups the items by carrier and hands each
-// group to its carrier's module, one carrier after the other. lib/postnl.js is the first one; deutschepost and dhl
-// are known names without a module yet. none = no cart.
+// Carriers: who sells the postage for a cart item, and so whose cart it goes in. none = no cart.
 //
 // A carrier module exports:
 //   NAME       its display name ('PostNL'): the UI says "Add to PostNL cart", "3 item(s) in the PostNL cart".

@@ -2,7 +2,6 @@
 // PostNL keeps the cart per tab (sessionStorage 'current-order', an NgRx entity state), so at the end the items
 // are merged into one tab's cart, in the shape of a cart built by hand. That tab comes to the front on the
 // cart page: check it and pay there. Nothing here pays.
-// The postnl carrier of lib/carriers.js (its interface is there): the app reaches it only through carriers.js.
 import { ext } from './ext.js';
 import { Tab, sleep } from './tabs.js';
 import { Norm, SuffixKey } from './plan.js';

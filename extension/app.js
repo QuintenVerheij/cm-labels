@@ -1,5 +1,4 @@
 // cm-labels app page: Load (Cardmarket) -> breakdown -> Print (browser print dialog) / Add to the carrier's cart
-// (PostNL for NL; lib/carriers.js builds one cart per carrier).
 // The jobs run in this page, so keep it open while one runs.
 import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';

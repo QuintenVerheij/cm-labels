@@ -98,6 +98,7 @@ test('a method with carrier none never reaches a cart', () => {
   ], cfg, 'NL', BRACKETS);
   assert.deepEqual([p.stamps, p.tracked], [[], []]);
   assert.deepEqual(p.skipped.map(x => x.id), ['1', '2', '3']);
+  assert.match(p.skipped[0].reason, /no carrier for 'Letter/);
   assert.match(p.skipped[1].reason, /no carrier/);
   assert.equal(p.print.length, 2);   // an untracked sale still gets its address label
 });
