@@ -4,7 +4,7 @@ Browser extension that turns Cardmarket sales into shipping labels and a PostNL 
 
 Works in Chromium browsers (Chrome, Brave, Edge; Chrome 121 or later) and Firefox 140 or later on the desktop. Firefox for Android is not supported.
 
-The panel only appears on the English Magic pages of Cardmarket (`https://www.cardmarket.com/en/Magic/...`). Other languages and other games are not read.
+The button appears on any Orders page of Cardmarket. On other pages the panel shows a message that it works only on the English Magic pages (`https://www.cardmarket.com/en/Magic/...`). Other languages and other games are not read.
 
 May at some point support other postal services.
 
