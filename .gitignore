@@ -1,3 +1,13 @@
 dist/
 extension/.amo-upload-uuid
 node_modules/
+docs/board/
+.claude/fleet/
+.claude/fleet-notes/
+/handoff.md
+
+# boat
+docs/
+devkit.config.mjs
+CLAUDE.md
+.gitattributes
