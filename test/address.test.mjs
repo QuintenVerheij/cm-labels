@@ -24,6 +24,18 @@ const rows = [
   ['AT', 'Hauptstraße 12 Stiege 2 Top 5', 'Hauptstraße', '12', '', 'Stiege 2 Top 5'],
   ['PL', 'ul. Długa 12 bt 5', 'ul. Długa', '12', '', 'bt 5'],
   ['PT', 'Rua Augusta 12 Loja 3', 'Rua Augusta', '12', '', 'Loja 3'],
+  ['DE', 'Hauptstr. 5 Halle 3', 'Hauptstr.', '5', '', 'Halle 3'],
+  ['DE', 'Musterstraße 5 Aufgang 2', 'Musterstraße', '5', '', 'Aufgang 2'],
+  ['SE', 'Storgatan 3 Trappa 2', 'Storgatan', '3', '', 'Trappa 2'],
+  ['DK', 'Vestergade 12 st 3', 'Vestergade', '12', '', 'st 3'],
+  ['NO', 'Storgata 5 Leil 3', 'Storgata', '5', '', 'Leil 3'],
+  ['DE', 'Karlsplatz 4 Aufzug 2', 'Karlsplatz', '4', '', 'Aufzug 2'],
+  ['DE', 'Hauptstraße 12 Nr. 3', 'Hauptstraße', '12', '', 'Nr. 3'],
+  ['GB', '12 Hill Top Road', 'Hill Top Road', '12', '', ''],
+  ['DE', 'Am Neuen Hof 3', 'Am Neuen Hof', '3', '', ''],
+  ['DE', 'Neuer Hof 12', 'Neuer Hof', '12', '', ''],
+  ['DE', 'Hof 3', 'Hof', '3', '', ''],
+  ['DE', 'Top 5', 'Top', '5', '', ''],
 ];
 
 for (const [iso, line, Street, Nr, Ext, Extra] of rows) {
@@ -85,6 +97,18 @@ test('splitNL keeps a number in the street name and takes the last number as hou
   const p = trackedPlan('Netherlands', 'Plein 1944 12', '1234AB Utrecht');
   assert.deepEqual({ Street: p.Street, Number: p.Number, Suffix: p.Suffix, error: p.error }, { Street: 'Plein 1944', Number: '12', Suffix: '', error: undefined });
 });
+
+for (const [line, Street, Number, SuffixKey] of [
+  ['Weesperstraat 55 1', 'Weesperstraat', '55', '1'],
+  ['Herengracht 100 2', 'Herengracht', '100', '2'],
+  ['Kerkstraat 12 3', 'Kerkstraat', '12', '3'],
+  ['2e Jan van der Heijdenstraat 12 3', '2e Jan van der Heijdenstraat', '12', '3'],
+]) {
+  test(`splitNL takes a number then a digit suffix as house number and suffix "${line}"`, () => {
+    const p = trackedPlan('Netherlands', line, '1234AB Utrecht');
+    assert.deepEqual({ Street: p.Street, Number: p.Number, SuffixKey: p.SuffixKey }, { Street, Number, SuffixKey });
+  });
+}
 
 test('splitNL keeps a dashed numeric suffix as suffix', () => {
   const p = trackedPlan('Netherlands', 'Kerkstraat 12-3', '1234AB Utrecht');

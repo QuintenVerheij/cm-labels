@@ -11,7 +11,7 @@ const THRESHOLD = 25;   // an untracked sale at or above this article value is s
 const NotAfterArticle = '(?<!\\b(?:de|del|della|dello|delle|des|du|la|le|el|los|las|am|im|zum|zur|der|dem)\\s)';
 const After = '([\\s,.:]|\\d|$)';
 // A line with one of these words is extra (apartment, building, c/o), even when it ends in a number.
-const ExtraWords = new RegExp('(^|[\\s,.])' + NotAfterArticle + '(app(artement)?|appt?|apt|apartment|unit|suite|bte|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\\/o|p\\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus|bt|lokal|lok|lgh|haus|hof|zimmer|eingang|top|stiege|loja)' + After, 'i');
+const ExtraWords = new RegExp('(^|[\\s,.])' + NotAfterArticle + '(app(artement)?|appt?|apt|apartment|unit|suite|bte|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\\/o|p\\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus|bt|lokal|lok|lgh|zimmer|eingang|stiege|loja|(?<=\\d.*)(?:haus|hof|top)(?=\\s*\\d))' + After, 'i');
 // Extra text -> PostNL's extra fields (35 characters each), split at key words, text kept as written.
 const ExtraFields = {
   Verdieping: new RegExp('(^|[\\s,])' + NotAfterArticle + '(\\d+\\s*[º°ª]|\\d+\\s*\\.\\s*(th|tv|mf)(?=[\\s,.:]|$)|(\\d+\\s*(e|er|re|[eè]me)?\\s*\\.?\\s*)?([eé]tage|etg|piso|planta|stock|floor)' + After + ')', 'i'),
@@ -38,6 +38,8 @@ export function splitExtra(text) {
   return Object.fromEntries(Object.entries(out).filter(([, v]) => v.length).map(([k, v]) => [k, v.join(', ')]));
 }
 
+// A street type word (with articles) that a number can follow inside the name: "Via 4 Novembre", "Straße des 17. Juni".
+const StreetType = /^(?:(?:via|viale|piazza|corso|calle|plaza|rue|ul|plac|aleja|strada)\.?|stra(?:ß|ss)e(?=\s+(?:de|del|della|des|du|la|le|der|von|van)))(\s+(de|del|della|des|du|la|le|der|von|van))*$/iu;
 // Street line -> street, number, suffix; extra lines + leftovers -> PostNL extra fields. FR and LU write the
 // number first ("12 rue de la Paix"), the others last. Cardmarket marks the street line (.Street) and the
 // extra lines (.Extra); the street line is tried first.
@@ -59,7 +61,7 @@ export function splitStreet(iso, street, extras) {
       if (!m) continue;
       // A word after the first number and another number later on: the first number belongs to the street
       // name ("Via 4 Novembre 10"), so the house number is the last one.
-      if (re === last && /^\p{L}+\.?(\s+(de|del|della|des|du|la|le|der|von|van))*$/u.test(m.groups.street.trim()) && /\d/.test(m.groups.more) && /^[\s.,]*(?![A-Z]{2,3}(?![A-Za-z]))\p{L}{2,}/u.test(m.groups.more)) m = head.trim().match(lastGreedy) ?? m;
+      if (re === last && StreetType.test(m.groups.street.trim()) && /\d/.test(m.groups.more) && /^[\s.,]*(?![A-Z]{2,3}(?![A-Za-z]))\p{L}{2,}/u.test(m.groups.more)) m = head.trim().match(lastGreedy) ?? m;
       const extra = lines.filter((_, j) => j !== i);
       const more = [String(m.groups.more ?? '').replace(/^[\s,\-/]+|[\s,\-/]+$/g, ''), tail].filter(Boolean).join(' ');
       if (more) extra.push(more);
@@ -84,7 +86,7 @@ function splitNL(line) {
   const rest = '(?<rest>(?:\\s*[-/.]?\\s*[A-Za-z0-9]{1,6}){0,2})\\s*$';
   for (const street of ['(?<street>.+?)', '(?<street>.+)']) {
     const m = line.match(new RegExp(`^${street}\\s+(?<nr>\\d{1,5})${rest}`));
-    if (m && street === '(?<street>.+?)' && /^\s*\d+$/.test(m.groups.rest)) continue;
+    if (m && street === '(?<street>.+?)' && /^\s*\d+$/.test(m.groups.rest) && /^(1[5-9]|20)\d\d$/.test(m.groups.nr)) continue;
     if (m && SuffixKey(m.groups.rest).length <= 5) return { Street: m.groups.street.trim(), Number: m.groups.nr, Suffix: m.groups.rest.trim(), SuffixKey: SuffixKey(m.groups.rest) };
   }
   throw new Error(`no house number (+ suffix of at most 5 letters/digits) at the end of '${line}'`);
