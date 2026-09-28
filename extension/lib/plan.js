@@ -133,7 +133,15 @@ function labelFields(s, cfg) {
   return { NAME: s.name, ADDRESS: [...s.extras, s.street].filter(Boolean), POSTCODE: m ? m.groups.pc.toUpperCase() : '', CITY: m ? m.groups.town.trim() : s.city, COUNTRY: s.country, ID: String(s.id ?? '') };
 }
 
-// sales: from loadSales in cardmarket.js. Returns the breakdown for the UI and the cart.
+// The carrier for a sale on an untracked method that is not in methods.psd1: the one carrier of the origin's stamp
+// methods, else none (the label is printed, the stamp bought by hand).
+function stampCarrier(cfg) {
+  const all = new Set(Object.values(cfg.methods).filter(m => m.Service === 'stamp').map(m => m.Carrier || 'none'));
+  return all.size === 1 ? [...all][0] : 'none';
+}
+
+// sales: from loadSales in cardmarket.js. Returns the breakdown for the UI and the cart. Every stamp group and tracked
+// label carries its carrier (lib/carriers.js builds the cart with it); carrier none never reaches a cart.
 export function planSales(sales, cfg, origin = 'NL') {
   const stamps = new Map(), print = [], tracked = [], skipped = [], all = [];
   for (const r of sales) {
@@ -144,6 +152,7 @@ export function planSales(sales, cfg, origin = 'NL') {
     s.iso = cfg.byName[s.country] || null;
     const m = cfg.methods[r.methodName];
     s.service = m ? m.Service : (r.tracked === false ? 'stamp' : 'unknown');
+    s.carrier = m ? m.Carrier || 'none' : s.service === 'stamp' ? stampCarrier(cfg) : 'none';
     all.push(s);
     const base = { id: s.id, iso: s.iso, value: s.value, method: s.method, address: s.address };
     if (s.service === 'stamp') {
@@ -151,17 +160,18 @@ export function planSales(sales, cfg, origin = 'NL') {
       if (s.value >= THRESHOLD) { skipped.push({ ...base, reason: `untracked, article value ${s.value} >= ${THRESHOLD}; check the sale` }); continue; }
       print.push({ Id: s.id, Value: s.value, Method: s.method, Address: s.address, Grams: s.grams, Iso: s.iso, Fields: labelFields(s, cfg) });
       let reason = null;
-      if (!s.iso) reason = `country '${s.country}' is not in the country data (source file countries.psd1); buy its stamp by hand`;
+      if (s.carrier === 'none') reason = `no carrier for '${s.method}' in the method data (source file methods.psd1); buy its stamp by hand`;
+      else if (!s.iso) reason = `country '${s.country}' is not in the country data (source file countries.psd1); buy its stamp by hand`;
       else if (!s.grams || s.grams > 50) reason = `no stamp weight up to 50 g in '${s.method}'; buy its stamp by hand`;
       if (reason) { skipped.push({ ...base, reason: 'label printed, stamp by hand: ' + reason }); continue; }
-      const w = s.grams <= 20 ? 20 : 50, code = `${s.iso}-${w}`;
-      if (!stamps.has(code)) stamps.set(code, { code, iso: s.iso, weight: w, country: cfg.countries[s.iso][1], qty: 0, ids: [] });
-      const g = stamps.get(code); g.qty++; g.ids.push(s.id);
-    } else if (s.service === 'postnl') {
-      try { tracked.push({ ...trackedPlan(s, m, cfg, origin), address: s.address, method: s.method, value: s.value }); }
-      catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [] }); }
+      const w = s.grams <= 20 ? 20 : 50, code = `${s.iso}-${w}`, key = `${s.carrier} ${code}`;
+      if (!stamps.has(key)) stamps.set(key, { code, iso: s.iso, weight: w, country: cfg.countries[s.iso][1], qty: 0, ids: [], carrier: s.carrier });
+      const g = stamps.get(key); g.qty++; g.ids.push(s.id);
+    } else if (s.service === 'postnl' && s.carrier !== 'none') {
+      try { tracked.push({ ...trackedPlan(s, m, cfg, origin), address: s.address, method: s.method, value: s.value, carrier: s.carrier }); }
+      catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [], carrier: s.carrier }); }
     } else {
-      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : `unknown tracked method '${r.methodName}': add it to the method data (source file methods.psd1)` });
+      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : m && s.carrier === 'none' ? `method '${r.methodName}' has no carrier in the method data (source file methods.psd1): buy by hand` : `unknown tracked method '${r.methodName}': add it to the method data (source file methods.psd1)` });
     }
   }
   const stampList = [...stamps.values()].sort((a, b) => (a.iso !== origin) - (b.iso !== origin) || a.iso.localeCompare(b.iso) || a.weight - b.weight);

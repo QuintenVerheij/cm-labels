@@ -4,7 +4,7 @@ import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';
 import { loadSales } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
-import { buildCart } from './lib/postnl.js';
+import { buildCart } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
@@ -286,9 +286,9 @@ async function loadMethods() {
 }
 function drawMethods() {
   const iso = $('#country').value, rates = methodsData.rates.filter(r => r.Iso === iso);
-  $('#mtable').innerHTML = `<thead><tr><th>Cardmarket method</th><th>Service</th><th>PostNL product · option</th><th>Seen</th><th class="num">Max. value</th><th class="num">Max. weight</th><th class="num">CM price</th><th class="num">Days</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
-    const m = methodsData.methods[name] || { Service: '?' }, rs = rates.filter(r => r.Method === name);
-    return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td>${m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen}</span>` : ''}</td>
+  $('#mtable').innerHTML = `<thead><tr><th>Cardmarket method</th><th>Service</th><th>Carrier</th><th>PostNL product · option</th><th>Seen</th><th class="num">Max. value</th><th class="num">Max. weight</th><th class="num">CM price</th><th class="num">Days</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
+    const m = methodsData.methods[name] || { Service: '?', Carrier: '?' }, rs = rates.filter(r => r.Method === name);
+    return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td><span class="tag">${esc(m.Carrier)}</span></td><td>${m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen}</span>` : ''}</td>
       <td class="num">${eur(rs[0].MaxValue)}</td><td class="num">${rs.map(r => r.MaxWeight + ' g').join('<br>')}</td><td class="num">${rs.map(r => eur(r.Price)).join('<br>')}</td><td class="num">${rs[0].Days}</td></tr>`;
   }).join('')}</tbody>`;
 }

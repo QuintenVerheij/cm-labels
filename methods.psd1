@@ -4,6 +4,8 @@
 #   Service  stamp   = postzegelcode and a 70x40 label
 #            postnl  = tracked PostNL label: pick Product + Option by label text, weight from max. NNNg
 #            manual  = not automated; buy by hand
+#   Carrier  who sells the postage, and so whose cart it goes in (extension/lib/carriers.js):
+#            postnl, deutschepost, dhl, or none = no cart (by hand). Every method names one.
 #   Product  PostNL card text under "Wat wil je versturen?"
 #   Option   PostNL radio text under "Hoe wil je het versturen?"
 #   Only     ISO code of the one country the method exists for (from shipping-costs.csv); absent = no restriction
@@ -16,23 +18,23 @@
 # Max. article values per method and country are in shipping-costs.csv; Cardmarket already enforces them.
 @{
   # ---- no tracking
-  'Letter' = @{ Service = 'stamp' }
-  'Brief'  = @{ Service = 'stamp'; Only = 'NL' }
+  'Letter' = @{ Service = 'stamp'; Carrier = 'postnl' }
+  'Brief'  = @{ Service = 'stamp'; Carrier = 'postnl'; Only = 'NL' }
 
   # ---- NL domestic
-  'Brievenbuspakje+'           = @{ Service = 'postnl'; Product = 'Brievenbuspakje'; Option = 'Met track & trace'; Only = 'NL'; Seen = 'order' }
-  'Pakket'                     = @{ Service = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Met track & trace'; Only = 'NL'; Seen = 'guess' }
-  'Aangetekend Pakket'         = @{ Service = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Aangetekend'; Only = 'NL'; Seen = 'guess' }
-  'Pakket met Verzekerservice' = @{ Service = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Verzekerd'; Only = 'NL'; Seen = 'guess' }
+  'Brievenbuspakje+'           = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Brievenbuspakje'; Option = 'Met track & trace'; Only = 'NL'; Seen = 'order' }
+  'Pakket'                     = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Met track & trace'; Only = 'NL'; Seen = 'guess' }
+  'Aangetekend Pakket'         = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Aangetekend'; Only = 'NL'; Seen = 'guess' }
+  'Pakket met Verzekerservice' = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Verzekerd'; Only = 'NL'; Seen = 'guess' }
 
   # ---- EU (all countries except NL; IS and LI have only the letterbox and Klein pakket methods)
-  'Brievenbuspakje met track & trace (Tracked Letterbox packet)'       = @{ Service = 'postnl'; Product = 'Brievenbuspakje'; Option = 'Met track & trace'; Seen = 'order' }
-  'Klein pakket aangetekend (Registered packet) - Insured up to 50€'   = @{ Service = 'postnl'; Product = 'Klein pakket'; Option = 'Verzekerd tot €50'; Seen = 'page' }
-  'Klein pakket aangetekend (Registered packet) R - Insured up to 50€' = @{ Service = 'postnl'; Product = 'Klein pakket'; Option = 'Verzekerd tot €50'; Seen = 'page' }
-  'Tracked Parcel (Standaard pakket)'                                  = @{ Service = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Met track & trace'; Seen = 'page' }
-  'Registered Parcel (Pakket aangetekend € 500)'                       = @{ Service = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Aangetekend tot €500'; Seen = 'order' }
-  'Insured Delivery (Verzekerd pakket € 5.500)'                        = @{ Service = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Verzekerd tot €5500'; Seen = 'page' }
+  'Brievenbuspakje met track & trace (Tracked Letterbox packet)'       = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Brievenbuspakje'; Option = 'Met track & trace'; Seen = 'order' }
+  'Klein pakket aangetekend (Registered packet) - Insured up to 50€'   = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Klein pakket'; Option = 'Verzekerd tot €50'; Seen = 'page' }
+  'Klein pakket aangetekend (Registered packet) R - Insured up to 50€' = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Klein pakket'; Option = 'Verzekerd tot €50'; Seen = 'page' }
+  'Tracked Parcel (Standaard pakket)'                                  = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Met track & trace'; Seen = 'page' }
+  'Registered Parcel (Pakket aangetekend € 500)'                       = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Aangetekend tot €500'; Seen = 'order' }
+  'Insured Delivery (Verzekerd pakket € 5.500)'                        = @{ Service = 'postnl'; Carrier = 'postnl'; Product = 'Gemiddeld pakket'; Option = 'Verzekerd tot €5500'; Seen = 'page' }
 
   # ---- courier, all countries
-  'SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance' = @{ Service = 'manual' }
+  'SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance' = @{ Service = 'manual'; Carrier = 'none' }
 }

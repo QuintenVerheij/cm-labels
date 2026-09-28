@@ -7,7 +7,7 @@
 import { ext, openPage } from './ext.js';
 import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { planSales } from './plan.js';
-import { buildCart } from './postnl.js';
+import { buildCart } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
 import { esc } from './esc.js';
 

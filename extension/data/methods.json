@@ -1,76 +1,89 @@
 {
  "Tracked Parcel (Standaard pakket)": {
   "Seen": "page",
+  "Carrier": "postnl",
   "Service": "postnl",
   "Option": "Met track & trace",
   "Product": "Gemiddeld pakket"
  },
  "Pakket met Verzekerservice": {
-  "Only": "NL",
+  "Carrier": "postnl",
+  "Option": "Verzekerd",
   "Seen": "guess",
   "Service": "postnl",
-  "Option": "Verzekerd",
-  "Product": "Gemiddeld pakket"
+  "Product": "Gemiddeld pakket",
+  "Only": "NL"
  },
  "Brievenbuspakje met track & trace (Tracked Letterbox packet)": {
   "Seen": "order",
+  "Carrier": "postnl",
   "Service": "postnl",
   "Option": "Met track & trace",
   "Product": "Brievenbuspakje"
  },
  "Pakket": {
-  "Only": "NL",
+  "Carrier": "postnl",
+  "Option": "Met track & trace",
   "Seen": "guess",
   "Service": "postnl",
-  "Option": "Met track & trace",
-  "Product": "Gemiddeld pakket"
+  "Product": "Gemiddeld pakket",
+  "Only": "NL"
  },
  "Brief": {
   "Only": "NL",
+  "Carrier": "postnl",
   "Service": "stamp"
  },
  "Registered Parcel (Pakket aangetekend € 500)": {
   "Seen": "order",
+  "Carrier": "postnl",
   "Service": "postnl",
   "Option": "Aangetekend tot €500",
   "Product": "Gemiddeld pakket"
  },
  "Aangetekend Pakket": {
-  "Only": "NL",
+  "Carrier": "postnl",
+  "Option": "Aangetekend",
   "Seen": "guess",
   "Service": "postnl",
-  "Option": "Aangetekend",
-  "Product": "Gemiddeld pakket"
+  "Product": "Gemiddeld pakket",
+  "Only": "NL"
  },
  "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance": {
+  "Carrier": "none",
   "Service": "manual"
  },
  "Klein pakket aangetekend (Registered packet) R - Insured up to 50€": {
   "Seen": "page",
+  "Carrier": "postnl",
   "Service": "postnl",
   "Option": "Verzekerd tot €50",
   "Product": "Klein pakket"
  },
  "Klein pakket aangetekend (Registered packet) - Insured up to 50€": {
   "Seen": "page",
+  "Carrier": "postnl",
   "Service": "postnl",
   "Option": "Verzekerd tot €50",
   "Product": "Klein pakket"
  },
  "Insured Delivery (Verzekerd pakket € 5.500)": {
   "Seen": "page",
+  "Carrier": "postnl",
   "Service": "postnl",
   "Option": "Verzekerd tot €5500",
   "Product": "Gemiddeld pakket"
  },
  "Letter": {
+  "Carrier": "postnl",
   "Service": "stamp"
  },
  "Brievenbuspakje+": {
-  "Only": "NL",
+  "Carrier": "postnl",
+  "Option": "Met track & trace",
   "Seen": "order",
   "Service": "postnl",
-  "Option": "Met track & trace",
-  "Product": "Brievenbuspakje"
+  "Product": "Brievenbuspakje",
+  "Only": "NL"
  }
 }

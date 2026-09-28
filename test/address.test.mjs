@@ -87,7 +87,7 @@ for (const [text, field] of [['3º B', 'Verdieping'], ['3º Esq', 'Verdieping'],
 const trackedCfg = {
   byName: { Netherlands: 'NL', Belgium: 'BE', Germany: 'DE' },
   countries: { NL: ['x', 'Netherlands', '\\d{4} ?[A-Z]{2}'], BE: ['x', 'Belgium', '\\d{4}'], DE: ['x', 'Germany', '\\d{5}'] },
-  methods: { Parcel: { Service: 'postnl', Product: 'Gemiddeld pakket', Option: '' } },
+  methods: { Parcel: { Service: 'postnl', Carrier: 'postnl', Product: 'Gemiddeld pakket', Option: '' } },
 };
 const trackedPlan = (country, street, city) => planSales([{
   id: '1', methodName: 'Parcel', method: 'Parcel max. 2000 g', grams: 2000, tracked: true, value: 10,

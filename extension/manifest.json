@@ -50,6 +50,7 @@
       "resources": [
         "lib/cardmarket.js",
         "lib/esc.js",
+        "lib/carriers.js",
         "lib/ext.js",
         "lib/panel-app.js",
         "lib/plan.js",
