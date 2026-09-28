@@ -4,6 +4,8 @@
 // At the first block or rate-limit page the whole run stops, and so does a run whose sale pages time out
 // three times in a row on a challenge or an unknown page.
 import { Tab, sleep } from './tabs.js';
+import { ext } from './ext.js';
+const tabGone = async tab => { try { await ext.tabs.get(tab.id); return false; } catch { return true; } };
 
 export const BASE = 'https://www.cardmarket.com/en/Magic';
 export const LISTS = {
@@ -23,16 +25,23 @@ class PageTimeout extends Error { constructor(msg, stuck) { super(msg); this.stu
 const STUCK_LIMIT = 3;                               // stuck timeouts in a row that stop the run
 
 // Load url in the tab and wait until the page is usable: ready, past Cloudflare's normal check, and
-// done(state) true (when given). A block or rate-limit page throws Blocked.
-async function loadPage(tab, url, done = () => true, ms = 60000) {
+// done(state) true (when given). A block or rate-limit page throws Blocked. A loaded page that says logged
+// out returns at once, at whatever URL. A loaded page that stays not done for a while throws missing (when
+// given) instead of waiting out ms.
+async function loadPage(tab, url, done = () => true, ms = 60000, missing = null) {
   await tab.navigate(url);
   const here = s => s.url.startsWith(url.split('?')[0]);
-  let s = null;
+  let s = null, seen = 0;
   for (const t = Date.now(); ; await sleep(400)) {
     s = await tab.safe('state', null);
     if (s?.block) throw new Blocked(`Cloudflare blocked this browser on Cardmarket (${url}). The run stopped; wait a while before you try again.`);
     if (s?.limited) throw new Blocked(`Cardmarket answered "Too Many Requests" (${url}). The run stopped; wait a while before you try again.`);
+    if (s && s.ready === 'complete' && !s.check && !s.loggedIn) return s;
     if (s && s.ready === 'complete' && !s.check && here(s) && await done(s)) return s;
+    if (missing && s && s.ready === 'complete' && !s.check && here(s)) {
+      seen ||= Date.now();
+      if (Date.now() - seen > Math.min(2000, ms / 4)) throw new PageTimeout(missing, false);
+    }
     if (Date.now() - t > ms) throw new PageTimeout(`Cardmarket page did not load within ${ms / 1000} s: ${url}`, !s || s.check || !here(s));
   }
 }
@@ -40,7 +49,7 @@ async function loadPage(tab, url, done = () => true, ms = 60000) {
 // onProgress(done, total): after every sale page (for a progress bar); the log gets a line every 10.
 // only: sale ids (10 digits). When given, only those sale pages are read, not the ids on the list pages (the
 // first list page still loads, for the login check).
-export async function loadSales(list, { log, onLogin, windowId, onProgress = () => {}, only = null, saleMs = 45000 }) {
+export async function loadSales(list, { log, onLogin, windowId, onProgress = () => {}, only = null, saleMs = 45000, loginMs = 600000, loginPollMs = 3000 }) {
   const tab = await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId });
   const workers = [];
   try {
@@ -50,9 +59,10 @@ export async function loadSales(list, { log, onLogin, windowId, onProgress = () 
       onLogin(true);
       await tab.activate();
       // check the page in that tab; no reloads while you type
-      while (!(s = await tab.safe('state', null))?.loggedIn) {
+      for (const t = Date.now(); !(s = await tab.safe('state', null))?.loggedIn; await sleep(loginPollMs)) {
         if (s?.block) throw new Blocked('Cloudflare blocked this browser on Cardmarket. The run stopped.');
-        await sleep(3000);
+        if (await tabGone(tab)) { onLogin(false); throw new Error('The Cardmarket tab was closed before you logged in. Start the run again.'); }
+        if (Date.now() - t > loginMs) { onLogin(false); throw new Error(`Not logged in to Cardmarket within ${Math.round(loginMs / 60000)} min. Start the run again.`); }
       }
       onLogin(false);
       log('Logged in.');
@@ -84,7 +94,8 @@ export async function loadSales(list, { log, onLogin, windowId, onProgress = () 
         const id = ids[next++];
         await pause();
         try {
-          await loadPage(w, `${BASE}/Orders/${id}`, () => w.safe('hasSale', false, id), saleMs);
+          const page = await loadPage(w, `${BASE}/Orders/${id}`, () => w.safe('hasSale', false, id), saleMs, `Sale ${id} not found: not your sale or no such order.`);
+          if (!page.loggedIn) throw new PageTimeout(`Sale ${id} not read: logged out of Cardmarket.`, false);
           out.push(await w.call('sale', id));
           stuck = 0;
         } catch (e) {
