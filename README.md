@@ -1,6 +1,6 @@
 # cm-labels
 
-Browser extension that turns Cardmarket sales into shipping labels and a PostNL cart: stamp codes, tracked labels and address labels. It never pays.
+Browser extension that turns Cardmarket sales into shipping labels and a PostNL cart: stamp codes, tracked labels and address labels.
 
 Works in Chromium browsers (Chrome, Brave, Edge) and Firefox.
 
