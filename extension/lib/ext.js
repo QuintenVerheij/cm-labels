@@ -17,7 +17,6 @@ const via = ops => Object.fromEntries(ops.map(([ns, name]) => [name, (...a) => r
 export const ext = isContentScript ? {
   runtime: raw.runtime,
   storage: raw.storage,
-  permissions: { contains: async () => true, request: async () => true },   // host access is the content script's own page
   tabs: via([['tabs', 'create'], ['tabs', 'update'], ['tabs', 'get'], ['tabs', 'remove'], ['tabs', 'reload'], ['tabs', 'group'], ['tabs', 'ungroup'], ['tabs', 'getCurrent']]),
   tabGroups: via([['tabGroups', 'update']]),
   windows: via([['windows', 'update']]),
