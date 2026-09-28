@@ -1,6 +1,5 @@
-﻿# ISO code = @(Cardmarket English name, PostNL Dutch name, postcode regex). Shared by cm-labels.ps1,
-# order-stamps.ps1 and order-tracked.ps1. The regex matches the postcode at the start of the
-# "<postcode> <city>" address line on Cardmarket; order-tracked stops an order when it does not match.
+﻿# ISO code = @(Cardmarket English name, PostNL Dutch name, postcode regex). The regex matches the postcode at the
+# start of the "<postcode> <city>" address line on Cardmarket; a tracked sale is stopped when it does not match.
 # No regex = no tracked labels to that country (outside the EU: sold only as stamps, if at all).
 @{
   AT = @('Austria', 'Oostenrijk', '\d{4}')

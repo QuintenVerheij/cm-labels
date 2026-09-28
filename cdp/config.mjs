@@ -1,5 +1,5 @@
-// methods.psd1 and countries.psd1 stay the one source for the PowerShell and the Node scripts: read them
-// through PowerShell once and convert to JSON.
+// methods.psd1 and countries.psd1 are the source files of the method and country data: read them through
+// PowerShell (Import-PowerShellDataFile) and convert to JSON.
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 

@@ -1,32 +1,23 @@
 // cm-labels app page: Load (Cardmarket) -> breakdown -> Print (browser print dialog) / Add to PostNL cart.
 // The jobs run in this page, so keep it open while one runs.
 import { ext } from './lib/ext.js';
+import { esc } from './lib/esc.js';
 import { loadSales } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
 import { buildCart } from './lib/postnl.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { defaultTemplate } from './lib/template.js';
-import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, DEFAULTS } from './lib/store.js';
+import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, loadData, DEFAULTS } from './lib/store.js';
 
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const PX = 96 / 25.4;
 const SAMPLE = { NAME: 'Jan Jansen', ADDRESS: ['Voorbeeldstraat 12 B'], POSTCODE: '1234AB', CITY: 'Voorbeeldstad', COUNTRY: 'Netherlands', ID: '1234567890' };
 
 const state = { job: null, progress: null, list: null, only: null, loadedAt: null, login: false, plan: null, cart: null, printed: null, error: null, log: [] };
 let settings = { ...DEFAULTS };
-let data = null;   // methods, countries, rates, byName
 
 const log = m => { state.log.push(`${new Date().toLocaleTimeString('nl-NL')}  ${m}`); if (state.log.length > 800) state.log.shift(); render(); };
-
-async function loadData() {
-  if (data) return data;
-  const get = async n => (await fetch(ext.runtime.getURL(`data/${n}.json`))).json();
-  const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
-  data = { methods, countries, rates, byName: Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso])) };
-  return data;
-}
 
 async function run(name, fn) {
   if (state.job) return;
@@ -232,7 +223,7 @@ function fillSettingsForm() {
   htmlPreview();
 }
 async function loadSettings() {
-  settings = await getSettings();   // also migrates the old ZPL / return-address settings once
+  settings = await getSettings();   // also migrates the old return-address setting once
   fillSettingsForm();
 }
 async function saveSettings(patch) { settings = { ...settings, ...patch }; await ext.storage.local.set({ settings }); }
@@ -344,8 +335,8 @@ $('#cart').onclick = () => {
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
 
-// Firefox (Manifest V3) treats host permissions as optional: ask for them, from a click, when they are missing.
-// Chromium grants them at install, so this stays hidden there.
+// Host permissions can be missing (Firefox lets the user turn them off): ask for them, from a click. The prompt
+// stays hidden while they are granted.
 const ORIGINS = ['https://www.cardmarket.com/*', 'https://jouw.postnl.nl/*'];
 async function checkAccess() {
   const ok = await ext.permissions.contains({ origins: ORIGINS }).catch(() => true);
