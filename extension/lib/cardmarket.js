@@ -23,6 +23,8 @@ const listUrl = (list, page = 1) => {
   const qs = [l.query, page > 1 ? `site=${page}` : ''].filter(Boolean).join('&');
   return BASE + l.path + (qs ? '?' + qs : '');
 };
+// content/panel.js does not start in a tab whose URL ends in this
+const WORKER_HASH = '#cml-worker';
 const WORKERS = 3;                                   // sale pages loading at the same time
 const pause = () => sleep(500);                      // between two page loads of one tab
 
@@ -57,7 +59,7 @@ async function loadPage(tab, url, done = () => true, ms = 60000, missing = null)
 // only: sale ids (10 digits). When given, only those sale pages are read, not the ids on the list pages (the
 // first list page still loads, for the login check).
 export async function loadSales(list, { log, onLogin, windowId, onProgress = () => {}, only = null, saleMs = 45000, loginMs = 600000, loginPollMs = 3000 }) {
-  const tab = await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId });
+  const tab = await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId, hash: WORKER_HASH });
   const workers = [];
   try {
     let s = await loadPage(tab, listUrl(list));
@@ -95,7 +97,7 @@ export async function loadSales(list, { log, onLogin, windowId, onProgress = () 
     const t = Date.now(), out = []; let next = 0, stop = null, stuck = 0;
     onProgress(0, ids.length);
     workers.push(tab);
-    for (let i = 1; i < Math.min(WORKERS, ids.length); i++) workers.push(await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId }));
+    for (let i = 1; i < Math.min(WORKERS, ids.length); i++) workers.push(await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId, hash: WORKER_HASH }));
     await Promise.all(workers.map(async w => {
       while (!stop && next < ids.length) {
         const id = ids[next++];
