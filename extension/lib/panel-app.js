@@ -173,7 +173,7 @@ export async function start({ saleId, list }) {
     const cfg = await loadData('NL');
     const me = await ext.tabs.getCurrent();
     const sales = await loadSales(list, { log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
-    state.plan = planSales(sales, cfg); state.list = list; state.loadedAt = new Date(); state.cart = null;
+    state.plan = planSales(sales, cfg, (await getSettings()).country); state.list = list; state.loadedAt = new Date(); state.cart = null;
     state.pick = { codes: state.plan.stamps.length > 0, labels: nLabels(state.plan) > 0 };
     await saveRun(list, state.plan);
   }
@@ -194,7 +194,7 @@ export async function start({ saleId, list }) {
     const cfg = await loadData('NL');
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
-    const p = planSales([sale], cfg);
+    const p = planSales([sale], cfg, (await getSettings()).country);
     state.plan = p; state.list = 'sale';
     const what = p.stamps.length ? `stamp code ${p.stamps[0].code} ×1` : nLabels(p) ? `shipping label: ${p.tracked[0].Product} · ${p.tracked[0].Option}` : null;
     if (!what) throw new Error(issues(p)[0]?.text || 'nothing for PostNL in this sale');
@@ -207,9 +207,9 @@ export async function start({ saleId, list }) {
     const cfg = await loadData('NL');
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
-    const p = planSales([sale], cfg);
-    if (!p.print.length) throw new Error(issues(p)[0]?.text || 'no label for this sale');
     const s = await getSettings();
+    const p = planSales([sale], cfg, s.country);
+    if (!p.print.length) throw new Error(issues(p)[0]?.text || 'no label for this sale');
     await ext.storage.local.set({ printJob: { orders: p.print, settings: s, at: Date.now() } });
     await openPage('print.html', { reuse: false });
   }
