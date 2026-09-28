@@ -63,3 +63,19 @@ test('parallel Tab.open calls create one tab group', async () => {
   assert.equal(created, 1);
   assert.equal(joined, 2);
 });
+
+test('poll reports a cookie wall and a timed out wait names it', async () => {
+  onTest = () => false;
+  const tab = new Tab(1, 'content/pnl.js', '__cmlPNL');
+  tab.onPoll = async () => true;
+  assert.equal(await tab.poll(), true);
+  tab.lastPoll = 0;
+  await assert.rejects(tab.waitFor({ path: '/x' }, 200, 'the page'), /timeout waiting for the page \(cookie wall\)/);
+});
+
+test('a timed out wait without a cookie wall does not name one', async () => {
+  onTest = () => false;
+  const tab = new Tab(1, 'content/pnl.js', '__cmlPNL');
+  tab.onPoll = async () => false;
+  await assert.rejects(tab.waitFor({ path: '/x' }, 200, 'the page'), err => !/cookie wall/.test(err.message));
+});

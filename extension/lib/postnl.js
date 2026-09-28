@@ -36,7 +36,9 @@ async function fill(tab, spec, text, what) {
 // of a PostNL tab checks for it (Tab.onPoll) and answers "only needed cookies". cookieWall() also checks at
 // the fixed moments it used to.
 async function cookieWall(tab, log) {
-  if (await tab.safe('cookie', false)) log?.('PostNL cookie wall answered: only needed cookies');
+  const wall = await tab.safe('cookie', false);
+  if (wall) log?.('PostNL cookie wall answered: only needed cookies');
+  return !!wall;
 }
 // step(): one progress step done (see STEPS)
 async function setCountry(tab, country, log, step) {

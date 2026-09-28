@@ -20,13 +20,14 @@ async function addToGroupNow(tabId) {
 export class Tab {
   // file: the content script; ns: the global it defines in the isolated world; hash: appended to every URL the
   // tab loads (a marker the panel content script looks for).
-  constructor(id, file, ns, hash = '') { this.id = id; this.file = file; this.ns = ns; this.hash = hash; this.onPoll = null; this.lastPoll = 0; this.lastError = null; }
+  constructor(id, file, ns, hash = '') { this.id = id; this.file = file; this.ns = ns; this.hash = hash; this.onPoll = null; this.lastPoll = 0; this.lastError = null; this.wall = false; }
   // Optional hook, run at most once per second inside every wait and click loop (PostNL: answer a cookie wall
-  // that pops up at any moment).
+  // that pops up at any moment). Resolves true when the hook reports a cookie wall; the tab remembers it in wall.
   async poll() {
-    if (!this.onPoll || Date.now() - this.lastPoll < 1000) return;
+    if (!this.onPoll || Date.now() - this.lastPoll < 1000) return false;
     this.lastPoll = Date.now();
-    try { await this.onPoll(this); } catch { }
+    try { if (await this.onPoll(this)) this.wall = true; } catch { }
+    return this.wall;
   }
 
   static async open(url, { file, ns, windowId, hash = '' }) {
@@ -49,17 +50,17 @@ export class Tab {
   async safe(name, fallback, ...args) { try { return await this.call(name, ...args); } catch (e) { this.lastError = e; return fallback; } }
 
   async waitFor(cond, ms = 15000, what = JSON.stringify(cond)) {
-    this.lastError = null;
+    this.lastError = null; this.wall = false;
     for (const t = Date.now(); ; await sleep(150)) {
       await this.poll();
       if (await this.safe('test', false, cond)) return;
-      if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}${this.lastError ? `: ${this.lastError.message}` : ''}`);
+      if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}${this.wall ? ' (cookie wall)' : ''}${this.lastError ? `: ${this.lastError.message}` : ''}`);
     }
   }
   // Test, click, wait up to 1 s for the result, repeat: a click right after load, before Angular is ready, does
   // nothing. The test comes first in every round, so a click that worked late is never followed by another one.
   async clickUntil(spec, cond, { tries = 15, what = JSON.stringify(spec) } = {}) {
-    this.lastError = null;
+    this.lastError = null; this.wall = false;
     for (let i = 0; i < tries; i++) {
       await this.poll();
       if (await this.safe('test', false, cond)) return i;
@@ -68,7 +69,7 @@ export class Tab {
     }
     const cause = this.lastError;
     const page = await this.safe('q', '', 'errors');
-    throw new Error(`no effect after ${tries} clicks: ${what}${page ? ` (page: ${page})` : ''}${cause ? ` (last error: ${cause.message})` : ''}`);
+    throw new Error(`no effect after ${tries} clicks: ${what}${this.wall ? ' (cookie wall)' : ''}${page ? ` (page: ${page})` : ''}${cause ? ` (last error: ${cause.message})` : ''}`);
   }
   // Start a page load and wait until Chrome reports it (status 'loading' or the new URL), so the previous
   // page is never read by mistake.
