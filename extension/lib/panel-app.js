@@ -11,6 +11,7 @@ import { buildCart } from './postnl.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
 import { esc } from './esc.js';
 
+const AGAIN_PROMPT = 'A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?';
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = d => d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 
@@ -255,12 +256,15 @@ export async function start({ saleId, list }) {
     $('#body').innerHTML = html + (state.job || !last ? '' : `<div class="log">${esc(last)}</div>`);
     $('#load')?.addEventListener('click', () => run('Loading paid sales', load));
     $('#reload')?.addEventListener('click', e => { e.preventDefault(); run('Loading paid sales', load); });
-    $('#again')?.addEventListener('click', () => run('Adding this sale', addThisSale));
+    $('#again')?.addEventListener('click', () => {
+      if ((state.cart?.merged || state.cart?.error) && !confirm(AGAIN_PROMPT)) return;
+      run('Adding this sale', addThisSale);
+    });
     for (const k of ['codes', 'labels']) $(`#${k}`)?.addEventListener('change', e => { state.pick = { ...state.pick, [k]: e.target.checked }; render(); });
     $('#print')?.addEventListener('click', () => run('Opening the print dialog', print));
     $('#cart')?.addEventListener('click', () => {
       if (state.list !== 'Paid') return;
-      if (state.cart?.merged && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
+      if ((state.cart?.merged || state.cart?.error) && !confirm(AGAIN_PROMPT)) return;
       const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(t => !t.error) : [];
       run('Adding to the PostNL cart', () => cart(stamps, tracked));
     });

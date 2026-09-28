@@ -330,7 +330,7 @@ for (const id of ['#pickcodes', '#picklabels']) $(id).onchange = () => render();
 $('#cart').onclick = () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
   if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
-  if (state.cart?.merged && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
+  if ((state.cart?.merged || state.cart?.error) && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
   run('Adding to PostNL cart', () => cart(withCodes, withLabels));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
