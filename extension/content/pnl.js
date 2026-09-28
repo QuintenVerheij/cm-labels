@@ -6,7 +6,11 @@
   const IT = e => (e ? (e.innerText || '').trim() : '');
   const lbl = i => i && (i.closest('label') || i.parentElement);
   const byText = t => [...document.querySelectorAll('button,a')].find(b => (b.getAttribute('aria-label') || b.innerText || '').trim() === t);
-  const byLabel = l => [...document.querySelectorAll('input,textarea')].find(e => e.labels && e.labels[0] && e.labels[0].innerText.trim().startsWith(l));
+  const byLabel = l => {
+    const m = [...document.querySelectorAll('input,textarea')].filter(e => e.labels && e.labels[0] && e.labels[0].innerText.trim().startsWith(l));
+    if (m.length !== 1) throw new Error(`${m.length} fields with a label starting "${l}", expected 1`);
+    return m[0];
+  };
   const countryOptions = () => [...document.querySelectorAll('[role=dialog] span,dialog span,.cdk-overlay-pane span')]
     .filter(e => !e.children.length && e.innerText.trim() && !/resultaten gevonden|Gefilterd/.test(e.innerText));
   // PostNL's cookie wall (a web component with a shadow root, sometimes plain page buttons) blocks the tab until
@@ -86,8 +90,10 @@
     if (!e) return null;
     e.scrollIntoView({ block: 'center' });
     e.focus();
-    const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(e), 'value').set;
-    set.call(e, text);
+    let proto = Object.getPrototypeOf(e), desc;
+    while (proto && !(desc = Object.getOwnPropertyDescriptor(proto, 'value'))) proto = Object.getPrototypeOf(proto);
+    if (!desc?.set) throw new Error('field has no value setter');
+    desc.set.call(e, text);
     e.dispatchEvent(new Event('input', { bubbles: true }));
     e.dispatchEvent(new Event('change', { bubbles: true }));
     e.dispatchEvent(new FocusEvent('blur'));

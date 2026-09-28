@@ -31,3 +31,20 @@ test('click refuses an element whose text speaks of paying or ordering', () => {
     assert.equal(clicked, 0, text);
   }
 });
+
+const field = (label, proto = Object.prototype) => ({ labels: [{ innerText: label }], __proto__: proto });
+const withFields = (fields, fn) => { const q = document.querySelectorAll; document.querySelectorAll = sel => (sel === 'input,textarea' ? fields : []); try { return fn(); } finally { document.querySelectorAll = q; } };
+const byLabel = () => window.__cmlPNL.exists({ k: 'label', v: 'Straat' });
+
+test('a label spec throws when no field or several fields match', () => {
+  withFields([field('Postcode')], () => assert.throws(byLabel, /0 fields/));
+  withFields([field('Straat'), field('Straatnaam')], () => assert.throws(byLabel, /2 fields/));
+  withFields([field('Straat'), field('Postcode')], () => assert.equal(byLabel(), true));
+});
+
+test('fill finds the value setter further up the prototype chain', () => {
+  const base = { set value(v) { this._v = v; }, get value() { return this._v; } };
+  const input = Object.assign(Object.create(Object.create(base)), { labels: [{ innerText: 'Straat' }], scrollIntoView() {}, focus() {}, blur() {}, dispatchEvent() {} });
+  globalThis.Event = class {}; globalThis.FocusEvent = class {};
+  withFields([input], () => assert.equal(window.__cmlPNL.fill({ k: 'label', v: 'Straat' }, 'Dorpsstraat'), 'Dorpsstraat'));
+});
