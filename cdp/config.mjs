@@ -3,8 +3,10 @@
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
-export function loadConfig(root) {
-  const ps = `$m = Import-PowerShellDataFile '${path.join(root, 'methods.psd1')}'; $c = Import-PowerShellDataFile '${path.join(root, 'countries.psd1')}';` +
+// The origin's files: methods.psd1 and countries.psd1 for NL, methods.<ISO>.psd1 and countries.<ISO>.psd1 for another origin.
+export function loadConfig(root, origin = 'NL') {
+  const sfx = origin === 'NL' ? '' : '.' + origin;
+  const ps = `$m = Import-PowerShellDataFile '${path.join(root, `methods${sfx}.psd1`)}'; $c = Import-PowerShellDataFile '${path.join(root, `countries${sfx}.psd1`)}';` +
     `[Console]::OutputEncoding = [Text.Encoding]::UTF8; ConvertTo-Json -Depth 5 -Compress @{ methods = $m; countries = $c }`;
   const out = execFileSync('powershell.exe', ['-NoProfile', '-Command', ps], { encoding: 'utf8' });
   const { methods, countries } = JSON.parse(out);

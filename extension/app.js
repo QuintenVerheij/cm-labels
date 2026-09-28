@@ -33,7 +33,7 @@ const onlyIds = () => { const ids = [...new Set($('#only').value.match(/\b\d{10}
 async function load(list, only) {
   Object.assign(state, { plan: null, cart: null, printed: null, list: null, only: null, loadedAt: null });
   await clearRun();   // a failed load leaves no earlier run behind
-  const cfg = await loadData();
+  const cfg = await loadData('NL');
   const me = await ext.tabs.getCurrent();
   const sales = await loadSales(list, {
     log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
@@ -270,8 +270,9 @@ $('#savesettings').onclick = async () => {
 };
 
 // ---------------------------------------------------------------- methods
+let methodsData;
 async function loadMethods() {
-  const d = await loadData();
+  const d = methodsData = await loadData('NL');
   if (!$('#country').options.length) {
     const have = new Set(d.rates.map(r => r.Iso));
     $('#country').innerHTML = Object.entries(d.countries).filter(([iso]) => have.has(iso)).sort().map(([iso, v]) => `<option value="${iso}">${esc(v[0])} (${iso})</option>`).join('');
@@ -281,9 +282,9 @@ async function loadMethods() {
   drawMethods();
 }
 function drawMethods() {
-  const iso = $('#country').value, rates = data.rates.filter(r => r.Iso === iso);
+  const iso = $('#country').value, rates = methodsData.rates.filter(r => r.Iso === iso);
   $('#mtable').innerHTML = `<thead><tr><th>Cardmarket method</th><th>Service</th><th>PostNL product · option</th><th>Seen</th><th class="num">Max. value</th><th class="num">Max. weight</th><th class="num">CM price</th><th class="num">Days</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
-    const m = data.methods[name] || { Service: '?' }, rs = rates.filter(r => r.Method === name);
+    const m = methodsData.methods[name] || { Service: '?' }, rs = rates.filter(r => r.Method === name);
     return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td>${m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen}</span>` : ''}</td>
       <td class="num">${eur(rs[0].MaxValue)}</td><td class="num">${rs.map(r => r.MaxWeight + ' g').join('<br>')}</td><td class="num">${rs.map(r => eur(r.Price)).join('<br>')}</td><td class="num">${rs[0].Days}</td></tr>`;
   }).join('')}</tbody>`;

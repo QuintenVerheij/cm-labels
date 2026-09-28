@@ -170,7 +170,7 @@ export async function start({ saleId, list }) {
   async function load() {
     state.plan = null; state.only = null;
     await clearRun();   // a failed load leaves no earlier run behind
-    const cfg = await loadData();
+    const cfg = await loadData('NL');
     const me = await ext.tabs.getCurrent();
     const sales = await loadSales(list, { log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
     state.plan = planSales(sales, cfg); state.list = list; state.loadedAt = new Date(); state.cart = null;
@@ -191,7 +191,7 @@ export async function start({ saleId, list }) {
   }
   // Single sale page: read this page, plan it, put it in the cart.
   async function addThisSale() {
-    const cfg = await loadData();
+    const cfg = await loadData('NL');
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
     const p = planSales([sale], cfg);
@@ -204,7 +204,7 @@ export async function start({ saleId, list }) {
 
   // Single sale page: read this page, plan it, open the print dialog for its address label.
   async function printThisSale() {
-    const cfg = await loadData();
+    const cfg = await loadData('NL');
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
     const p = planSales([sale], cfg);

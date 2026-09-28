@@ -55,12 +55,11 @@ export function runAge(loadedAt, now = Date.now()) {
 }
 export const runScope = (only, all) => only?.length ? `${only.length} chosen order${only.length === 1 ? '' : 's'}` : all;
 
-// The data files of the extension (methods, countries, rates).
-let data = null;
-export async function loadData() {
-  if (data) return data;
-  const get = async n => (await fetch(ext.runtime.getURL(`data/${n}.json`))).json();
+// The data files of the extension (methods, countries, rates) for one origin country; NL's files carry no suffix.
+const data = {};
+export async function loadData(origin) {
+  if (data[origin]) return data[origin];
+  const get = async n => (await fetch(ext.runtime.getURL(`data/${n}${origin === 'NL' ? '' : '.' + origin}.json`))).json();
   const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
-  data = { methods, countries, rates, byName: Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso])) };
-  return data;
+  return data[origin] = { methods, countries, rates, byName: Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso])) };
 }
