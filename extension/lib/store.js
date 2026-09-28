@@ -4,7 +4,7 @@ import { ext } from './ext.js';
 import { esc } from './esc.js';
 
 // html '' = the default layout, made from the label size (so it scales when the size changes)
-export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL' };
+export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL', postcode: '' };
 
 // Migration of the old settings: a stored return address becomes part of an own HTML template (the default 4
 // lines, centred above a small return line); the keys of the old settings are dropped.

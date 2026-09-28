@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { splitStreet, splitExtra, planSales } from '../extension/lib/plan.js';
+import { postcodeProblem } from '../extension/lib/postcode.js';
 
 const rows = [
   // [iso, street line, Street, Nr, Ext, Extra]
@@ -126,3 +127,27 @@ for (const [country, city, Postcode, Town] of [
     assert.deepEqual({ Postcode: p.Postcode, Town: p.Town }, { Postcode, Town });
   });
 }
+
+// A domestic sale for a German origin: the German street layout, PLZ + Ort.
+for (const [line, Street, Number, Suffix, Extra] of [
+  ['Hauptstraße 12a', 'Hauptstraße', '12', 'a', ''],
+  ['Straße des 17. Juni 135, Hinterhaus', 'Straße des 17. Juni', '135', '', 'Hinterhaus'],
+  ['c/o Müller, Bahnhofstr. 3', 'Bahnhofstr.', '3', '', 'c/o Müller'],
+]) {
+  test(`DE origin domestic sale splits "${line}"`, () => {
+    const p = planSales([{
+      id: '1', methodName: 'Parcel', method: 'Parcel max. 2000 g', grams: 2000, tracked: true, value: 10,
+      lines: [{ kind: 'Name', text: 'Jan Jansen' }, { kind: 'Street', text: line }, { kind: 'City', text: '10623 Berlin' }, { kind: 'Country', text: 'Germany' }],
+    }], trackedCfg, 'DE').tracked[0];
+    assert.equal(p.error, undefined);
+    assert.deepEqual({ Street: p.Street, Number: p.Number, Suffix: p.Suffix, Extra: p.Extra, Postcode: p.Postcode, Town: p.Town }, { Street, Number, Suffix, Extra, Postcode: '10623', Town: 'Berlin' });
+  });
+}
+
+test('postcodeProblem checks the postcode against the origin format', () => {
+  assert.equal(postcodeProblem('NL', '1234 AB'), '');
+  assert.equal(postcodeProblem('DE', '10623'), '');
+  assert.equal(postcodeProblem('DE', '1234 AB') !== '', true);
+  assert.equal(postcodeProblem('NL', '10623') !== '', true);
+  assert.equal(postcodeProblem('DE', ''), '');
+});

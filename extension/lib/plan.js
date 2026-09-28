@@ -92,7 +92,7 @@ function splitNL(line) {
   throw new Error(`no house number (+ suffix of at most 5 letters/digits) at the end of '${line}'`);
 }
 
-function trackedPlan(s, m, cfg) {
+function trackedPlan(s, m, cfg, origin) {
   const p = { Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, Seen: m.Seen || '', Grams: s.grams, Phone: s.phone || '', Email: s.email || '', warnings: [] };
   const c = cfg.countries[s.iso];
   p.Country = c?.[1];
@@ -113,6 +113,8 @@ function trackedPlan(s, m, cfg) {
     p.AddressLine = [...s.extras, s.street].filter(Boolean).join(', ');
     p.Manual = splitStreet(s.iso, s.street, s.extras);
     if (!p.Manual) p.warnings.push('no street + house number found; only PostNL address suggestions can be used');
+    // A domestic sale outside NL shows the origin's own layout: street, number + suffix, then extras.
+    if (s.iso === origin && p.Manual) Object.assign(p, { Street: p.Manual.Street, Number: p.Manual.Nr, Suffix: p.Manual.Ext, Extra: p.Manual.Extra });
   }
   if (p.Seen === 'guess') p.warnings.push('the PostNL mapping for this method is a guess (see the method data, source file methods.psd1); check the choice');
   return p;
@@ -127,7 +129,7 @@ function labelFields(s, cfg) {
 }
 
 // sales: from loadSales in cardmarket.js. Returns the breakdown for the UI and the cart.
-export function planSales(sales, cfg) {
+export function planSales(sales, cfg, origin = 'NL') {
   const stamps = new Map(), print = [], tracked = [], skipped = [], all = [];
   for (const r of sales) {
     if (r.error) { skipped.push({ id: r.id, reason: r.error }); continue; }
@@ -151,13 +153,13 @@ export function planSales(sales, cfg) {
       if (!stamps.has(code)) stamps.set(code, { code, iso: s.iso, weight: w, country: cfg.countries[s.iso][1], qty: 0, ids: [] });
       const g = stamps.get(code); g.qty++; g.ids.push(s.id);
     } else if (s.service === 'postnl') {
-      try { tracked.push({ ...trackedPlan(s, m, cfg), address: s.address, method: s.method, value: s.value }); }
+      try { tracked.push({ ...trackedPlan(s, m, cfg, origin), address: s.address, method: s.method, value: s.value }); }
       catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [] }); }
     } else {
       skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : `unknown tracked method '${r.methodName}': add it to the method data (source file methods.psd1)` });
     }
   }
-  const stampList = [...stamps.values()].sort((a, b) => (a.iso !== 'NL') - (b.iso !== 'NL') || a.iso.localeCompare(b.iso) || a.weight - b.weight);
+  const stampList = [...stamps.values()].sort((a, b) => (a.iso !== origin) - (b.iso !== origin) || a.iso.localeCompare(b.iso) || a.weight - b.weight);
   return {
     stamps: stampList, stampLine: stampList.map(g => `${g.code}x${g.qty}`).join(' '),
     print, tracked, skipped, count: sales.length,

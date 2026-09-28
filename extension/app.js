@@ -6,6 +6,7 @@ import { loadSales } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
 import { buildCart } from './lib/postnl.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
+import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
 import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, loadData, DEFAULTS } from './lib/store.js';
 
@@ -39,7 +40,7 @@ async function load(list, only) {
     log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
     onLogin: async on => { state.login = on; render(); if (!on) await ext.tabs.update(me.id, { active: true }); },
   });
-  state.plan = planSales(sales, cfg);
+  state.plan = planSales(sales, cfg, settings.country);
   state.list = list; state.only = only; state.loadedAt = new Date();
   $('#pickcodes').checked = state.plan.stamps.length > 0;
   $('#picklabels').checked = state.plan.tracked.some(t => !t.error);
@@ -73,7 +74,7 @@ function renderLog() {
 }
 function addressText(t) {
   if (t.error) return '';
-  if (t.Iso === 'NL') return `${esc(t.Street)} ${esc(t.Number)}${t.Suffix ? ` <span class="tag">${esc(t.Suffix)}</span>` : ''}<br>${esc(t.Postcode)} ${esc(t.Town)}`;
+  if (t.Iso === settings.country && (t.Iso === 'NL' || t.Manual)) return `${esc(t.Street)} ${esc(t.Number)}${t.Suffix ? ` <span class="tag">${esc(t.Suffix)}</span>` : ''}${t.Iso !== 'NL' && t.Extra ? `<br>${esc(t.Extra)}` : ''}<br>${esc(t.Postcode)} ${esc(t.Town)}`;
   const m = t.Manual;
   const man = m ? `<br><span class="hint">manual if needed: ${esc(m.Street)} · ${esc(m.Nr)}${m.Ext ? ' ' + esc(m.Ext) : ''}${Object.entries(m.Fields || {}).map(([f, v]) => ` · ${esc(f)}: ${esc(v)}`).join('')}</span>` : '';
   return `${esc(t.AddressLine)}<br>${esc(t.Postcode)} ${esc(t.Town)}${man}`;
@@ -215,7 +216,7 @@ function htmlPreview() {
 const paperName = g => Object.keys(PAPERS).find(k => PAPERS[k][0] === +g.paperW && PAPERS[k][1] === +g.paperH) || 'custom';
 function fillSettingsForm() {
   const g = sheetOf(settings);
-  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country;
+  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country; $('#shoppostcode').value = settings.postcode;
   for (const r of document.querySelectorAll('input[name=papermode]')) r.checked = r.value === (g.on ? 'sheet' : 'printer');
   $('#paper').value = paperName(g); $('#pw').value = g.paperW; $('#ph').value = g.paperH; $('#cols').value = g.cols; $('#rows').value = g.rows;
   $('#html').value = settings.html || defaultFor(settings);
@@ -253,13 +254,15 @@ $('#savesettings').onclick = async () => {
   const bad = sizeProblem(f);
   if (bad) { $('#settingsmsg').textContent = bad; return; }
   if (femail && !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(femail)) { $('#settingsmsg').textContent = 'That is not an e-mail address.'; return; }
+  const pcBad = postcodeProblem($('#shopcountry').value, $('#shoppostcode').value.trim());
+  if (pcBad) { $('#settingsmsg').textContent = pcBad; return; }
   if (!html) { $('#settingsmsg').textContent = 'The layout is empty: click "Default layout for this size".'; return; }
   // the default layout is stored as '' so that it keeps following the label size
   const isDefault = html === defaultFor(f).trim();
   // a new grid: start again at position 1
   const old = sheetOf(settings);
   if (f.sheet.cols !== old.cols || f.sheet.rows !== old.rows) f.sheet.start = 1;
-  await saveSettings({ ...f, fallbackEmail: femail, country: $('#shopcountry').value, html: isDefault ? '' : html });
+  await saveSettings({ ...f, fallbackEmail: femail, country: $('#shopcountry').value, postcode: $('#shoppostcode').value.trim().toUpperCase(), html: isDefault ? '' : html });
   const e = effective(f);
   const where = f.sheet.on ? `${f.sheet.cols}×${f.sheet.rows} labels of ${mm(e.width)}×${mm(e.height)} mm on ${mm(f.sheet.paperW)}×${mm(f.sheet.paperH)} mm paper`
     : `${f.width}×${f.height} mm${f.rotate ? `, turned ${f.rotate}° on a ${f.rotate % 180 ? `${f.height}×${f.width}` : `${f.width}×${f.height}`} mm page` : ''}`;
