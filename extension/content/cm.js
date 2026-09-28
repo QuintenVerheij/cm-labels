@@ -40,15 +40,16 @@
   function sale(id) {
     const doc = document;
     if (!doc.querySelector('#ShippingAddress')) return { id, error: 'no shipping address on the page' };
-    const lines = [...doc.querySelectorAll('#ShippingAddress > div')].map(d => ({ kind: d.className, text: T(d) })).filter(x => x.text);
+    const lines = [...doc.querySelectorAll('#ShippingAddress > div')].map(d => ({ kind: ['Name', 'Extra', 'Street', 'City', 'Country'].find(k => d.classList.contains(k)) || '', text: T(d) })).filter(x => x.text);
     const info = {};
     const dts = [...doc.querySelectorAll('#collapsibleOtherInfo dt')];
     for (const dt of dts) info[T(dt).replace(/:$/, '')] = dt.nextElementSibling;
     const md = info['Shipping Method'];
+    if (!md) return { id, error: 'shipping method not found on page' };
     const spans = md ? [...md.querySelectorAll(':scope > span')] : [];
     const methodName = T(spans.find(s => !s.classList.contains('text-muted')));
     const max = T(spans.find(s => s.classList.contains('text-muted')));
-    const grams = (max.match(/max\.?\s*(\d+)\s*g/i) || [])[1];
+    const grams = (max.match(/max\.?\s*(\d{1,3}(?:[,.]\d{3})+|\d+)\s*g/i) || [])[1]?.replace(/[,.]/g, '');
     const flags = md ? T(md.querySelector('div')) : '';
     const all = dts.map(dt => T(dt.nextElementSibling)).join(' ');
     const mailDd = Object.entries(info).find(([k]) => /mail/i.test(k))?.[1];
@@ -59,7 +60,7 @@
       id, lines, methodName, method: (methodName + max).trim(), grams: grams ? +grams : null,
       tracked: md ? !/No tracking/i.test(flags) : null, trackingCode: T(info['Tracking Code']) || null,
       phone: T(info['Phone Number']) || null, email,
-      value: sum ? +sum.getAttribute('data-item-value') : null, articles: sum ? +sum.getAttribute('data-article-count') : null,
+      value: sum && Number.isFinite(parseFloat(sum.getAttribute('data-item-value'))) ? +sum.getAttribute('data-item-value') : null, articles: sum ? +sum.getAttribute('data-article-count') : null,
     };
   }
 

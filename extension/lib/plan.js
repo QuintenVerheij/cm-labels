@@ -134,7 +134,8 @@ export function planSales(sales, cfg) {
     all.push(s);
     const base = { id: s.id, iso: s.iso, value: s.value, method: s.method, address: s.address };
     if (s.service === 'stamp') {
-      if (s.value != null && s.value >= THRESHOLD) { skipped.push({ ...base, reason: `untracked, article value ${s.value} >= ${THRESHOLD}; check the sale` }); continue; }
+      if (!Number.isFinite(s.value)) { skipped.push({ ...base, reason: 'untracked, article value could not be read from the page; check the sale' }); continue; }
+      if (s.value >= THRESHOLD) { skipped.push({ ...base, reason: `untracked, article value ${s.value} >= ${THRESHOLD}; check the sale` }); continue; }
       print.push({ Id: s.id, Value: s.value, Method: s.method, Address: s.address, Skip: null, Grams: s.grams, Iso: s.iso, Fields: labelFields(s, cfg) });
       let reason = null;
       if (!s.iso) reason = `country '${s.country}' is not in countries.psd1; buy its stamp by hand`;
