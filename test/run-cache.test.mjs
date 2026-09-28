@@ -10,7 +10,7 @@ globalThis.browser = {
   } },
   tabs: {}, runtime: {},
 };
-const { saveRun, getRun, clearRun, purgeStale, runAge, runScope } = await import('../extension/lib/store.js');
+const { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings } = await import('../extension/lib/store.js');
 
 const HOUR = 3600 * 1000;
 beforeEach(() => { db = {}; });
@@ -63,4 +63,11 @@ test('runAge and runScope describe a restored run', () => {
   assert.equal(runScope(['1', '2', '3'], 'paid orders'), '3 chosen orders');
   assert.equal(runScope(['1'], 'paid orders'), '1 chosen order');
   assert.equal(runScope(null, 'paid orders'), 'paid orders');
+});
+
+test('settings stored before the country setting existed read as NL', async () => {
+  db.settings = { width: 50, height: 30, rotate: 0, html: '', fallbackEmail: '', list: 'Paid' };
+  const s = await getSettings();
+  assert.equal(s.country, 'NL');
+  assert.equal(s.width, 50);
 });

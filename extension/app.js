@@ -215,7 +215,7 @@ function htmlPreview() {
 const paperName = g => Object.keys(PAPERS).find(k => PAPERS[k][0] === +g.paperW && PAPERS[k][1] === +g.paperH) || 'custom';
 function fillSettingsForm() {
   const g = sheetOf(settings);
-  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#femail').value = settings.fallbackEmail;
+  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country;
   for (const r of document.querySelectorAll('input[name=papermode]')) r.checked = r.value === (g.on ? 'sheet' : 'printer');
   $('#paper').value = paperName(g); $('#pw').value = g.paperW; $('#ph').value = g.paperH; $('#cols').value = g.cols; $('#rows').value = g.rows;
   $('#html').value = settings.html || defaultFor(settings);
@@ -259,7 +259,7 @@ $('#savesettings').onclick = async () => {
   // a new grid: start again at position 1
   const old = sheetOf(settings);
   if (f.sheet.cols !== old.cols || f.sheet.rows !== old.rows) f.sheet.start = 1;
-  await saveSettings({ ...f, fallbackEmail: femail, html: isDefault ? '' : html });
+  await saveSettings({ ...f, fallbackEmail: femail, country: $('#shopcountry').value, html: isDefault ? '' : html });
   const e = effective(f);
   const where = f.sheet.on ? `${f.sheet.cols}×${f.sheet.rows} labels of ${mm(e.width)}×${mm(e.height)} mm on ${mm(f.sheet.paperW)}×${mm(f.sheet.paperH)} mm paper`
     : `${f.width}×${f.height} mm${f.rotate ? `, turned ${f.rotate}° on a ${f.rotate % 180 ? `${f.height}×${f.width}` : `${f.width}×${f.height}`} mm page` : ''}`;
