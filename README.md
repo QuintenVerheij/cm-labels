@@ -4,6 +4,8 @@ Browser extension that turns Cardmarket sales into shipping labels and a PostNL 
 
 Works in Chromium browsers (Chrome, Brave, Edge) and Firefox.
 
+May at some point support other postal services.
+
 ## Layout
 
 - `extension/` - the extension itself (load this folder unpacked).
