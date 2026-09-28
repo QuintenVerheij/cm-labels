@@ -24,3 +24,9 @@ test('datamatrix at the default module keeps 0.25 mm per module', () => {
   assert.equal(width, 2.5);
   assert.equal(quiet, 1);
 });
+
+test('pdf417 at the default module keeps 0.25 mm per module (one bwip-js unit per module)', () => {
+  const { width, quiet } = measure(barcodeSvg({ type: 'pdf417', value: 'HELLO' }));
+  assert.equal(width, 25.75);
+  assert.equal(quiet, 1);
+});

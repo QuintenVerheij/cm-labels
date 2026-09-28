@@ -20,4 +20,4 @@ node tools/build-data.mjs   # regenerate extension/data/*.json
 node tools/pack.mjs         # write dist/cm-labels-<version>.zip and .xpi
 ```
 
-Firefox signing: set `AMO_JWT_ISSUER` and `AMO_JWT_SECRET`, then run `node tools/sign.mjs`.
+Firefox signing: set `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET`, then run `node tools/sign.mjs`.
