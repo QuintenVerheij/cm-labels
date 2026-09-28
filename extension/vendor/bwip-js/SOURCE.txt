@@ -1,3 +1,11 @@
 bwip-js 4.11.4 (MIT), unchanged copy of dist/bwip-js.mjs and dist/bwipp.mjs from the npm package
 https://www.npmjs.com/package/bwip-js/v/4.11.4  -  https://github.com/metafloor/bwip-js
 Barcode Writer in Pure PostScript: https://github.com/bwipp/postscriptbarcode (MIT)
+
+npm tarball bwip-js-4.11.4.tgz
+  integrity sha512-FOXnOQkinxog8FwxdnPB+8k2wRqwPnqXwxX37KcXOtMNW+9CinOkGv9MtIoRC4HX/UyogT0/9lIp6FDm2DcquQ==
+  shasum    01e7cc5fe0d9a1aff0715ed34bf5b8966a81e3b1
+
+SHA-256 of the files as stored in git (LF line endings; a Windows checkout may show CRLF and a different hash)
+  1823b112b3378acbbc563cd73494f1c3f46a4cd583742b43fc993ca63539f87f  bwip-js.mjs
+  139f22f1cfed7194120a1de91709f743e3391292274d9ac9b428eb3d1007ca64  bwipp.mjs
