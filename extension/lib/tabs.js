@@ -71,7 +71,12 @@ export class Tab {
       if (s.status === 'loading' || (s.pendingUrl || s.url) === url) break;
     }
   }
-  async reload() { await ext.tabs.reload(this.id); await sleep(500); }
+  // Reload and wait for the new document: first 'loading', then 'complete', so the old page is never read.
+  async reload() {
+    await ext.tabs.reload(this.id);
+    for (const t = Date.now(); Date.now() - t < 3000; await sleep(50)) if ((await ext.tabs.get(this.id)).status === 'loading') break;
+    for (const t = Date.now(); Date.now() - t < 20000; await sleep(100)) if ((await ext.tabs.get(this.id)).status === 'complete') return;
+  }
   async activate() { const t = await ext.tabs.update(this.id, { active: true }); await ext.windows.update(t.windowId, { focused: true }); }
   async close() { try { await ext.tabs.remove(this.id); } catch { } }
 }

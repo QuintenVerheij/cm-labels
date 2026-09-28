@@ -63,7 +63,9 @@ async function cart(withCodes, withLabels) {
   state.cart = { running: true }; render();
   log(`PostNL: ${stamps.length} stamp code group(s) + ${tracked.length} shipping label(s), in parallel tabs...`);
   const t = Date.now();
-  state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
+  try {
+    state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
+  } catch (e) { state.cart = { items: [], merged: false, error: e.message, seconds: 0 }; throw e; }
   state.cart.seconds = Math.round((Date.now() - t) / 100) / 10;
   log(`PostNL done in ${state.cart.seconds} s.${state.cart.merged ? ' The cart tab is in front: check it and pay there.' : ''}`);
 }
@@ -143,7 +145,7 @@ function renderPlan() {
   if (c && !c.running) {
     $('#cartitems').innerHTML = `<thead><tr><th>Item</th><th>Result</th><th class="num">Price</th><th class="num">Time</th></tr></thead><tbody>${c.items.map(i => `<tr><td class="mono">${esc(i.key)}</td><td>${i.ok ? `<span class="ok">in the cart</span>${i.manual ? ' <span class="tag warn">manual address</span>' : ''}` : `<span class="bad">${esc(i.error)}</span>`}</td><td class="num">${eur(i.total)}</td><td class="num">${i.ms != null ? (i.ms / 1000).toFixed(1) + ' s' : ''}</td></tr>`).join('')}</tbody>`;
     $('#cartsummary').innerHTML = c.merged ? `${c.count} item(s) in one cart, total <b>${eur(c.total)}</b>${c.check ? '' : ` <span class="bad">expected ${eur(c.expected)}: check the cart</span>`}, in ${c.seconds} s. The cart tab is in front: check it and pay there.`
-      : 'Nothing was added. Failed items keep their tab open.';
+      : c.error ? `${esc(c.error)} No tab was closed: check the PostNL tabs.` : 'Nothing was added. Failed items keep their tab open.';
   }
 }
 // Progress bars while a job runs, as in the Cardmarket panel: loading under the load button (per sale), the

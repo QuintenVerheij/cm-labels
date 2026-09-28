@@ -113,9 +113,16 @@
     setSuffix: i => { const s = document.querySelector('select[formcontrolname=houseNumberSuffix]'); s.selectedIndex = i; s.dispatchEvent(new Event('change', { bubbles: true })); s.dispatchEvent(new FocusEvent('blur')); return s.selectedIndex; },
     // Cart merge: append other tabs' entities (NgRx entity state) with the next numeric ids, last one active.
     mergeOrders: others => {
-      const a = JSON.parse(sessionStorage.getItem('current-order'));
+      const parse = (raw, what) => {
+        let o = null;
+        try { o = JSON.parse(raw); } catch { }
+        if (!o || typeof o !== 'object' || !o.entities || !Array.isArray(o.ids)) throw new Error(`${what} has no valid PostNL cart (current-order)`);
+        return o;
+      };
+      const a = parse(sessionStorage.getItem('current-order'), 'the cart tab');
+      const bs = others.map((s, i) => parse(s, `tab ${i + 2}`));
       let n = Math.max(-1, ...Object.values(a.entities).map(e => e.id)) + 1;
-      for (const s of others) { const b = JSON.parse(s); for (const e of Object.values(b.entities)) { a.entities[String(n)] = { ...e, id: n }; a.ids.push(n); n++; } }
+      for (const b of bs) { for (const e of Object.values(b.entities)) { a.entities[String(n)] = { ...e, id: n }; a.ids.push(n); n++; } }
       a.ids = a.ids.map(Number); a.activeIds = [a.ids[a.ids.length - 1]];
       sessionStorage.setItem('current-order', JSON.stringify(a));
       return a.ids.length;
