@@ -41,8 +41,9 @@ export function splitExtra(text) {
 // number first ("12 rue de la Paix"), the others last. Cardmarket marks the street line (.Street) and the
 // extra lines (.Extra); the street line is tried first.
 export function splitStreet(iso, street, extras) {
-  const first = /^(?<nr>\d{1,5})\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z]))?\s*,?\s+(?<street>\D.*)$/;
-  const last = /^(?<street>.*?\D)[\s,]+(?<nr>\d{1,5})\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z]))?(?<more>.*)$/;
+  const first = /^(?<nr>\d{1,5})(?!\d)\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z.]))?\s*,?\s+(?<street>\D.*)$/;
+  const last = /^(?<street>.*?\D)[\s,]+(?<nr>\d{1,5})(?!\d)\s*\/?\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z.]))?(?<more>.*)$/;
+  const lastGreedy = /^(?<street>.*\D)[\s,]+(?<nr>\d{1,5})(?!\d)\s*\/?\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z.]))?(?<more>.*)$/;
   const order = ['FR', 'LU'].includes(iso) ? [first, last] : [last, first];
   const lines = [street, ...extras].filter(Boolean);
   for (const re of order) {
@@ -51,8 +52,11 @@ export function splitStreet(iso, street, extras) {
       if (w && w.index === 0) continue;
       const head = w ? lines[i].slice(0, w.index) : lines[i];
       const tail = w ? lines[i].slice(w.index).replace(/^[\s,]+|[\s,]+$/g, '') : '';
-      const m = head.trim().match(re);
+      let m = head.trim().match(re);
       if (!m) continue;
+      // A word after the first number and another number later on: the first number belongs to the street
+      // name ("Via 4 Novembre 10"), so the house number is the last one.
+      if (re === last && /\d/.test(m.groups.more) && /^[\s.,]*(?![A-Z]{2,3}(?![A-Za-z]))\p{L}{2,}/u.test(m.groups.more)) m = head.trim().match(lastGreedy) ?? m;
       const extra = lines.filter((_, j) => j !== i);
       const more = [String(m.groups.more ?? '').replace(/^[\s,\-/]+|[\s,\-/]+$/g, ''), tail].filter(Boolean).join(' ');
       if (more) extra.push(more);
