@@ -75,8 +75,10 @@ export async function loadData(origin) {
   const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
   return data[origin] = { methods, countries, rates, byName: byNameOf(countries) };
 }
-// The data of the seller's country setting; NL when there are no files for it.
+// The countries that have data files (the origins tools/build-data.mjs emits).
+const ORIGINS_WITH_DATA = ['NL', 'DE'];
+// The data of the seller's country setting; NL for a country without files. A failed fetch for a country with files throws.
 export async function loadOwnData() {
   const { country } = await getSettings();
-  return loadData(country).catch(() => loadData('NL'));
+  return loadData(ORIGINS_WITH_DATA.includes(country) ? country : 'NL');
 }
