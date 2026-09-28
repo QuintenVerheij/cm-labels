@@ -2,7 +2,9 @@
 # jouw.postnl.nl/online-versturen/nl-NL/pakket/kiezen. Origin is always NL.
 #
 #   Service  stamp   = postzegelcode and a 70x40 label
-#            postnl  = tracked PostNL label: pick Product + Option by label text, weight from max. NNNg
+#            tracked = tracked label from the method's Carrier: pick Product + Option by label text, weight
+#                      from max. NNNg
+#            postnl  = the older name of tracked, same meaning (the methods below still use it)
 #            manual  = not automated; buy by hand
 #   Carrier  who sells the postage, and so whose cart it goes in (extension/lib/carriers.js):
 #            postnl, deutschepost, dhl, or none = no cart (by hand). Every method names one.

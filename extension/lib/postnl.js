@@ -7,6 +7,9 @@ import { ext } from './ext.js';
 import { Tab, sleep } from './tabs.js';
 import { Norm, SuffixKey } from './plan.js';
 
+export const NAME = 'PostNL';
+export const ORIGINS = ['https://jouw.postnl.nl/*'];
+export const BRACKETS = [20, 50];   // Brief of kaart: the two weights of a postzegelcode (weight-0, weight-1)
 export const START = 'https://jouw.postnl.nl/online-versturen/nl-NL/pakket/kiezen';
 const S = {
   sel: v => ({ k: 'sel', v }), btn: v => ({ k: 'btn', v }), val: v => ({ k: 'value', v }), radio: (name, i) => ({ k: 'radio', name, i }),

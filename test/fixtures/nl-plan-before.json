@@ -1,0 +1,645 @@
+{
+ "stamps": [
+  {
+   "code": "NL-20",
+   "iso": "NL",
+   "weight": 20,
+   "country": "Nederland",
+   "qty": 3,
+   "ids": [
+    "1003",
+    "1004",
+    "1012"
+   ]
+  },
+  {
+   "code": "DE-20",
+   "iso": "DE",
+   "weight": 20,
+   "country": "Duitsland",
+   "qty": 1,
+   "ids": [
+    "1001"
+   ]
+  },
+  {
+   "code": "DE-50",
+   "iso": "DE",
+   "weight": 50,
+   "country": "Duitsland",
+   "qty": 3,
+   "ids": [
+    "1002",
+    "1011",
+    "1013"
+   ]
+  },
+  {
+   "code": "FR-20",
+   "iso": "FR",
+   "weight": 20,
+   "country": "Frankrijk",
+   "qty": 1,
+   "ids": [
+    "1005"
+   ]
+  }
+ ],
+ "stampLine": "NL-20x3 DE-20x1 DE-50x3 FR-20x1",
+ "print": [
+  {
+   "Id": "1001",
+   "Value": 4.5,
+   "Method": "Letter max. 20 g",
+   "Address": [
+    "Anna Schmidt",
+    "Hauptstraße 12",
+    "10623 Berlin",
+    "Germany"
+   ],
+   "Grams": 20,
+   "Iso": "DE",
+   "Fields": {
+    "NAME": "Anna Schmidt",
+    "ADDRESS": [
+     "Hauptstraße 12"
+    ],
+    "POSTCODE": "10623",
+    "CITY": "Berlin",
+    "COUNTRY": "Germany",
+    "ID": "1001"
+   }
+  },
+  {
+   "Id": "1002",
+   "Value": 12,
+   "Method": "Letter max. 50 g",
+   "Address": [
+    "Bernd Müller",
+    "c/o Weber",
+    "Bahnhofstr. 3",
+    "80331 München",
+    "Germany"
+   ],
+   "Grams": 50,
+   "Iso": "DE",
+   "Fields": {
+    "NAME": "Bernd Müller",
+    "ADDRESS": [
+     "c/o Weber",
+     "Bahnhofstr. 3"
+    ],
+    "POSTCODE": "80331",
+    "CITY": "München",
+    "COUNTRY": "Germany",
+    "ID": "1002"
+   }
+  },
+  {
+   "Id": "1003",
+   "Value": 2,
+   "Method": "Standard Letter max. 20 g",
+   "Address": [
+    "Cees de Vries",
+    "Kerkstraat 12A",
+    "1234AB Utrecht",
+    "Netherlands"
+   ],
+   "Grams": 20,
+   "Iso": "NL",
+   "Fields": {
+    "NAME": "Cees de Vries",
+    "ADDRESS": [
+     "Kerkstraat 12A"
+    ],
+    "POSTCODE": "1234AB",
+    "CITY": "Utrecht",
+    "COUNTRY": "Netherlands",
+    "ID": "1003"
+   }
+  },
+  {
+   "Id": "1004",
+   "Value": 1.25,
+   "Method": "Brief max. 20 g",
+   "Address": [
+    "Dirk Bakker",
+    "Dorpsweg 5",
+    "9876 ZX Groningen",
+    "Netherlands"
+   ],
+   "Grams": 20,
+   "Iso": "NL",
+   "Fields": {
+    "NAME": "Dirk Bakker",
+    "ADDRESS": [
+     "Dorpsweg 5"
+    ],
+    "POSTCODE": "9876 ZX",
+    "CITY": "Groningen",
+    "COUNTRY": "Netherlands",
+    "ID": "1004"
+   }
+  },
+  {
+   "Id": "1005",
+   "Value": 7,
+   "Method": "Letter max. 20 g",
+   "Address": [
+    "Élodie Martin",
+    "12 rue de la Paix",
+    "75002 Paris",
+    "France"
+   ],
+   "Grams": 20,
+   "Iso": "FR",
+   "Fields": {
+    "NAME": "Élodie Martin",
+    "ADDRESS": [
+     "12 rue de la Paix"
+    ],
+    "POSTCODE": "75002",
+    "CITY": "Paris",
+    "COUNTRY": "France",
+    "ID": "1005"
+   }
+  },
+  {
+   "Id": "1006",
+   "Value": 8,
+   "Method": "Letter max. 100 g",
+   "Address": [
+    "Franz Huber",
+    "Ringstraße 1",
+    "1010 Wien",
+    "Austria"
+   ],
+   "Grams": 100,
+   "Iso": "AT",
+   "Fields": {
+    "NAME": "Franz Huber",
+    "ADDRESS": [
+     "Ringstraße 1"
+    ],
+    "POSTCODE": "1010",
+    "CITY": "Wien",
+    "COUNTRY": "Austria",
+    "ID": "1006"
+   }
+  },
+  {
+   "Id": "1009",
+   "Value": 3,
+   "Method": "Letter max. 20 g",
+   "Address": [
+    "Ivo Nowak",
+    "Main Street 1",
+    "Nowhere",
+    "Atlantis"
+   ],
+   "Grams": 20,
+   "Iso": null,
+   "Fields": {
+    "NAME": "Ivo Nowak",
+    "ADDRESS": [
+     "Main Street 1"
+    ],
+    "POSTCODE": "",
+    "CITY": "Nowhere",
+    "COUNTRY": "Atlantis",
+    "ID": "1009"
+   }
+  },
+  {
+   "Id": "1010",
+   "Value": 3,
+   "Method": "Letter max. 0 g",
+   "Address": [
+    "Jens Olsen",
+    "Vestergade 2",
+    "1456 København K",
+    "Denmark"
+   ],
+   "Grams": 0,
+   "Iso": "DK",
+   "Fields": {
+    "NAME": "Jens Olsen",
+    "ADDRESS": [
+     "Vestergade 2"
+    ],
+    "POSTCODE": "1456",
+    "CITY": "København K",
+    "COUNTRY": "Denmark",
+    "ID": "1010"
+   }
+  },
+  {
+   "Id": "1011",
+   "Value": 5,
+   "Method": "Letter max. 40 g",
+   "Address": [
+    "Karl Weiß",
+    "Königsallee 3-5",
+    "40212 Düsseldorf",
+    "Germany"
+   ],
+   "Grams": 40,
+   "Iso": "DE",
+   "Fields": {
+    "NAME": "Karl Weiß",
+    "ADDRESS": [
+     "Königsallee 3-5"
+    ],
+    "POSTCODE": "40212",
+    "CITY": "Düsseldorf",
+    "COUNTRY": "Germany",
+    "ID": "1011"
+   }
+  },
+  {
+   "Id": "1012",
+   "Value": 6,
+   "Method": "Letter max. 20 g",
+   "Address": [
+    "Lieke Smit",
+    "Plein 1944 12",
+    "6511 AB Nijmegen",
+    "Netherlands"
+   ],
+   "Grams": 20,
+   "Iso": "NL",
+   "Fields": {
+    "NAME": "Lieke Smit",
+    "ADDRESS": [
+     "Plein 1944 12"
+    ],
+    "POSTCODE": "6511 AB",
+    "CITY": "Nijmegen",
+    "COUNTRY": "Netherlands",
+    "ID": "1012"
+   }
+  },
+  {
+   "Id": "1013",
+   "Value": 9,
+   "Method": "Letter max. 50 g",
+   "Address": [
+    "Anton Braun",
+    "Lindenweg 7",
+    "20095 Hamburg",
+    "Germany"
+   ],
+   "Grams": 50,
+   "Iso": "DE",
+   "Fields": {
+    "NAME": "Anton Braun",
+    "ADDRESS": [
+     "Lindenweg 7"
+    ],
+    "POSTCODE": "20095",
+    "CITY": "Hamburg",
+    "COUNTRY": "Germany",
+    "ID": "1013"
+   }
+  }
+ ],
+ "tracked": [
+  {
+   "Id": "2001",
+   "Iso": "NL",
+   "Product": "Brievenbuspakje",
+   "Option": "Met track & trace",
+   "Seen": "order",
+   "Grams": 500,
+   "Phone": "0612345678",
+   "Email": "buyer@example.com",
+   "warnings": [
+    "the NL form has no phone field; the phone number is not sent"
+   ],
+   "Country": "Nederland",
+   "First": "Maarten",
+   "Last": "Visser",
+   "Postcode": "1234AB",
+   "Town": "Utrecht",
+   "Street": "Kerkstraat",
+   "Number": "12",
+   "Suffix": "-3",
+   "SuffixKey": "3",
+   "address": [
+    "Maarten Visser",
+    "Kerkstraat 12-3",
+    "1234 AB Utrecht",
+    "Netherlands"
+   ],
+   "method": "Brievenbuspakje+ max. 500 g",
+   "value": 40
+  },
+  {
+   "Id": "2002",
+   "Iso": "DE",
+   "Product": "Gemiddeld pakket",
+   "Option": "Met track & trace",
+   "Seen": "page",
+   "Grams": 2000,
+   "Phone": "",
+   "Email": "buyer@example.com",
+   "warnings": [],
+   "Country": "Duitsland",
+   "First": "Nina",
+   "Last": "Wagner",
+   "Postcode": "10623",
+   "Town": "Berlin",
+   "AddressLine": "Hinterhaus, Straße des 17. Juni 135",
+   "Manual": {
+    "Street": "Straße des 17. Juni",
+    "Nr": "135",
+    "Ext": "",
+    "Extra": "Hinterhaus",
+    "Fields": {
+     "Gebouw": "Hinterhaus"
+    }
+   },
+   "address": [
+    "Nina Wagner",
+    "Hinterhaus",
+    "Straße des 17. Juni 135",
+    "10623 Berlin",
+    "Germany"
+   ],
+   "method": "Tracked Parcel (Standaard pakket) max. 2000 g",
+   "value": 60
+  },
+  {
+   "Id": "2003",
+   "Iso": "FR",
+   "Product": "Gemiddeld pakket",
+   "Option": "Aangetekend tot €500",
+   "Seen": "order",
+   "Grams": 1000,
+   "Phone": "",
+   "Email": "buyer@example.com",
+   "warnings": [],
+   "Country": "Frankrijk",
+   "First": "Olivier",
+   "Last": "Dubois",
+   "Postcode": "69006",
+   "Town": "Lyon",
+   "AddressLine": "Appartement 12, 3e étage, 8 bis avenue Foch",
+   "Manual": {
+    "Street": "avenue Foch",
+    "Nr": "8",
+    "Ext": "bis",
+    "Extra": "Appartement 12, 3e étage",
+    "Fields": {
+     "Verdieping": "3e étage",
+     "Flat": "Appartement 12"
+    }
+   },
+   "address": [
+    "Olivier Dubois",
+    "Appartement 12, 3e étage",
+    "8 bis avenue Foch",
+    "69006 Lyon",
+    "France"
+   ],
+   "method": "Registered Parcel (Pakket aangetekend € 500) max. 1000 g",
+   "value": 120
+  },
+  {
+   "Id": "2004",
+   "Iso": "IT",
+   "Product": "Gemiddeld pakket",
+   "Option": "Verzekerd tot €5500",
+   "Seen": "page",
+   "Grams": 2000,
+   "Phone": "+39 06 1234567",
+   "Email": "buyer@example.com",
+   "warnings": [],
+   "Country": "Italië",
+   "First": "Paolo",
+   "Last": "Rossi",
+   "Postcode": "00187",
+   "Town": "Roma",
+   "AddressLine": "Via 4 Novembre 10",
+   "Manual": {
+    "Street": "Via 4 Novembre",
+    "Nr": "10",
+    "Ext": "",
+    "Extra": "",
+    "Fields": {}
+   },
+   "address": [
+    "Paolo Rossi",
+    "Via 4 Novembre 10",
+    "00187 Roma",
+    "Italy"
+   ],
+   "method": "Insured Delivery (Verzekerd pakket € 5.500) max. 2000 g",
+   "value": 900
+  },
+  {
+   "Id": "2005",
+   "Iso": "BE",
+   "Product": "Brievenbuspakje",
+   "Option": "Met track & trace",
+   "error": "name 'Quinn' has one word; PostNL needs a first and a last name",
+   "address": [
+    "Quinn",
+    "Rue Neuve 1",
+    "1000 Bruxelles",
+    "Belgium"
+   ],
+   "method": "Brievenbuspakje met track & trace (Tracked Letterbox packet) max. 500 g",
+   "value": 30,
+   "warnings": []
+  },
+  {
+   "Id": "2006",
+   "Iso": "DE",
+   "Product": "Gemiddeld pakket",
+   "Option": "Met track & trace",
+   "error": "method 'Pakket' is for NL only, sale goes to DE",
+   "address": [
+    "Rolf Keller",
+    "Hauptstraße 1",
+    "10115 Berlin",
+    "Germany"
+   ],
+   "method": "Pakket max. 2000 g",
+   "value": 50,
+   "warnings": []
+  },
+  {
+   "Id": "2007",
+   "Iso": "BE",
+   "Product": "Klein pakket",
+   "Option": "Verzekerd tot €50",
+   "error": "no 'max. NNNg' in the method",
+   "address": [
+    "Sanne Mol",
+    "Rue du Lac 4",
+    "1000 Brussel",
+    "Belgium"
+   ],
+   "method": "Klein pakket aangetekend (Registered packet) - Insured up to 50€ max. 0 g",
+   "value": 45,
+   "warnings": []
+  },
+  {
+   "Id": "2008",
+   "Iso": "ES",
+   "Product": "Gemiddeld pakket",
+   "Option": "Met track & trace",
+   "Seen": "page",
+   "Grams": 2000,
+   "Phone": "",
+   "Email": "buyer@example.com",
+   "warnings": [
+    "no street + house number found; only PostNL address suggestions can be used"
+   ],
+   "Country": "Spanje",
+   "First": "Tomás",
+   "Last": "García",
+   "Postcode": "28013",
+   "Town": "Madrid",
+   "AddressLine": "Calle Mayor",
+   "Manual": null,
+   "address": [
+    "Tomás García",
+    "Calle Mayor",
+    "28013 Madrid",
+    "Spain"
+   ],
+   "method": "Tracked Parcel (Standaard pakket) max. 2000 g",
+   "value": 70
+  },
+  {
+   "Id": "2009",
+   "Iso": "NL",
+   "Product": "Gemiddeld pakket",
+   "Option": "Aangetekend",
+   "Seen": "guess",
+   "Grams": 2000,
+   "Phone": "",
+   "Email": "buyer@example.com",
+   "warnings": [
+    "the PostNL mapping for this method is a guess (see the method data, source file methods.psd1); check the choice"
+   ],
+   "Country": "Nederland",
+   "First": "Ursula",
+   "Last": "de Boer",
+   "Postcode": "2564AA",
+   "Town": "Den Haag",
+   "Street": "Laan van Meerdervoort",
+   "Number": "1000",
+   "Suffix": "",
+   "SuffixKey": "",
+   "address": [
+    "Ursula de Boer",
+    "Laan van Meerdervoort 1000",
+    "2564 AA Den Haag",
+    "Netherlands"
+   ],
+   "method": "Aangetekend Pakket max. 2000 g",
+   "value": 80
+  }
+ ],
+ "skipped": [
+  {
+   "id": "1006",
+   "iso": "AT",
+   "value": 8,
+   "method": "Letter max. 100 g",
+   "address": [
+    "Franz Huber",
+    "Ringstraße 1",
+    "1010 Wien",
+    "Austria"
+   ],
+   "reason": "label printed, stamp by hand: no stamp weight up to 50 g in 'Letter max. 100 g'; buy its stamp by hand"
+  },
+  {
+   "id": "1007",
+   "iso": "SE",
+   "value": 30,
+   "method": "Letter max. 20 g",
+   "address": [
+    "Greta Berg",
+    "Storgatan 1",
+    "11122 Stockholm",
+    "Sweden"
+   ],
+   "reason": "untracked, article value 30 >= 25; check the sale"
+  },
+  {
+   "id": "1008",
+   "iso": "BE",
+   "value": null,
+   "method": "Letter max. 20 g",
+   "address": [
+    "Hugo Janssens",
+    "Grote Markt 1",
+    "1000 Brussel",
+    "Belgium"
+   ],
+   "reason": "untracked, article value could not be read from the page; check the sale"
+  },
+  {
+   "id": "1009",
+   "iso": null,
+   "value": 3,
+   "method": "Letter max. 20 g",
+   "address": [
+    "Ivo Nowak",
+    "Main Street 1",
+    "Nowhere",
+    "Atlantis"
+   ],
+   "reason": "label printed, stamp by hand: country 'Atlantis' is not in the country data (source file countries.psd1); buy its stamp by hand"
+  },
+  {
+   "id": "1010",
+   "iso": "DK",
+   "value": 3,
+   "method": "Letter max. 0 g",
+   "address": [
+    "Jens Olsen",
+    "Vestergade 2",
+    "1456 København K",
+    "Denmark"
+   ],
+   "reason": "label printed, stamp by hand: no stamp weight up to 50 g in 'Letter max. 0 g'; buy its stamp by hand"
+  },
+  {
+   "id": "3001",
+   "iso": "NL",
+   "value": 3000,
+   "method": "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance max. 5000 g",
+   "address": [
+    "Vera Kok",
+    "Markt 1",
+    "5611 EB Eindhoven",
+    "Netherlands"
+   ],
+   "reason": "manual method 'SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance': buy by hand"
+  },
+  {
+   "id": "3002",
+   "iso": "NL",
+   "value": 50,
+   "method": "Mystery Tracked max. 1000 g",
+   "address": [
+    "Wim Pauw",
+    "Markt 2",
+    "5611 EB Eindhoven",
+    "Netherlands"
+   ],
+   "reason": "unknown tracked method 'Mystery Tracked': add it to the method data (source file methods.psd1)"
+  },
+  {
+   "id": "3003",
+   "reason": "shipping method not found on page"
+  }
+ ],
+ "count": 25
+}

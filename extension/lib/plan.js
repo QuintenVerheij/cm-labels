@@ -140,9 +140,15 @@ function stampCarrier(cfg) {
   return all.size === 1 ? [...all][0] : 'none';
 }
 
+// A tracked method: Service tracked, or postnl, its older name with the same meaning (the NL methods file uses it).
+const isTracked = service => service === 'tracked' || service === 'postnl';
+
 // sales: from loadSales in cardmarket.js. Returns the breakdown for the UI and the cart. Every stamp group and tracked
 // label carries its carrier (lib/carriers.js builds the cart with it); carrier none never reaches a cart.
-export function planSales(sales, cfg, origin = 'NL') {
+// brackets: carrier -> its stamp weights in g, ascending (BRACKETS of lib/carriers.js, from each carrier module).
+// A stamp goes in the smallest bracket of its carrier that holds the sale's grams; a carrier without brackets
+// leaves its stamps for buying by hand. Each group keeps every sale's grams (weights, in the order of ids).
+export function planSales(sales, cfg, origin = 'NL', brackets = {}) {
   const stamps = new Map(), print = [], tracked = [], skipped = [], all = [];
   for (const r of sales) {
     if (r.error) { skipped.push({ id: r.id, reason: r.error }); continue; }
@@ -151,7 +157,7 @@ export function planSales(sales, cfg, origin = 'NL') {
     s.address = r.lines.map(l => l.text);
     s.iso = cfg.byName[s.country] || null;
     const m = cfg.methods[r.methodName];
-    s.service = m ? m.Service : (r.tracked === false ? 'stamp' : 'unknown');
+    s.service = m ? (isTracked(m.Service) ? 'tracked' : m.Service) : (r.tracked === false ? 'stamp' : 'unknown');
     s.carrier = m ? m.Carrier || 'none' : s.service === 'stamp' ? stampCarrier(cfg) : 'none';
     all.push(s);
     const base = { id: s.id, iso: s.iso, value: s.value, method: s.method, address: s.address };
@@ -159,15 +165,17 @@ export function planSales(sales, cfg, origin = 'NL') {
       if (!Number.isFinite(s.value)) { skipped.push({ ...base, reason: 'untracked, article value could not be read from the page; check the sale' }); continue; }
       if (s.value >= THRESHOLD) { skipped.push({ ...base, reason: `untracked, article value ${s.value} >= ${THRESHOLD}; check the sale` }); continue; }
       print.push({ Id: s.id, Value: s.value, Method: s.method, Address: s.address, Grams: s.grams, Iso: s.iso, Fields: labelFields(s, cfg) });
+      const steps = brackets[s.carrier] || [], w = s.grams ? steps.find(b => s.grams <= b) : undefined;
       let reason = null;
       if (s.carrier === 'none') reason = `no carrier for '${s.method}' in the method data (source file methods.psd1); buy its stamp by hand`;
       else if (!s.iso) reason = `country '${s.country}' is not in the country data (source file countries.psd1); buy its stamp by hand`;
-      else if (!s.grams || s.grams > 50) reason = `no stamp weight up to 50 g in '${s.method}'; buy its stamp by hand`;
+      else if (!steps.length) reason = `carrier '${s.carrier}' has no stamp weights in cm-labels yet; buy its stamp by hand`;
+      else if (w == null) reason = `no stamp weight up to ${steps[steps.length - 1]} g in '${s.method}'; buy its stamp by hand`;
       if (reason) { skipped.push({ ...base, reason: 'label printed, stamp by hand: ' + reason }); continue; }
-      const w = s.grams <= 20 ? 20 : 50, code = `${s.iso}-${w}`, key = `${s.carrier} ${code}`;
-      if (!stamps.has(key)) stamps.set(key, { code, iso: s.iso, weight: w, country: cfg.countries[s.iso][1], qty: 0, ids: [], carrier: s.carrier });
-      const g = stamps.get(key); g.qty++; g.ids.push(s.id);
-    } else if (s.service === 'postnl' && s.carrier !== 'none') {
+      const code = `${s.iso}-${w}`, key = `${s.carrier} ${code}`;
+      if (!stamps.has(key)) stamps.set(key, { code, iso: s.iso, weight: w, country: cfg.countries[s.iso][1], qty: 0, ids: [], weights: [], carrier: s.carrier });
+      const g = stamps.get(key); g.qty++; g.ids.push(s.id); g.weights.push(s.grams);
+    } else if (s.service === 'tracked' && s.carrier !== 'none') {
       try { tracked.push({ ...trackedPlan(s, m, cfg, origin), address: s.address, method: s.method, value: s.value, carrier: s.carrier }); }
       catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [], carrier: s.carrier }); }
     } else {

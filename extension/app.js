@@ -1,10 +1,11 @@
-// cm-labels app page: Load (Cardmarket) -> breakdown -> Print (browser print dialog) / Add to PostNL cart.
+// cm-labels app page: Load (Cardmarket) -> breakdown -> Print (browser print dialog) / Add to the carrier's cart
+// (PostNL for NL; lib/carriers.js builds one cart per carrier).
 // The jobs run in this page, so keep it open while one runs.
 import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';
 import { loadSales } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
-import { buildCart } from './lib/carriers.js';
+import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS, ORIGINS as CARRIER_ORIGINS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
@@ -40,7 +41,7 @@ async function load(list, only) {
     log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
     onLogin: async on => { state.login = on; render(); if (!on) await ext.tabs.update(me.id, { active: true }); },
   });
-  state.plan = planSales(sales, cfg, settings.country);
+  state.plan = planSales(sales, cfg, settings.country, BRACKETS);
   state.list = list; state.only = only; state.loadedAt = new Date();
   $('#pickcodes').checked = state.plan.stamps.length > 0;
   $('#picklabels').checked = state.plan.tracked.some(t => !t.error);
@@ -56,13 +57,37 @@ async function cart(withCodes, withLabels) {
   const tracked = withLabels ? state.plan.tracked.filter(t => !t.error) : [];
   const me = await ext.tabs.getCurrent();
   state.cart = { running: true }; render();
-  log(`PostNL: ${stamps.length} stamp code group(s) + ${tracked.length} shipping label(s), in parallel tabs...`);
+  for (const c of carriersOf(stamps, tracked)) log(`${carrierName(c)}: ${stamps.filter(g => g.carrier === c).length} stamp code group(s) + ${tracked.filter(p => p.carrier === c).length} shipping label(s), in parallel tabs...`);
   const t = Date.now();
   try {
     state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
-  } catch (e) { state.cart = { items: [], merged: false, error: e.message, seconds: 0 }; throw e; }
+  } catch (e) { state.cart = { carts: [], error: e.message, seconds: 0 }; throw e; }
   state.cart.seconds = Math.round((Date.now() - t) / 100) / 10;
-  log(`PostNL done in ${state.cart.seconds} s.${state.cart.merged ? ' The cart tab is in front: check it and pay there.' : ''}`);
+  const failed = abortedError(state.cart);
+  if (failed) throw new Error(failed);   // the run shows as failed; the carts that were made still show
+  const merged = state.cart.carts.filter(c => c.merged).length;
+  log(`${state.cart.carts.map(c => carrierName(c.carrier)).join(' and ')} done in ${state.cart.seconds} s.${merged === 1 ? ' The cart tab is in front: check it and pay there.' : merged ? ' Each cart is in a tab of its own: check them and pay there.' : ''}`);
+}
+// The carriers the cart button is for: the chosen items', else all items', else the ones the NL methods name.
+function cartCarriers(p, withCodes, withLabels) {
+  const ok = p ? p.tracked.filter(t => !t.error) : [];
+  const picked = p ? carriersOf(withCodes ? p.stamps : [], withLabels ? ok : []) : [];
+  if (picked.length) return picked;
+  const all = p ? carriersOf(p.stamps, ok) : [];
+  return all.length ? all : methodCarriers(data.NL?.methods);
+}
+// The line under the cart items: one per carrier when there are several.
+function cartSummary(c) {
+  if (c.error) return `${esc(c.error)} Nothing was added.`;
+  if (!c.carts.length) return 'Nothing was added.';
+  const multi = c.carts.length > 1;
+  const one = k => {
+    const name = carrierName(k.carrier);
+    const text = k.merged ? `${k.count} item(s) in one cart, total <b>${eur(k.total)}</b>${k.check ? '' : ` <span class="bad">expected ${eur(k.expected)}: check the cart</span>`}${multi ? '.' : `, in ${c.seconds} s. The cart tab is in front: check it and pay there.`}`
+      : k.error ? `${esc(k.error)} No tab was closed: check the ${esc(name)} tabs.` : 'Nothing was added. Failed items keep their tab open.';
+    return multi ? `<b>${esc(name)}</b>: ${text}` : text;
+  };
+  return c.carts.map(one).join('<br>') + (multi && c.carts.some(k => k.merged) ? `<br>Done in ${c.seconds} s. Each cart is in a tab of its own: check them and pay there.` : '');
 }
 
 // ---------------------------------------------------------------- render
@@ -136,18 +161,22 @@ function renderPlan() {
   $('#picklabels').disabled = busy || !nLabels; if (!nLabels) $('#picklabels').checked = false;
   $('#cart').disabled = busy || !paid || !($('#pickcodes').checked || $('#picklabels').checked);
   $('#cart').title = paid ? '' : 'Only after a load of the Paid list';
+  $('#cart').textContent = `Add to ${cartTitle(cartCarriers(p, $('#pickcodes').checked, $('#picklabels').checked))}`;
   const c = state.cart;
   $('#cartresult').hidden = !c || c.running;
   if (c && !c.running) {
-    $('#cartitems').innerHTML = `<thead><tr><th>Item</th><th>Result</th><th class="num">Price</th><th class="num">Time</th></tr></thead><tbody>${c.items.map(i => `<tr><td class="mono">${esc(i.key)}</td><td>${i.ok ? `<span class="ok">in the cart</span>${i.manual ? ' <span class="tag warn">manual address</span>' : ''}` : `<span class="bad">${esc(i.error)}</span>`}</td><td class="num">${eur(i.total)}</td><td class="num">${i.ms != null ? (i.ms / 1000).toFixed(1) + ' s' : ''}</td></tr>`).join('')}</tbody>`;
-    $('#cartsummary').innerHTML = c.merged ? `${c.count} item(s) in one cart, total <b>${eur(c.total)}</b>${c.check ? '' : ` <span class="bad">expected ${eur(c.expected)}: check the cart</span>`}, in ${c.seconds} s. The cart tab is in front: check it and pay there.`
-      : c.error ? `${esc(c.error)} No tab was closed: check the PostNL tabs.` : 'Nothing was added. Failed items keep their tab open.';
+    const title = cartTitle(c.carts.length ? c.carts.map(k => k.carrier) : cartCarriers(p, true, true));
+    $('#cartresult h3').textContent = title[0].toUpperCase() + title.slice(1);
+    const row = i => `<tr><td class="mono">${esc(i.key)}</td><td>${i.ok ? `<span class="ok">in the cart</span>${i.manual ? ' <span class="tag warn">manual address</span>' : ''}` : `<span class="bad">${esc(i.error)}</span>`}</td><td class="num">${eur(i.total)}</td><td class="num">${i.ms != null ? (i.ms / 1000).toFixed(1) + ' s' : ''}</td></tr>`;
+    const multi = c.carts.length > 1;
+    $('#cartitems').innerHTML = `<thead><tr><th>Item</th><th>Result</th><th class="num">Price</th><th class="num">Time</th></tr></thead><tbody>${c.carts.map(k => (multi ? `<tr><th colspan="4">${esc(carrierName(k.carrier))}</th></tr>` : '') + k.items.map(row).join('')).join('')}</tbody>`;
+    $('#cartsummary').innerHTML = cartSummary(c);
   }
 }
 // Progress bars while a job runs, as in the Cardmarket panel: loading under the load button (per sale), the
-// PostNL cart under the cart row (per step; the text counts the finished items).
+// carrier carts under the cart row (per step; the text counts the finished items).
 function renderProgress() {
-  const el = state.job === 'Adding to PostNL cart' ? $('#cartprogress') : /^Loading/.test(state.job || '') ? $('#loadprogress') : null;
+  const el = /^Adding to /.test(state.job || '') ? $('#cartprogress') : /^Loading/.test(state.job || '') ? $('#loadprogress') : null;
   for (const p of [$('#loadprogress'), $('#cartprogress')]) p.hidden = p !== el;
   if (!el) return;
   const [n, of, it] = state.progress || [0, 0];
@@ -288,7 +317,7 @@ function drawMethods() {
   const iso = $('#country').value, rates = methodsData.rates.filter(r => r.Iso === iso);
   $('#mtable').innerHTML = `<thead><tr><th>Cardmarket method</th><th>Service</th><th>Carrier</th><th>PostNL product · option</th><th>Seen</th><th class="num">Max. value</th><th class="num">Max. weight</th><th class="num">CM price</th><th class="num">Days</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
     const m = methodsData.methods[name] || { Service: '?', Carrier: '?' }, rs = rates.filter(r => r.Method === name);
-    return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td><span class="tag">${esc(m.Carrier)}</span></td><td>${m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen}</span>` : ''}</td>
+    return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td><span class="tag">${esc(m.Carrier)}</span></td><td>${m.Service === 'tracked' || m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen}</span>` : ''}</td>
       <td class="num">${eur(rs[0].MaxValue)}</td><td class="num">${rs.map(r => r.MaxWeight + ' g').join('<br>')}</td><td class="num">${rs.map(r => eur(r.Price)).join('<br>')}</td><td class="num">${rs[0].Days}</td></tr>`;
   }).join('')}</tbody>`;
 }
@@ -334,14 +363,14 @@ for (const id of ['#pickcodes', '#picklabels']) $(id).onchange = () => render();
 $('#cart').onclick = () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
   if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
-  if ((state.cart?.merged || state.cart?.error) && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
-  run('Adding to PostNL cart', () => cart(withCodes, withLabels));
+  if ((state.cart?.error || state.cart?.carts?.some(c => c.merged || c.error)) && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
+  run(`Adding to ${cartTitle(cartCarriers(state.plan, withCodes, withLabels))}`, () => cart(withCodes, withLabels));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
 
 // Host permissions can be missing (Firefox lets the user turn them off): ask for them, from a click. The prompt
 // stays hidden while they are granted.
-const ORIGINS = ['https://www.cardmarket.com/*', 'https://jouw.postnl.nl/*'];
+const ORIGINS = ['https://www.cardmarket.com/*', ...CARRIER_ORIGINS];
 async function checkAccess() {
   const ok = await ext.permissions.contains({ origins: ORIGINS }).catch(() => true);
   $('#access').hidden = ok;
@@ -351,6 +380,7 @@ async function checkAccess() {
 $('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(`Permission request failed: ${e.message}`); } await checkAccess(); };
 
 await loadSettings();
+await loadData('NL').catch(() => {});   // the carriers of the methods name the cart button before any load
 await purgeStale();
 // the last load (also one made in the Cardmarket page panel), if it is recent
 const last = await getRun();

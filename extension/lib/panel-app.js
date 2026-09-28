@@ -1,13 +1,13 @@
 // The cm-labels panel in the Cardmarket page (content script, loaded by content/panel.js).
 // Paid list: a "cm-labels" button in the title row (right, above the line) opens a panel fixed at the top right,
-//            over the page: Load -> short breakdown -> Print labels / Add to PostNL cart. The full tables and
-//            previews are on the full page ("Open full page" at the top of the panel).
-// Sale page: an "Add to PostNL cart" button at the same place puts this one sale in the PostNL cart.
+//            over the page: Load -> short breakdown -> Print labels / Add to the carrier's cart (PostNL for NL).
+//            The full tables and previews are on the full page ("Open full page" at the top of the panel).
+// Sale page: an "Add to PostNL cart" button at the same place puts this one sale in its carrier's cart.
 // The run lives in this page: keep it open while a run goes. Tab work goes through the background script.
 import { ext, openPage } from './ext.js';
 import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { planSales } from './plan.js';
-import { buildCart } from './carriers.js';
+import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
 import { esc } from './esc.js';
 
@@ -77,7 +77,10 @@ export async function start({ saleId, list }) {
   const ref = refs.find(e => e.getClientRects().length) || refs[0];
   const h1 = document.querySelector('h1');
   const anchor = document.createElement('div');
-  const labelText = saleId ? 'Add to PostNL cart' : 'cm-labels';
+  // Before a sale is planned, the cart is named by the carriers of the origin's methods (NL: PostNL).
+  const originCarriers = methodCarriers((await loadData('NL').catch(() => null))?.methods);
+  const originCart = cartTitle(originCarriers);
+  const labelText = saleId ? `Add to ${originCart}` : 'cm-labels';
   const ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h7.2l6.3 6.3v7.2A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/></svg>';
   const PRINT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2"/><path d="M7 14h10v6H7z"/></svg>';
   // One builder for every button, so they all get the same design.
@@ -173,7 +176,7 @@ export async function start({ saleId, list }) {
     const cfg = await loadData('NL');
     const me = await ext.tabs.getCurrent();
     const sales = await loadSales(list, { log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
-    state.plan = planSales(sales, cfg, (await getSettings()).country); state.list = list; state.loadedAt = new Date(); state.cart = null;
+    state.plan = planSales(sales, cfg, (await getSettings()).country, BRACKETS); state.list = list; state.loadedAt = new Date(); state.cart = null;
     state.pick = { codes: state.plan.stamps.length > 0, labels: nLabels(state.plan) > 0 };
     await saveRun(list, state.plan);
   }
@@ -182,6 +185,9 @@ export async function start({ saleId, list }) {
     state.cart = null;
     const { fallbackEmail } = await getSettings();
     state.cart = await buildCart({ stamps, tracked, fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; render(); } });
+    const failed = abortedError(state.cart);
+    // shown as the error; the carts that were made still show (none made: as if no cart was tried)
+    if (failed) { if (state.cart.carts.every(c => c.aborted)) state.cart = null; throw new Error(failed); }
   }
   async function print() {
     if (state.list !== 'Paid') return;   // printing only after a Paid load
@@ -194,10 +200,10 @@ export async function start({ saleId, list }) {
     const cfg = await loadData('NL');
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
-    const p = planSales([sale], cfg, (await getSettings()).country);
+    const p = planSales([sale], cfg, (await getSettings()).country, BRACKETS);
     state.plan = p; state.list = 'sale';
     const what = p.stamps.length ? `stamp code ${p.stamps[0].code} ×1` : nLabels(p) ? `shipping label: ${p.tracked[0].Product} · ${p.tracked[0].Option}` : null;
-    if (!what) throw new Error(issues(p)[0]?.text || 'nothing for PostNL in this sale');
+    if (!what) throw new Error(issues(p)[0]?.text || `nothing for ${originCarriers.map(c => carrierName(c)).join(' or ') || 'a cart'} in this sale`);
     log(`Sale ${saleId}: ${what}`);
     await cart(p.stamps, p.tracked.filter(t => !t.error));
   }
@@ -214,13 +220,23 @@ export async function start({ saleId, list }) {
     await openPage('print.html', { reuse: false });
   }
 
+  // One line per carrier cart (a cart whose module threw is in state.error already).
   function cartLine() {
-    const c = state.cart;
-    if (!c) return '';
-    const bad = c.items.filter(i => !i.ok);
-    return `<div>${c.merged ? `<span class="ok">${c.count} item(s) in the PostNL cart, ${eur(c.total)}${c.check ? '' : ` <span class="err">(expected ${eur(c.expected)}: check the cart)</span>`}.</span> The cart tab is in front: pay there.` : '<span class="err">Nothing was added.</span>'}</div>
+    const carts = (state.cart?.carts || []).filter(c => !c.aborted);
+    const multi = carts.length > 1;
+    return carts.map(c => {
+      const name = carrierName(c.carrier), bad = c.items.filter(i => !i.ok);
+      return `<div>${c.merged ? `<span class="ok">${c.count} item(s) in the ${esc(name)} cart, ${eur(c.total)}${c.check ? '' : ` <span class="err">(expected ${eur(c.expected)}: check the cart)</span>`}.</span> ${multi ? 'Its tab is open: pay there.' : 'The cart tab is in front: pay there.'}` : `<span class="err">Nothing was added${multi ? ` to the ${esc(name)} cart` : ''}.</span>`}</div>
       ${bad.map(i => `<div class="err">${esc(i.key)}: ${esc(i.error)}</div>`).join('')}`;
+    }).join('');
   }
+  // The cart the Paid page's button fills: the chosen items' carriers, else all items', else the origin's.
+  const pickedCart = p => {
+    const ok = p.tracked.filter(t => !t.error);
+    const names = carriersOf(state.pick?.codes ? p.stamps : [], state.pick?.labels ? ok : []);
+    const all = carriersOf(p.stamps, ok);
+    return names.length ? cartTitle(names) : all.length ? cartTitle(all) : originCart;
+  };
   function render() {
     $('.dot').className = `dot ${state.job ? 'run' : state.error ? 'bad' : state.plan ? 'ok' : ''}`;
     for (const b of [btn, printBtn]) if (b) { b.setAttribute('aria-disabled', String(!!state.job)); b.style.pointerEvents = state.job ? 'none' : ''; b.style.opacity = state.job ? '.6' : ''; }
@@ -233,8 +249,8 @@ export async function start({ saleId, list }) {
       html = `<div class="sum">${esc(state.job)}…${it ? ` ${it.items}/${it.of}` : of ? ` ${n}/${of}` : ''}</div>${of ? `<div class="bar"><i style="width:${Math.round(100 * n / of)}%"></i></div>` : '<div class="bar"><i style="width:0%"></i></div>'}
         <div class="log">${esc(last || '')}</div><div class="muted">Keep this page open until the run is done.</div>`;
     } else if (saleId) {
-      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}${cartLine()}${!state.error && !state.cart ? '<div class="muted">Puts this sale in the PostNL cart (stamp code or shipping label). Nothing is paid.</div>' : ''}
-        <div class="actions"><button class="btn" id="again">${state.cart || state.error ? 'Try again' : 'Add to PostNL cart'}</button></div>`;
+      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}${cartLine()}${!state.error && !state.cart ? `<div class="muted">Puts this sale in the ${esc(originCart)} (stamp code or shipping label). Nothing is paid.</div>` : ''}
+        <div class="actions"><button class="btn" id="again">${state.cart || state.error ? 'Try again' : `Add to ${esc(originCart)}`}</button></div>`;
     } else if (!p) {
       const rows = document.querySelectorAll('div[data-url*="/Orders/"]').length;
       const pages = +((document.body.textContent.match(/Page \d+ of (\d+)/) || [])[1] || 1);
@@ -250,23 +266,23 @@ export async function start({ saleId, list }) {
           <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>Codes</b><small>${p.stamps.length ? `${nStamps} stamp(s), ${p.stamps.length} code(s)` : 'none'}</small></span></label>
           <label class="card"><input type="checkbox" id="labels" ${state.pick?.labels ? 'checked' : ''} ${nLabels(p) ? '' : 'disabled'}><span><b>Shipping labels</b><small>${nLabels(p) ? `${nLabels(p)} tracked` : 'none'}</small></span></label>
         </div>
-        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? 'Opens the print dialog' : 'Only after a load of the Paid list'}">Print labels (${p.print.length})</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : 'Only after a load of the Paid list'}">Add to PostNL cart</button></div>
+        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? 'Opens the print dialog' : 'Only after a load of the Paid list'}">Print labels (${p.print.length})</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : 'Only after a load of the Paid list'}">Add to ${esc(pickedCart(p))}</button></div>
         ${cartLine()}`;
     }
     $('#body').innerHTML = html + (state.job || !last ? '' : `<div class="log">${esc(last)}</div>`);
     $('#load')?.addEventListener('click', () => run('Loading paid sales', load));
     $('#reload')?.addEventListener('click', e => { e.preventDefault(); run('Loading paid sales', load); });
     $('#again')?.addEventListener('click', () => {
-      if ((state.cart?.merged || state.cart?.error) && !confirm(AGAIN_PROMPT)) return;
+      if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(AGAIN_PROMPT)) return;
       run('Adding this sale', addThisSale);
     });
     for (const k of ['codes', 'labels']) $(`#${k}`)?.addEventListener('change', e => { state.pick = { ...state.pick, [k]: e.target.checked }; render(); });
     $('#print')?.addEventListener('click', () => run('Opening the print dialog', print));
     $('#cart')?.addEventListener('click', () => {
       if (state.list !== 'Paid') return;
-      if ((state.cart?.merged || state.cart?.error) && !confirm(AGAIN_PROMPT)) return;
+      if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(AGAIN_PROMPT)) return;
       const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(t => !t.error) : [];
-      run('Adding to the PostNL cart', () => cart(stamps, tracked));
+      run(`Adding to the ${pickedCart(p)}`, () => cart(stamps, tracked));
     });
   }
 

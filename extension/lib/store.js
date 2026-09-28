@@ -39,7 +39,14 @@ export async function getRun() {
   const r = (await ext.storage.local.get('lastRun')).lastRun;
   if (!r) return null;
   if (!(Date.now() - Date.parse(r.loadedAt) < MAX_AGE)) { await clearRun(); return null; }   // buyer data does not outlive the cache
-  return { ...r, loadedAt: new Date(r.loadedAt) };
+  return { ...r, plan: withCarrier(r.plan), loadedAt: new Date(r.loadedAt) };
+}
+// A run saved before stamp groups and tracked labels named their carrier: every such run was PostNL's.
+export function withCarrier(plan) {
+  if (!plan) return plan;
+  const out = { ...plan };
+  for (const k of ['stamps', 'tracked']) if (Array.isArray(plan[k])) out[k] = plan[k].map(x => x.carrier ? x : { ...x, carrier: 'postnl' });
+  return out;
 }
 // The print page takes a print job within seconds; one that is still there was never opened.
 const JOB_MAX_AGE = 10 * 60 * 1000;
