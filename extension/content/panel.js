@@ -1,6 +1,7 @@
 // Content script on Cardmarket order pages: starts the cm-labels panel on the Paid list and on a single sale page.
 // The panel code is an ES module of the extension, loaded with import() (content scripts cannot be modules).
 (() => {
+  if (location.hash === '#cml-worker') return;
   if (window.__cmlPanelStarted) return;
   window.__cmlPanelStarted = true;
   const ext = globalThis.browser ?? globalThis.chrome;

@@ -18,8 +18,9 @@ async function addToGroupNow(tabId) {
 }
 
 export class Tab {
-  // file: the content script; ns: the global it defines in the isolated world.
-  constructor(id, file, ns) { this.id = id; this.file = file; this.ns = ns; this.onPoll = null; this.lastPoll = 0; this.lastError = null; }
+  // file: the content script; ns: the global it defines in the isolated world; hash: appended to every URL the
+  // tab loads (a marker the panel content script looks for).
+  constructor(id, file, ns, hash = '') { this.id = id; this.file = file; this.ns = ns; this.hash = hash; this.onPoll = null; this.lastPoll = 0; this.lastError = null; }
   // Optional hook, run at most once per second inside every wait and click loop (PostNL: answer a cookie wall
   // that pops up at any moment).
   async poll() {
@@ -28,10 +29,10 @@ export class Tab {
     try { await this.onPoll(this); } catch { }
   }
 
-  static async open(url, { file, ns, windowId }) {
-    const t = await ext.tabs.create({ url, active: false, windowId });
+  static async open(url, { file, ns, windowId, hash = '' }) {
+    const t = await ext.tabs.create({ url: url === 'about:blank' ? url : url + hash, active: false, windowId });
     await addToGroup(t.id);
-    return new Tab(t.id, file, ns);
+    return new Tab(t.id, file, ns, hash);
   }
 
   raw(name, args) { return callInTab(this.id, this.ns, name, args); }
@@ -72,6 +73,7 @@ export class Tab {
   // Start a page load and wait until Chrome reports it (status 'loading' or the new URL), so the previous
   // page is never read by mistake.
   async navigate(url) {
+    url += this.hash;
     await ext.tabs.update(this.id, { url });
     for (const t = Date.now(); Date.now() - t < 3000; await sleep(50)) {
       const s = await ext.tabs.get(this.id);
