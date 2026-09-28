@@ -15,6 +15,7 @@ fs.mkdirSync(dist, { recursive: true });
 const entries = fs.readdirSync(src).filter(f => !f.startsWith('.'));
 // Windows' own bsdtar (not Git's GNU tar, which has no zip format); -a picks zip from the .zip extension.
 const tar = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe');
+if (!fs.existsSync(tar)) { console.error(`tar.exe not found at ${tar}. This tool needs Windows' built-in bsdtar (Windows 10 1803 or later).`); process.exit(1); }
 const zip = path.join(dist, `cm-labels-${version}.zip`), xpi = path.join(dist, `cm-labels-${version}.xpi`);
 for (const f of [zip, xpi]) if (fs.existsSync(f)) fs.unlinkSync(f);
 execFileSync(tar, ['-a', '-cf', zip, '-C', src, ...entries]);
