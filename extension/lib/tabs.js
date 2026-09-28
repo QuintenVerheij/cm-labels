@@ -4,7 +4,10 @@ import { ext, callInTab, injectFile } from './ext.js';
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 let groupId = null;
-async function addToGroup(tabId) {
+let groupQueue = Promise.resolve();
+// One at a time, so parallel opens find the group the first one created.
+const addToGroup = tabId => (groupQueue = groupQueue.then(() => addToGroupNow(tabId)));
+async function addToGroupNow(tabId) {
   try {
     if (groupId !== null) { await ext.tabs.group({ tabIds: [tabId], groupId }); return; }
   } catch { groupId = null; }
@@ -16,7 +19,7 @@ async function addToGroup(tabId) {
 
 export class Tab {
   // file: the content script; ns: the global it defines in the isolated world.
-  constructor(id, file, ns) { this.id = id; this.file = file; this.ns = ns; this.onPoll = null; this.lastPoll = 0; }
+  constructor(id, file, ns) { this.id = id; this.file = file; this.ns = ns; this.onPoll = null; this.lastPoll = 0; this.lastError = null; }
   // Optional hook, run at most once per second inside every wait and click loop (PostNL: answer a cookie wall
   // that pops up at any moment).
   async poll() {
@@ -42,25 +45,29 @@ export class Tab {
     return r.v;
   }
   // Same, but a page that is loading or navigating gives the fallback instead of an error.
-  async safe(name, fallback, ...args) { try { return await this.call(name, ...args); } catch { return fallback; } }
+  async safe(name, fallback, ...args) { try { return await this.call(name, ...args); } catch (e) { this.lastError = e; return fallback; } }
 
   async waitFor(cond, ms = 15000, what = JSON.stringify(cond)) {
+    this.lastError = null;
     for (const t = Date.now(); ; await sleep(150)) {
       await this.poll();
       if (await this.safe('test', false, cond)) return;
-      if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}`);
+      if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}${this.lastError ? `: ${this.lastError.message}` : ''}`);
     }
   }
   // Test, click, wait up to 1 s for the result, repeat: a click right after load, before Angular is ready, does
   // nothing. The test comes first in every round, so a click that worked late is never followed by another one.
   async clickUntil(spec, cond, { tries = 15, what = JSON.stringify(spec) } = {}) {
+    this.lastError = null;
     for (let i = 0; i < tries; i++) {
       await this.poll();
       if (await this.safe('test', false, cond)) return i;
       await this.safe('click', false, spec);
       for (const t = Date.now(); Date.now() - t < 1000; await sleep(100)) if (await this.safe('test', false, cond)) return i + 1;
     }
-    throw new Error(`no effect after ${tries} clicks: ${what}`);
+    const cause = this.lastError;
+    const page = await this.safe('q', '', 'errors');
+    throw new Error(`no effect after ${tries} clicks: ${what}${page ? ` (page: ${page})` : ''}${cause ? ` (last error: ${cause.message})` : ''}`);
   }
   // Start a page load and wait until Chrome reports it (status 'loading' or the new URL), so the previous
   // page is never read by mistake.
