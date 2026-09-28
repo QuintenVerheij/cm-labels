@@ -12,8 +12,9 @@ const page = (url, over = {}) => ({ ready: 'complete', check: false, block: fals
 
 // pageFor(url, tab) is the state of the page the tab shows after navigating to url.
 function runWith(pageFor, opts = {}) {
-  const opened = [];
-  Tab.open = async () => {
+  const opened = [], openOpts = [];
+  Tab.open = async (url, o) => {
+    openOpts.push(o);
     const tab = {
       id: 1, url: '', closed: false, navigations: 0,
       async navigate(url) { this.url = url; this.navigations++; },
@@ -30,7 +31,7 @@ function runWith(pageFor, opts = {}) {
   };
   const logins = [];
   const run = () => loadSales('Paid', { log() {}, onLogin: on => logins.push(on), saleMs: 200, loginPollMs: 10, ...opts });
-  return { run, opened, logins };
+  return { run, opened, logins, openOpts };
 }
 
 const loggedOut = url => page(url, { loggedIn: false, sale: null });
@@ -58,7 +59,7 @@ test('the login wait ends at once when the tab is gone', async () => {
 test('a logged-out page at another URL is seen as logged out, not as a timeout', async () => {
   tabExists = true;
   let polls = 0;
-  const { run } = runWith(url => {
+  const { run, logins } = runWith(url => {
     if (!url.includes('/Orders/Sales')) return page(url);
     if (polls++ < 3) return page('https://www.cardmarket.com/en/Magic/Login?referrer=x', { loggedIn: false, sale: null });
     return page(url, { sale: null });
@@ -66,6 +67,7 @@ test('a logged-out page at another URL is seen as logged out, not as a timeout',
   const out = await run();
   assert.equal(out.length, 1);
   assert.ok(polls >= 3);
+  assert.deepEqual(logins, [true, false]);
 });
 
 test('a loaded page with no sale reports not your sale, well before the page deadline', async () => {
@@ -75,4 +77,12 @@ test('a loaded page with no sale reports not your sale, well before the page dea
   const out = await run();
   assert.match(out[0].error, /not your sale or no such order/);
   assert.ok(Date.now() - started < 3500);
+});
+
+test('the list tab and every worker tab open with the worker hash', async () => {
+  tabExists = true;
+  const { run, openOpts } = runWith(url => page(url), { only: [ID, '1000000002', '1000000003'] });
+  await run();
+  assert.equal(openOpts.length, 3);
+  for (const o of openOpts) assert.equal(o.hash, '#cml-worker');
 });
