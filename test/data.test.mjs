@@ -49,3 +49,12 @@ test('the duplicate check fails on a synthetic duplicate and prints the rows', (
   assert.equal(r.stderr.split('\n').filter(l => l.startsWith('  AT | Letter | ')).length, 2, r.stderr);
   assert.equal(fs.existsSync(path.join(dir, 'out')), false);
 }));
+
+test('AT, DK and LI each list the tracked letter at 500 g and 1000 g', () => {
+  const tracked = 'Brievenbuspakje met track & trace (Tracked Letterbox packet)';
+  const rates = JSON.parse(fs.readFileSync(path.join(dataDir, 'rates.json'), 'utf8'));
+  for (const iso of ['AT', 'DK', 'LI']) {
+    const weights = rates.filter(r => r.Iso === iso && r.Method === tracked).map(r => r.MaxWeight);
+    assert.deepEqual(weights, ['500', '1000'], iso);
+  }
+});
