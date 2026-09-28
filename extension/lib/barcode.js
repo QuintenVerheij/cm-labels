@@ -2,7 +2,7 @@
 //   <cml-barcode type="code128" value="{ID}" height="8mm" module="0.25mm" text="true"></cml-barcode>
 //   <cml-barcode type="qrcode" value="https://www.cardmarket.com/en/Magic/Orders/{ID}" size="14mm"></cml-barcode>
 // Attributes: type (a bwip-js bcid: code128, code39, ean13, qrcode, datamatrix, pdf417, ...; default code128),
-// value, module (width of one bar/module in mm; default 0.25mm = 2 dots at 203 dpi), height (linear codes, mm;
+// value, module (width of one bar/module in mm; default 0.25mm = 2 dots at 203 dpi, where one dot is 0.125mm), height (linear codes, mm;
 // default 8mm), size (2D codes: total width in mm, instead of module), quiet (quiet zone in modules; default 10
 // for linear, 4 for 2D), text ("true" = the value under the bars, or your own text).
 // The SVG has shape-rendering crispEdges, so the bars stay sharp on a thermal printer. A value that the barcode
@@ -24,7 +24,7 @@ export function barcodeSvg(a) {
   try { svg = toSVG({ bcid: type, text: value, scale: 1 }); }
   catch (e) { return fail(String(e?.message || e).replace(/^bwipp\.\w+#\d+:\s*/, '')); }
   const [, , vbW, vbH] = (svg.match(/viewBox="([^"]+)"/)?.[1] || '0 0 0 0').split(/\s+/).map(Number);
-  const modules = vbW / 2;                           // bwip-js at scale 1: 2 units per module
+  const modules = twoD && !/pdf417/i.test(type) ? vbW / 2 : vbW;   // bwip-js at scale 1: square 2D codes 2 units per module, linear codes and pdf417 1
   let w = a.size ? mm(a.size, 14) : modules * mm(a.module, 0.25);
   let h = twoD ? (a.height ? mm(a.height, w) : w * vbH / vbW) : mm(a.height, 8);
   const quiet = (+a.quiet >= 0 && a.quiet !== '' ? +a.quiet : twoD ? 4 : 10) * (w / modules);
