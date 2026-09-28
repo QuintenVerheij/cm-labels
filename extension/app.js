@@ -31,9 +31,10 @@ async function loadData() {
 async function run(name, fn) {
   if (state.job) return;
   state.job = name; state.error = null; state.progress = null; render();
+  await ext.storage.session?.set({ runLive: Date.now() }).catch(() => {});   // background.js does not reload this page while set
   try { await fn(); }
   catch (e) { state.error = e.message; log(`${name} FAILED: ${e.message}`); }
-  finally { state.job = null; state.progress = null; state.login = false; render(); }
+  finally { state.job = null; state.progress = null; state.login = false; await ext.storage.session?.remove('runLive').catch(() => {}); render(); }
 }
 
 // the order numbers in the "Specific order numbers" field (10 digits each), or null when it is empty
@@ -118,7 +119,7 @@ function renderPlan() {
   const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}`;
   if (key !== lastKey) {
     lastKey = key;
-    $('#resulttitle').textContent = `Breakdown: ${runScope(state.only, 'paid orders')}, loaded ${state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })} (${runAge(state.loadedAt)})`;
+    $('#resulttitle').textContent = `Breakdown: ${runScope(state.only, `${(state.list || 'Paid').toLowerCase()} orders`)}, loaded ${state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })} (${runAge(state.loadedAt)})`;
     const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0);
     $('#chips').innerHTML = [`${p.count} sale(s)`, `${p.print.length} address label(s)`, `${nStamps} stamp(s)`, `${p.tracked.length} tracked`, `${p.skipped.length} by hand`].map(c => `<span class="chip">${c}</span>`).join('');
     $('#stamps').innerHTML = p.stamps.length ? `<thead><tr><th>Code</th><th>Country</th><th class="num">Weight</th><th class="num">Qty</th><th>Sales</th></tr></thead><tbody>${p.stamps.map(g => `<tr><td class="mono">${g.code}</td><td>${esc(g.country)}</td><td class="num">${g.weight} g</td><td class="num">${g.qty}</td><td class="mono">${g.ids.join(', ')}</td></tr>`).join('')}</tbody>` : '<tbody><tr><td class="hint">None.</td></tr></tbody>';
@@ -141,7 +142,8 @@ function renderPlan() {
   const nCodes = p.stamps.length, nLabels = p.tracked.filter(t => !t.error).length;
   $('#pickcodes').disabled = busy || !nCodes; if (!nCodes) $('#pickcodes').checked = false;
   $('#picklabels').disabled = busy || !nLabels; if (!nLabels) $('#picklabels').checked = false;
-  $('#cart').disabled = busy || !($('#pickcodes').checked || $('#picklabels').checked);
+  $('#cart').disabled = busy || !paid || !($('#pickcodes').checked || $('#picklabels').checked);
+  $('#cart').title = paid ? '' : 'Only after a load of the Paid list';
   const c = state.cart;
   $('#cartresult').hidden = !c || c.running;
   if (c && !c.running) {
@@ -336,7 +338,8 @@ $('#previews').addEventListener('click', e => {
 for (const id of ['#pickcodes', '#picklabels']) $(id).onchange = () => render();
 $('#cart').onclick = () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
-  if (!withCodes && !withLabels) return;
+  if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
+  if (state.cart?.merged && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
   run('Adding to PostNL cart', () => cart(withCodes, withLabels));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });

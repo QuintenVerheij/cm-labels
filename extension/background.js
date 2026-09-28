@@ -6,13 +6,20 @@
 //    also keeps a service worker awake while a run goes.
 const ext = globalThis.browser ?? globalThis.chrome;
 
+// The app page sets runLive in session storage while a job runs; a reload would end that job.
+const RUN_LIVE_MS = 60 * 60 * 1000;
+async function runLive() {
+  try { const { runLive: at } = await ext.storage.session.get('runLive'); return typeof at === 'number' && Date.now() - at < RUN_LIVE_MS; }
+  catch { return false; }
+}
+
 async function openPage(page, reuse = true) {
   const url = ext.runtime.getURL(page);
   const [open] = reuse ? await ext.tabs.query({ url }) : [];
   if (open) {
     await ext.tabs.update(open.id, { active: true });
     await ext.windows.update(open.windowId, { focused: true });
-    if (page.startsWith('app.html')) await ext.tabs.reload(open.id);   // show the latest run
+    if (page.startsWith('app.html') && !(await runLive())) await ext.tabs.reload(open.id);   // show the latest run
     return open.id;
   }
   return (await ext.tabs.create({ url })).id;
