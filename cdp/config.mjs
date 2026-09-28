@@ -1,0 +1,14 @@
+// methods.psd1 and countries.psd1 stay the one source for the PowerShell and the Node scripts: read them
+// through PowerShell once and convert to JSON.
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+
+export function loadConfig(root) {
+  const ps = `$m = Import-PowerShellDataFile '${path.join(root, 'methods.psd1')}'; $c = Import-PowerShellDataFile '${path.join(root, 'countries.psd1')}';` +
+    `[Console]::OutputEncoding = [Text.Encoding]::UTF8; ConvertTo-Json -Depth 5 -Compress @{ methods = $m; countries = $c }`;
+  const out = execFileSync('powershell.exe', ['-NoProfile', '-Command', ps], { encoding: 'utf8' });
+  const { methods, countries } = JSON.parse(out);
+  // countries: ISO -> [Cardmarket English name, PostNL Dutch name, postcode regex?]
+  const byName = Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso]));
+  return { methods, countries, byName };
+}

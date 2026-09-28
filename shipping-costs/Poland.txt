@@ -1,0 +1,25 @@
+﻿TO: Poland
+Letter	No	25,00 €	20	2,11 €	2,41 €	10
+Brievenbuspakje met track & trace (Tracked Letterbox packet)	Yes	150,00 €	500	11,95 €	12,45 €	10
+Brievenbuspakje met track & trace (Tracked Letterbox packet)	Yes	150,00 €	1000	14,95 €	15,45 €	10
+Klein pakket aangetekend (Registered packet) R - Insured up to 50€	Yes	150,00 €	500	15,90 €	16,90 €	10
+Klein pakket aangetekend (Registered packet) - Insured up to 50€	Yes	150,00 €	1000	16,45 €	17,45 €	10
+Klein pakket aangetekend (Registered packet) - Insured up to 50€	Yes	150,00 €	2000	17,30 €	18,30 €	10
+Tracked Parcel (Standaard pakket)	Yes	150,00 €	2000	18,05 €	19,05 €	10
+Registered Parcel (Pakket aangetekend € 500)	Yes	500,00 €	2000	23,05 €	24,05 €	10
+Registered Parcel (Pakket aangetekend € 500)	Yes	500,00 €	5000	29,30 €	30,30 €	10
+Registered Parcel (Pakket aangetekend € 500)	Yes	500,00 €	10000	35,60 €	36,60 €	10
+Registered Parcel (Pakket aangetekend € 500)	Yes	500,00 €	20000	45,30 €	46,30 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	2.500,00 €	20000	99,00 €	100,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	5.000,00 €	20000	149,00 €	150,00 €	10
+Insured Delivery (Verzekerd pakket € 5.500)	Yes	5.500,00 €	2000	33,05 €	34,05 €	10
+Insured Delivery (Verzekerd pakket € 5.500)	Yes	5.500,00 €	5000	39,30 €	40,30 €	10
+Insured Delivery (Verzekerd pakket € 5.500)	Yes	5.500,00 €	10000	45,60 €	46,60 €	10
+Insured Delivery (Verzekerd pakket € 5.500)	Yes	5.500,00 €	20000	55,30 €	56,30 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	10.000,00 €	20000	249,00 €	250,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	20.000,00 €	20000	449,00 €	450,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	50.000,00 €	20000	1.049,00 €	1.050,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	100.000,00 €	20000	2.049,00 €	2.050,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	200.000,00 €	20000	4.049,00 €	4.050,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	500.000,00 €	20000	10.049,00 €	10.050,00 €	10
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	1.000.000,00 €	20000	20.049,00 €	20.050,00 €	10

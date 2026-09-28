@@ -1,0 +1,20 @@
+﻿TO: Netherlands
+Brief	No	25,00 €	20	1,40 €	1,70 €	5
+Brief	No	25,00 €	50	2,80 €	3,10 €	5
+Brief	No	25,00 €	350	4,35 €	4,85 €	5
+Brievenbuspakje+	Yes	200,00 €	2000	5,70 €	6,20 €	5
+Pakket	Yes	100,00 €	10000	8,75 €	9,75 €	5
+Pakket	Yes	100,00 €	23000	18,75 €	19,75 €	5
+Aangetekend Pakket	Yes	500,00 €	10000	12,55 €	13,55 €	5
+Aangetekend Pakket	Yes	500,00 €	23000	22,55 €	23,55 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	2.500,00 €	20000	99,00 €	100,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	5.000,00 €	20000	149,00 €	150,00 €	5
+Pakket met Verzekerservice	Yes	5.500,00 €	10000	17,15 €	18,15 €	5
+Pakket met Verzekerservice	Yes	5.500,00 €	23000	27,15 €	28,15 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	10.000,00 €	20000	249,00 €	250,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	20.000,00 €	20000	449,00 €	450,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	50.000,00 €	20000	1.049,00 €	1.050,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	100.000,00 €	20000	2.049,00 €	2.050,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	200.000,00 €	20000	4.049,00 €	4.050,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	500.000,00 €	20000	10.049,00 €	10.050,00 €	5
+SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance	Yes	1.000.000,00 €	20000	20.049,00 €	20.050,00 €	5

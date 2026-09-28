@@ -1,0 +1,3 @@
+bwip-js 4.11.4 (MIT), unchanged copy of dist/bwip-js.mjs and dist/bwipp.mjs from the npm package
+https://www.npmjs.com/package/bwip-js/v/4.11.4  -  https://github.com/metafloor/bwip-js
+Barcode Writer in Pure PostScript: https://github.com/bwipp/postscriptbarcode (MIT)

@@ -1,0 +1,154 @@
+// Based on cdp/plan.mjs (same rules); the extension adds the label fields for the ZPL template (Fields).
+// What to do with each sale: stamp (70x40 label + postzegelcode), PostNL tracked label, or by hand.
+// The address rules are the ones tested in order-tracked.ps1 (NL house number + suffix keys, street/extra
+// split and PostNL's extra fields outside NL).
+
+export const Norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[^a-z0-9]/g, '');
+// House number suffix compare key: letters and digits only, upper case ("A-1", "a 1", "A/1" -> "A1"; "t/o" -> "TO").
+export const SuffixKey = s => String(s ?? '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+const THRESHOLD = 25;   // an untracked sale at or above this article value is suspicious: skip it
+
+// A line with one of these words is extra (apartment, building, c/o), even when it ends in a number.
+const ExtraWords = /(^|[\s,.])(app(artement)?|appt?|apt|r[eé]sidence|b[aâ]t(iment)?|[eé]tage|etg|escalier|piso|puerta|escalera|esc|planta|int|interno|scala|c\/o|p\/a|bus|bo[iî]te|flat|stock|whg|wohnung|hinterhaus|vorderhaus)([\s,.:]|\d|$)/i;
+// Extra text -> PostNL's extra fields (35 characters each), split at key words, text kept as written.
+const ExtraFields = {
+  Verdieping: /(^|[\s,])(\d+\s*(e|er|re|[eè]me|º|°)?\s*)?([eé]tage|etg|piso|planta|stock|floor)([\s,.:]|\d|$)/i,
+  Flat: /(^|[\s,])(app(artement)?|appt?|apt|flat|whg|wohnung|int|interno|bus|bo[iî]te)([\s,.:]|\d|$)/i,
+  Trap: /(^|[\s,])(escalier|escalera|esc|scala|stiege)([\s,.:]|\d|$)/i,
+  Deur: /(^|[\s,])(porte|puerta|door|t[uü]r)([\s,.:]|\d|$)/i,
+};
+
+export function splitExtra(text) {
+  const out = { Gebouw: [], Verdieping: [], Flat: [], Trap: [], Deur: [] };
+  for (const part of String(text).split(',').map(s => s.trim()).filter(Boolean)) {
+    const cuts = new Set([0, part.length]);
+    for (const re of Object.values(ExtraFields)) {
+      for (const m of part.matchAll(new RegExp(re.source, 'gi'))) cuts.add(m.index + (m[0].length - m[0].replace(/^[\s,]+/, '').length));
+    }
+    const c = [...cuts].sort((a, b) => a - b);
+    for (let i = 0; i < c.length - 1; i++) {
+      const piece = part.slice(c[i], c[i + 1]).replace(/^[\s,]+|[\s,]+$/g, '');
+      if (!piece) continue;
+      const f = Object.keys(ExtraFields).find(k => { const m = piece.match(ExtraFields[k]); return m && m.index === 0; }) || 'Gebouw';
+      out[f].push(piece);
+    }
+  }
+  return Object.fromEntries(Object.entries(out).filter(([, v]) => v.length).map(([k, v]) => [k, v.join(', ')]));
+}
+
+// Street line -> street, number, suffix; extra lines + leftovers -> PostNL extra fields. FR and LU write the
+// number first ("12 rue de la Paix"), the others last. Cardmarket marks the street line (.Street) and the
+// extra lines (.Extra); the street line is tried first.
+export function splitStreet(iso, street, extras) {
+  const first = /^(?<nr>\d{1,5})\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z]))?\s*,?\s+(?<street>\D.*)$/;
+  const last = /^(?<street>.*?\D)[\s,]+(?<nr>\d{1,5})\s*(?<ext>bis|ter|quater|[A-Za-z](?![A-Za-z]))?(?<more>.*)$/;
+  const order = ['FR', 'LU'].includes(iso) ? [first, last] : [last, first];
+  const lines = [street, ...extras].filter(Boolean);
+  for (const re of order) {
+    for (let i = 0; i < lines.length; i++) {
+      const w = lines[i].match(ExtraWords);
+      if (w && w.index === 0) continue;
+      const head = w ? lines[i].slice(0, w.index) : lines[i];
+      const tail = w ? lines[i].slice(w.index).replace(/^[\s,]+|[\s,]+$/g, '') : '';
+      const m = head.trim().match(re);
+      if (!m) continue;
+      const extra = lines.filter((_, j) => j !== i);
+      const more = [String(m.groups.more ?? '').replace(/^[\s,\-/]+|[\s,\-/]+$/g, ''), tail].filter(Boolean).join(' ');
+      if (more) extra.push(more);
+      const fields = splitExtra(extra.join(', '));
+      const long = Object.entries(fields).filter(([, v]) => v.length > 35);
+      if (long.length) throw new Error(`extra address text too long for PostNL's ${long.map(([k]) => k).join(', ')} field (35 characters): ${long.map(([, v]) => v).join(' | ')}`);
+      return { Street: m.groups.street.replace(/^[\s,]+|[\s,]+$/g, ''), Nr: m.groups.nr, Ext: m.groups.ext || '', Extra: extra.join(', '), Fields: fields };
+    }
+  }
+  return null;
+}
+
+function splitName(n) {
+  const w = String(n).trim().split(/\s+/);
+  if (w.length < 2) throw new Error(`name '${n}' has one word; PostNL needs a first and a last name`);
+  return [w[0], w.slice(1).join(' ')];
+}
+
+// NL: street, house number (1-5 digits), then up to two suffix parts (huisletter and/or toevoeging). If the
+// first split gives a key longer than BAG allows (letter + 4), the street holds digits: take the last number.
+function splitNL(line) {
+  const rest = '(?<rest>(?:\\s*[-/.]?\\s*[A-Za-z0-9]{1,6}){0,2})\\s*$';
+  for (const street of ['(?<street>.+?)', '(?<street>.+)']) {
+    const m = line.match(new RegExp(`^${street}\\s+(?<nr>\\d{1,5})${rest}`));
+    if (m && SuffixKey(m.groups.rest).length <= 5) return { Street: m.groups.street.trim(), Number: m.groups.nr, Suffix: m.groups.rest.trim(), SuffixKey: SuffixKey(m.groups.rest) };
+  }
+  throw new Error(`no house number (+ suffix of at most 5 letters/digits) at the end of '${line}'`);
+}
+
+function trackedPlan(s, m, cfg) {
+  const p = { Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, Seen: m.Seen || '', Grams: s.grams, Phone: s.phone || '', Email: s.email || '', warnings: [] };
+  const c = cfg.countries[s.iso];
+  p.Country = c?.[1];
+  if (m.Only && m.Only !== s.iso) throw new Error(`method '${s.methodName}' is for ${m.Only} only, sale goes to ${s.iso}`);
+  if (!s.grams) throw new Error("no 'max. NNNg' in the method");
+  if (!c || c.length < 3) throw new Error(`country '${s.country}' has no postcode pattern in countries.psd1 (EU only)`);
+  [p.First, p.Last] = splitName(s.name);
+  const pcm = s.city.match(new RegExp(`^(?<pc>${c[2]})\\s+(?<town>.+)$`));
+  if (!pcm) throw new Error(`line '${s.city}' does not start with a ${s.iso} postcode`);
+  p.Postcode = pcm.groups.pc; p.Town = pcm.groups.town.trim();
+  if (s.iso === 'NL') {
+    if (s.extras.length) p.warnings.push(`extra address line(s) '${s.extras.join(', ')}' are not sent: the NL form has no field for them`);
+    Object.assign(p, splitNL(s.street));
+    p.Postcode = p.Postcode.replace(/\s/g, '').toUpperCase();
+    if (p.Phone) p.warnings.push('the NL form has no phone field; the phone number is not sent');
+  } else {
+    if (p.Town.length > 35) throw new Error(`city '${p.Town}' is longer than 35 characters (PostNL limit)`);
+    p.AddressLine = [...s.extras, s.street].filter(Boolean).join(', ');
+    p.Manual = splitStreet(s.iso, s.street, s.extras);
+    if (!p.Manual) p.warnings.push('no street + house number found; only PostNL address suggestions can be used');
+  }
+  if (p.Seen === 'guess') p.warnings.push('the PostNL mapping for this method is a guess (methods.psd1); check the choice');
+  return p;
+}
+
+// Fields for the HTML label template (ID = the sale id, e.g. for a barcode). The Cardmarket city line is split with the postcode pattern of the
+// country ("3028BX Rotterdam" -> POSTCODE 3028BX, CITY Rotterdam); without a match CITY is the whole line.
+function labelFields(s, cfg) {
+  const re = cfg.countries[s.iso]?.[2];
+  const m = re && s.city.match(new RegExp(`^(?<pc>${re})\\s+(?<town>.+)$`));
+  return { NAME: s.name, ADDRESS: [...s.extras, s.street].filter(Boolean), POSTCODE: m ? m.groups.pc : '', CITY: m ? m.groups.town.trim() : s.city, COUNTRY: s.country, ID: String(s.id ?? '') };
+}
+
+// sales: from cardmarket.readSales. Returns the breakdown for the UI and the cart.
+export function planSales(sales, cfg) {
+  const stamps = new Map(), print = [], tracked = [], skipped = [], all = [];
+  for (const r of sales) {
+    if (r.error) { skipped.push({ id: r.id, reason: r.error }); continue; }
+    const byKind = k => r.lines.filter(l => l.kind === k).map(l => l.text);
+    const s = { ...r, name: byKind('Name')[0] || '', extras: byKind('Extra'), street: byKind('Street')[0] || '', city: byKind('City')[0] || '', country: byKind('Country')[0] || '' };
+    s.address = r.lines.map(l => l.text);
+    s.iso = cfg.byName[s.country] || null;
+    const m = cfg.methods[r.methodName];
+    s.service = m ? m.Service : (r.tracked === false ? 'stamp' : 'unknown');
+    all.push(s);
+    const base = { id: s.id, iso: s.iso, value: s.value, method: s.method, address: s.address };
+    if (s.service === 'stamp') {
+      if (s.value != null && s.value >= THRESHOLD) { skipped.push({ ...base, reason: `untracked, article value ${s.value} >= ${THRESHOLD}; check the sale` }); continue; }
+      print.push({ Id: s.id, Value: s.value, Method: s.method, Address: s.address, Skip: null, Grams: s.grams, Iso: s.iso, Fields: labelFields(s, cfg) });
+      let reason = null;
+      if (!s.iso) reason = `country '${s.country}' is not in countries.psd1; buy its stamp by hand`;
+      else if (!s.grams || s.grams > 50) reason = `no stamp weight up to 50 g in '${s.method}'; buy its stamp by hand`;
+      if (reason) { skipped.push({ ...base, reason: 'label printed, stamp by hand: ' + reason }); continue; }
+      const w = s.grams <= 20 ? 20 : 50, code = `${s.iso}-${w}`;
+      if (!stamps.has(code)) stamps.set(code, { code, iso: s.iso, weight: w, country: cfg.countries[s.iso][1], qty: 0, ids: [] });
+      const g = stamps.get(code); g.qty++; g.ids.push(s.id);
+    } else if (s.service === 'postnl') {
+      try { tracked.push({ ...trackedPlan(s, m, cfg), address: s.address, method: s.method, value: s.value }); }
+      catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [] }); }
+    } else {
+      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : `unknown tracked method '${r.methodName}': add it to methods.psd1` });
+    }
+  }
+  const stampList = [...stamps.values()].sort((a, b) => (a.iso !== 'NL') - (b.iso !== 'NL') || a.iso.localeCompare(b.iso) || a.weight - b.weight);
+  return {
+    stamps: stampList, stampLine: stampList.map(g => `${g.code}x${g.qty}`).join(' '),
+    print, tracked, skipped, count: sales.length,
+  };
+}

@@ -1,0 +1,747 @@
+﻿Iso,Country,Method,Tracked,MaxValue,MaxWeight,StampPrice,Price,Days
+AT,Austria,Letter,False,25.00,20,2.11,2.41,9
+AT,Austria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.95,11.45,9
+AT,Austria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,9
+AT,Austria,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.60,13.60,9
+AT,Austria,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,13.65,14.65,9
+AT,Austria,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,14.70,15.70,9
+AT,Austria,Tracked Parcel (Standaard pakket),True,150.00,2000,15.80,16.80,9
+AT,Austria,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,20.80,21.80,9
+AT,Austria,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,27.30,28.30,9
+AT,Austria,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,33.50,34.50,9
+AT,Austria,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,43.30,44.30,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,9
+AT,Austria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,30.80,31.80,9
+AT,Austria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,37.30,38.30,9
+AT,Austria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,43.50,44.50,9
+AT,Austria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,53.30,54.30,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,9
+AT,Austria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,9
+BE,Belgium,Letter,False,25.00,20,2.11,2.41,7
+BE,Belgium,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,9.95,10.45,7
+BE,Belgium,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.45,10.95,7
+BE,Belgium,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,500,15.90,16.90,7
+BE,Belgium,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,16.45,17.45,7
+BE,Belgium,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,7
+BE,Belgium,Tracked Parcel (Standaard pakket),True,150.00,2000,13.20,14.20,7
+BE,Belgium,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,7
+BE,Belgium,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,18.20,19.20,7
+BE,Belgium,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,25.20,26.20,7
+BE,Belgium,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,30.70,31.70,7
+BE,Belgium,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,40.20,41.20,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,7
+BE,Belgium,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,28.20,29.20,7
+BE,Belgium,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,35.20,36.20,7
+BE,Belgium,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,40.70,41.70,7
+BE,Belgium,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,50.20,51.20,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,7
+BE,Belgium,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,7
+BG,Bulgaria,Letter,False,25.00,20,2.11,2.41,16
+BG,Bulgaria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,16
+BG,Bulgaria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,16
+BG,Bulgaria,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,16
+BG,Bulgaria,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,16
+BG,Bulgaria,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,16
+BG,Bulgaria,Tracked Parcel (Standaard pakket),True,150.00,2000,36.80,37.80,16
+BG,Bulgaria,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,41.80,42.80,16
+BG,Bulgaria,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,49.00,50.00,16
+BG,Bulgaria,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,55.10,56.10,16
+BG,Bulgaria,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,64.40,65.40,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,16
+BG,Bulgaria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,51.80,52.80,16
+BG,Bulgaria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,59.00,60.00,16
+BG,Bulgaria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,65.10,66.10,16
+BG,Bulgaria,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,74.40,75.40,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,16
+BG,Bulgaria,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,16
+HR,Croatia,Letter,False,25.00,20,2.11,2.41,13
+HR,Croatia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,13
+HR,Croatia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,13
+HR,Croatia,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,13
+HR,Croatia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,13
+HR,Croatia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,13
+HR,Croatia,Tracked Parcel (Standaard pakket),True,150.00,2000,21.80,22.80,13
+HR,Croatia,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,26.80,27.80,13
+HR,Croatia,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,33.50,34.50,13
+HR,Croatia,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,40.70,41.70,13
+HR,Croatia,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,50.00,51.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,13
+HR,Croatia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,36.80,37.80,13
+HR,Croatia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,43.50,44.50,13
+HR,Croatia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,50.70,51.70,13
+HR,Croatia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,60.00,61.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,13
+HR,Croatia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,13
+CY,Cyprus,Letter,False,25.00,20,2.11,2.41,19
+CY,Cyprus,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,19
+CY,Cyprus,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,19
+CY,Cyprus,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,19
+CY,Cyprus,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,19
+CY,Cyprus,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,19
+CY,Cyprus,Tracked Parcel (Standaard pakket),True,150.00,2000,22.30,23.30,19
+CY,Cyprus,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,27.30,28.30,19
+CY,Cyprus,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,34.50,35.50,19
+CY,Cyprus,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,44.80,45.80,19
+CY,Cyprus,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,72.70,73.70,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,19
+CY,Cyprus,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,37.30,38.30,19
+CY,Cyprus,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,44.50,45.50,19
+CY,Cyprus,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,54.80,55.80,19
+CY,Cyprus,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,82.70,83.70,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,19
+CY,Cyprus,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,19
+CZ,Czech Republic,Letter,False,25.00,20,2.11,2.41,10
+CZ,Czech Republic,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,10
+CZ,Czech Republic,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,10
+CZ,Czech Republic,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,10
+CZ,Czech Republic,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,10
+CZ,Czech Republic,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,10
+CZ,Czech Republic,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,10
+CZ,Czech Republic,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,10
+CZ,Czech Republic,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,10
+CZ,Czech Republic,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,10
+CZ,Czech Republic,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,10
+CZ,Czech Republic,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,10
+CZ,Czech Republic,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,10
+CZ,Czech Republic,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,10
+CZ,Czech Republic,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,10
+CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,10
+DK,Denmark,Letter,False,25.00,20,2.11,2.41,11
+DK,Denmark,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.95,11.45,11
+DK,Denmark,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,11
+DK,Denmark,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.60,13.60,11
+DK,Denmark,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,13.65,14.65,11
+DK,Denmark,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,14.70,15.70,11
+DK,Denmark,Tracked Parcel (Standaard pakket),True,150.00,2000,15.80,16.80,11
+DK,Denmark,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,20.80,21.80,11
+DK,Denmark,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,27.30,28.30,11
+DK,Denmark,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,33.50,34.50,11
+DK,Denmark,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,43.30,44.30,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,11
+DK,Denmark,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,30.80,31.80,11
+DK,Denmark,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,37.30,38.30,11
+DK,Denmark,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,43.50,44.50,11
+DK,Denmark,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,53.30,54.30,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,11
+DK,Denmark,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,11
+EE,Estonia,Letter,False,25.00,20,2.11,2.41,13
+EE,Estonia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,13
+EE,Estonia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,13
+EE,Estonia,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,13
+EE,Estonia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,13
+EE,Estonia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,13
+EE,Estonia,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,13
+EE,Estonia,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,13
+EE,Estonia,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,13
+EE,Estonia,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,13
+EE,Estonia,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,13
+EE,Estonia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,13
+EE,Estonia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,13
+EE,Estonia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,13
+EE,Estonia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,13
+EE,Estonia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,13
+FI,Finland,Letter,False,25.00,20,2.11,2.41,11
+FI,Finland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,11
+FI,Finland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,11
+FI,Finland,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,11
+FI,Finland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,11
+FI,Finland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,11
+FI,Finland,Tracked Parcel (Standaard pakket),True,150.00,2000,21.80,22.80,11
+FI,Finland,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,26.80,27.80,11
+FI,Finland,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,33.50,34.50,11
+FI,Finland,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,40.70,41.70,11
+FI,Finland,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,50.00,51.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,11
+FI,Finland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,36.80,37.80,11
+FI,Finland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,43.50,44.50,11
+FI,Finland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,50.70,51.70,11
+FI,Finland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,60.00,61.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,11
+FI,Finland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,11
+FR,France,Letter,False,25.00,20,2.11,2.41,8
+FR,France,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.35,10.85,8
+FR,France,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.95,11.45,8
+FR,France,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.10,13.10,8
+FR,France,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,12.60,13.60,8
+FR,France,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,13.05,14.05,8
+FR,France,Tracked Parcel (Standaard pakket),True,150.00,2000,13.55,14.55,8
+FR,France,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,18.55,19.55,8
+FR,France,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,25.70,26.70,8
+FR,France,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,31.45,32.45,8
+FR,France,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,41.20,42.20,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,8
+FR,France,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,28.55,29.55,8
+FR,France,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,35.70,36.70,8
+FR,France,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,41.45,42.45,8
+FR,France,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,51.20,52.20,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,8
+FR,France,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,8
+DE,Germany,Letter,False,25.00,20,2.11,2.41,6
+DE,Germany,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.35,10.85,6
+DE,Germany,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.95,11.45,6
+DE,Germany,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.10,13.10,6
+DE,Germany,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,12.60,13.60,6
+DE,Germany,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,13.05,14.05,6
+DE,Germany,Tracked Parcel (Standaard pakket),True,150.00,2000,13.55,14.55,6
+DE,Germany,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,18.55,19.55,6
+DE,Germany,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,25.70,26.70,6
+DE,Germany,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,31.45,32.45,6
+DE,Germany,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,41.20,42.20,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,6
+DE,Germany,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,28.55,29.55,6
+DE,Germany,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,35.70,36.70,6
+DE,Germany,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,41.45,42.45,6
+DE,Germany,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,51.20,52.20,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,6
+DE,Germany,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,6
+GR,Greece,Letter,False,25.00,20,2.11,2.41,20
+GR,Greece,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,20
+GR,Greece,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,15.05,15.55,20
+GR,Greece,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,20
+GR,Greece,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,17.75,18.75,20
+GR,Greece,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,21.80,22.80,20
+GR,Greece,Tracked Parcel (Standaard pakket),True,150.00,2000,22.30,23.30,20
+GR,Greece,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,27.30,28.30,20
+GR,Greece,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,34.50,35.50,20
+GR,Greece,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,44.80,45.80,20
+GR,Greece,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,72.70,73.70,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,20
+GR,Greece,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,37.30,38.30,20
+GR,Greece,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,44.50,45.50,20
+GR,Greece,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,54.80,55.80,20
+GR,Greece,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,82.70,83.70,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,20
+GR,Greece,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,20
+HU,Hungary,Letter,False,25.00,20,2.11,2.41,9
+HU,Hungary,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,9
+HU,Hungary,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,9
+HU,Hungary,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,9
+HU,Hungary,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,9
+HU,Hungary,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,9
+HU,Hungary,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,9
+HU,Hungary,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,9
+HU,Hungary,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,9
+HU,Hungary,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,9
+HU,Hungary,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,9
+HU,Hungary,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,9
+HU,Hungary,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,9
+HU,Hungary,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,9
+HU,Hungary,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,9
+HU,Hungary,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,9
+IS,Iceland,Letter,False,25.00,20,2.11,2.41,16
+IS,Iceland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,16
+IS,Iceland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,16
+IS,Iceland,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,16
+IS,Iceland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,16
+IS,Iceland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,16
+IS,Iceland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,16
+IE,Ireland,Letter,False,25.00,20,2.11,2.41,12
+IE,Ireland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.55,12.05,12
+IE,Ireland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,13.45,13.95,12
+IE,Ireland,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,14.15,15.15,12
+IE,Ireland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,14.80,15.80,12
+IE,Ireland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,15.70,16.70,12
+IE,Ireland,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,12
+IE,Ireland,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,12
+IE,Ireland,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,12
+IE,Ireland,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,12
+IE,Ireland,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,12
+IE,Ireland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,12
+IE,Ireland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,12
+IE,Ireland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,12
+IE,Ireland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,12
+IE,Ireland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,12
+IT,Italy,Letter,False,25.00,20,2.11,2.41,11
+IT,Italy,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.35,10.85,11
+IT,Italy,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.95,11.45,11
+IT,Italy,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.10,13.10,11
+IT,Italy,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,12.60,13.60,11
+IT,Italy,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,13.05,14.05,11
+IT,Italy,Tracked Parcel (Standaard pakket),True,150.00,2000,13.55,14.55,11
+IT,Italy,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,18.55,19.55,11
+IT,Italy,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,25.70,26.70,11
+IT,Italy,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,31.45,32.45,11
+IT,Italy,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,41.20,42.20,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,11
+IT,Italy,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,28.55,29.55,11
+IT,Italy,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,35.70,36.70,11
+IT,Italy,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,41.45,42.45,11
+IT,Italy,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,51.20,52.20,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,11
+IT,Italy,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,11
+LV,Latvia,Letter,False,25.00,20,2.11,2.41,13
+LV,Latvia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,13
+LV,Latvia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,13
+LV,Latvia,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,13
+LV,Latvia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,13
+LV,Latvia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,13
+LV,Latvia,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,13
+LV,Latvia,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,13
+LV,Latvia,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,13
+LV,Latvia,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,13
+LV,Latvia,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,13
+LV,Latvia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,13
+LV,Latvia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,13
+LV,Latvia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,13
+LV,Latvia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,13
+LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,13
+LI,Liechtenstein,Letter,False,25.00,20,2.11,2.41,12
+LI,Liechtenstein,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.95,11.45,12
+LI,Liechtenstein,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,12
+LI,Liechtenstein,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.60,13.60,12
+LI,Liechtenstein,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,13.65,14.65,12
+LI,Liechtenstein,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,14.70,15.70,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,12
+LI,Liechtenstein,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,12
+LT,Lithuania,Letter,False,25.00,20,2.11,2.41,14
+LT,Lithuania,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,14
+LT,Lithuania,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,14
+LT,Lithuania,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,14
+LT,Lithuania,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,14
+LT,Lithuania,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,14
+LT,Lithuania,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,14
+LT,Lithuania,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,14
+LT,Lithuania,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,14
+LT,Lithuania,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,14
+LT,Lithuania,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,14
+LT,Lithuania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,14
+LT,Lithuania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,14
+LT,Lithuania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,14
+LT,Lithuania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,14
+LT,Lithuania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,14
+LU,Luxembourg,Letter,False,25.00,20,2.11,2.41,7
+LU,Luxembourg,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.35,10.85,7
+LU,Luxembourg,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.95,11.45,7
+LU,Luxembourg,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.10,13.10,7
+LU,Luxembourg,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,12.60,13.60,7
+LU,Luxembourg,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,13.05,14.05,7
+LU,Luxembourg,Tracked Parcel (Standaard pakket),True,150.00,2000,13.20,14.20,7
+LU,Luxembourg,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,18.20,19.20,7
+LU,Luxembourg,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,25.20,26.20,7
+LU,Luxembourg,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,30.70,31.70,7
+LU,Luxembourg,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,40.20,41.20,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,7
+LU,Luxembourg,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,28.20,29.20,7
+LU,Luxembourg,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,35.20,36.20,7
+LU,Luxembourg,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,40.70,41.70,7
+LU,Luxembourg,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,50.20,51.20,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,7
+LU,Luxembourg,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,7
+MT,Malta,Letter,False,25.00,20,2.11,2.41,16
+MT,Malta,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,16
+MT,Malta,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,15.05,15.55,16
+MT,Malta,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,16
+MT,Malta,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,17.75,18.75,16
+MT,Malta,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,21.80,22.80,16
+MT,Malta,Tracked Parcel (Standaard pakket),True,150.00,2000,22.30,23.30,16
+MT,Malta,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,27.30,28.30,16
+MT,Malta,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,34.50,35.50,16
+MT,Malta,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,44.80,45.80,16
+MT,Malta,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,72.70,73.70,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,16
+MT,Malta,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,37.30,38.30,16
+MT,Malta,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,44.50,45.50,16
+MT,Malta,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,54.80,55.80,16
+MT,Malta,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,82.70,83.70,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,16
+MT,Malta,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,16
+NL,Netherlands,Brief,False,25.00,20,1.40,1.70,5
+NL,Netherlands,Brief,False,25.00,50,2.80,3.10,5
+NL,Netherlands,Brief,False,25.00,350,4.35,4.85,5
+NL,Netherlands,Brievenbuspakje+,True,200.00,2000,5.70,6.20,5
+NL,Netherlands,Pakket,True,100.00,10000,8.75,9.75,5
+NL,Netherlands,Pakket,True,100.00,23000,18.75,19.75,5
+NL,Netherlands,Aangetekend Pakket,True,500.00,10000,12.55,13.55,5
+NL,Netherlands,Aangetekend Pakket,True,500.00,23000,22.55,23.55,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,5
+NL,Netherlands,Pakket met Verzekerservice,True,5500.00,10000,17.15,18.15,5
+NL,Netherlands,Pakket met Verzekerservice,True,5500.00,23000,27.15,28.15,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,5
+NL,Netherlands,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,5
+NO,Norway,Letter,False,25.00,20,2.11,2.41,12
+NO,Norway,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,12
+NO,Norway,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,12
+NO,Norway,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,12
+NO,Norway,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,12
+NO,Norway,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,12
+NO,Norway,Tracked Parcel (Standaard pakket),True,150.00,2000,27.50,28.50,12
+NO,Norway,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,32.50,33.50,12
+NO,Norway,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,38.70,39.70,12
+NO,Norway,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,49.00,50.00,12
+NO,Norway,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,69.60,70.60,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,12
+NO,Norway,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,42.50,43.50,12
+NO,Norway,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,48.70,49.70,12
+NO,Norway,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,59.00,60.00,12
+NO,Norway,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,79.60,80.60,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,12
+NO,Norway,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,12
+PL,Poland,Letter,False,25.00,20,2.11,2.41,10
+PL,Poland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,10
+PL,Poland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,10
+PL,Poland,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,10
+PL,Poland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,10
+PL,Poland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,10
+PL,Poland,Tracked Parcel (Standaard pakket),True,150.00,2000,18.05,19.05,10
+PL,Poland,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,23.05,24.05,10
+PL,Poland,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,29.30,30.30,10
+PL,Poland,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,35.60,36.60,10
+PL,Poland,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,45.30,46.30,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,10
+PL,Poland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,33.05,34.05,10
+PL,Poland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,39.30,40.30,10
+PL,Poland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,45.60,46.60,10
+PL,Poland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,55.30,56.30,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,10
+PL,Poland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,10
+PT,Portugal,Letter,False,25.00,20,2.11,2.41,11
+PT,Portugal,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.55,12.05,11
+PT,Portugal,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,13.45,13.95,11
+PT,Portugal,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,14.15,15.15,11
+PT,Portugal,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,14.80,15.80,11
+PT,Portugal,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,15.70,16.70,11
+PT,Portugal,Tracked Parcel (Standaard pakket),True,150.00,2000,15.80,16.80,11
+PT,Portugal,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,20.80,21.80,11
+PT,Portugal,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,27.30,28.30,11
+PT,Portugal,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,33.50,34.50,11
+PT,Portugal,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,43.30,44.30,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,11
+PT,Portugal,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,30.80,31.80,11
+PT,Portugal,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,37.30,38.30,11
+PT,Portugal,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,43.50,44.50,11
+PT,Portugal,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,53.30,54.30,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,11
+PT,Portugal,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,11
+RO,Romania,Letter,False,25.00,20,2.11,2.41,11
+RO,Romania,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,11
+RO,Romania,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,11
+RO,Romania,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,11
+RO,Romania,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,11
+RO,Romania,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,11
+RO,Romania,Tracked Parcel (Standaard pakket),True,150.00,2000,27.50,28.50,11
+RO,Romania,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,32.50,33.50,11
+RO,Romania,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,38.70,39.70,11
+RO,Romania,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,45.90,46.90,11
+RO,Romania,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,53.10,54.10,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,11
+RO,Romania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,42.50,43.50,11
+RO,Romania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,48.70,49.70,11
+RO,Romania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,55.90,56.90,11
+RO,Romania,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,63.10,64.10,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,11
+RO,Romania,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,11
+SK,Slovakia,Letter,False,25.00,20,2.11,2.41,9
+SK,Slovakia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,9
+SK,Slovakia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,9
+SK,Slovakia,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,9
+SK,Slovakia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,9
+SK,Slovakia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,9
+SK,Slovakia,Tracked Parcel (Standaard pakket),True,150.00,2000,21.80,22.80,9
+SK,Slovakia,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,26.80,27.80,9
+SK,Slovakia,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,33.50,34.50,9
+SK,Slovakia,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,40.70,41.70,9
+SK,Slovakia,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,50.00,51.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,9
+SK,Slovakia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,36.80,37.80,9
+SK,Slovakia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,43.50,44.50,9
+SK,Slovakia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,50.70,51.70,9
+SK,Slovakia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,60.00,61.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,9
+SK,Slovakia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,9
+SI,Slovenia,Letter,False,25.00,20,2.11,2.41,10
+SI,Slovenia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,10
+SI,Slovenia,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,10
+SI,Slovenia,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,10
+SI,Slovenia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,10
+SI,Slovenia,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,10
+SI,Slovenia,Tracked Parcel (Standaard pakket),True,150.00,2000,27.50,28.50,10
+SI,Slovenia,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,32.50,33.50,10
+SI,Slovenia,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,38.70,39.70,10
+SI,Slovenia,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,45.90,46.90,10
+SI,Slovenia,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,53.10,54.10,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,10
+SI,Slovenia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,42.50,43.50,10
+SI,Slovenia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,48.70,49.70,10
+SI,Slovenia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,55.90,56.90,10
+SI,Slovenia,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,63.10,64.10,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,10
+SI,Slovenia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,10
+ES,Spain,Letter,False,25.00,20,2.11,2.41,10
+ES,Spain,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.35,10.85,10
+ES,Spain,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.95,11.45,10
+ES,Spain,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.10,13.10,10
+ES,Spain,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,12.60,13.60,10
+ES,Spain,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,13.05,14.05,10
+ES,Spain,Tracked Parcel (Standaard pakket),True,150.00,2000,13.55,14.55,10
+ES,Spain,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,18.55,19.55,10
+ES,Spain,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,25.70,26.70,10
+ES,Spain,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,31.45,32.45,10
+ES,Spain,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,41.20,42.20,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,10
+ES,Spain,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,28.55,29.55,10
+ES,Spain,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,35.70,36.70,10
+ES,Spain,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,41.45,42.45,10
+ES,Spain,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,51.20,52.20,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,10
+ES,Spain,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,10
+SE,Sweden,Letter,False,25.00,20,2.11,2.41,10
+SE,Sweden,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.35,10.85,10
+SE,Sweden,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,10.95,11.45,10
+SE,Sweden,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.10,13.10,10
+SE,Sweden,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,12.60,13.60,10
+SE,Sweden,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,13.05,14.05,10
+SE,Sweden,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,10
+SE,Sweden,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,10
+SE,Sweden,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,10
+SE,Sweden,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,10
+SE,Sweden,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,10
+SE,Sweden,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,10
+SE,Sweden,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,10
+SE,Sweden,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,10
+SE,Sweden,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,10
+SE,Sweden,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,10
+CH,Switzerland,Letter,False,25.00,20,2.11,2.41,8
+CH,Switzerland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,8
+CH,Switzerland,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,14.95,15.45,8
+CH,Switzerland,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,15.90,16.90,8
+CH,Switzerland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,16.45,17.45,8
+CH,Switzerland,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,17.30,18.30,8
+CH,Switzerland,Tracked Parcel (Standaard pakket),True,150.00,2000,27.50,28.50,8
+CH,Switzerland,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,32.50,33.50,8
+CH,Switzerland,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,38.70,39.70,8
+CH,Switzerland,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,49.00,50.00,8
+CH,Switzerland,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,69.60,70.60,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,8
+CH,Switzerland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,42.50,43.50,8
+CH,Switzerland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,48.70,49.70,8
+CH,Switzerland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,59.00,60.00,8
+CH,Switzerland,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,79.60,80.60,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,8
+CH,Switzerland,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,8
+GB,United Kingdom,Letter,False,25.00,20,2.11,2.41,9
+GB,United Kingdom,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.55,12.05,9
+GB,United Kingdom,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,13.45,13.95,9
+GB,United Kingdom,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,14.15,15.15,9
+GB,United Kingdom,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,14.80,15.80,9
+GB,United Kingdom,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,15.70,16.70,9
+GB,United Kingdom,Tracked Parcel (Standaard pakket),True,150.00,2000,20.80,21.80,9
+GB,United Kingdom,Registered Parcel (Pakket aangetekend € 500),True,500.00,2000,25.80,26.80,9
+GB,United Kingdom,Registered Parcel (Pakket aangetekend € 500),True,500.00,5000,32.50,33.50,9
+GB,United Kingdom,Registered Parcel (Pakket aangetekend € 500),True,500.00,10000,39.70,40.70,9
+GB,United Kingdom,Registered Parcel (Pakket aangetekend € 500),True,500.00,20000,49.00,50.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,2500.00,20000,99.00,100.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5000.00,20000,149.00,150.00,9
+GB,United Kingdom,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,2000,35.80,36.80,9
+GB,United Kingdom,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,5000,42.50,43.50,9
+GB,United Kingdom,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,10000,49.70,50.70,9
+GB,United Kingdom,Insured Delivery (Verzekerd pakket € 5.500),True,5500.00,20000,59.00,60.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,10000.00,20000,249.00,250.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,20000.00,20000,449.00,450.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,50000.00,20000,1049.00,1050.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,100000.00,20000,2049.00,2050.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,200000.00,20000,4049.00,4050.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,500000.00,20000,10049.00,10050.00,9
+GB,United Kingdom,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,9
