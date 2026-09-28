@@ -27,7 +27,7 @@
   "Method": "Brievenbuspakje met track & trace (Tracked Letterbox packet)",
   "Tracked": "True",
   "MaxValue": "150.00",
-  "MaxWeight": "500",
+  "MaxWeight": "1000",
   "StampPrice": "11.95",
   "Price": "12.45",
   "Days": "9"
@@ -1622,7 +1622,7 @@
   "Method": "Brievenbuspakje met track & trace (Tracked Letterbox packet)",
   "Tracked": "True",
   "MaxValue": "150.00",
-  "MaxWeight": "500",
+  "MaxWeight": "1000",
   "StampPrice": "11.95",
   "Price": "12.45",
   "Days": "11"
@@ -4427,7 +4427,7 @@
   "Method": "Brievenbuspakje met track & trace (Tracked Letterbox packet)",
   "Tracked": "True",
   "MaxValue": "150.00",
-  "MaxWeight": "500",
+  "MaxWeight": "1000",
   "StampPrice": "11.95",
   "Price": "12.45",
   "Days": "12"

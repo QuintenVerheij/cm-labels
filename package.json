@@ -1,0 +1,11 @@
+{
+  "name": "cm-labels",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "build": "node tools/build-data.mjs",
+    "pack": "node tools/pack.mjs"
+  }
+}

@@ -6,7 +6,11 @@
   const IT = e => (e ? (e.innerText || '').trim() : '');
   const lbl = i => i && (i.closest('label') || i.parentElement);
   const byText = t => [...document.querySelectorAll('button,a')].find(b => (b.getAttribute('aria-label') || b.innerText || '').trim() === t);
-  const byLabel = l => [...document.querySelectorAll('input,textarea')].find(e => e.labels && e.labels[0] && e.labels[0].innerText.trim().startsWith(l));
+  const byLabel = l => {
+    const m = [...document.querySelectorAll('input,textarea')].filter(e => e.labels && e.labels[0] && e.labels[0].innerText.trim().startsWith(l));
+    if (m.length !== 1) throw new Error(`${m.length} fields with a label starting "${l}", expected 1`);
+    return m[0];
+  };
   const countryOptions = () => [...document.querySelectorAll('[role=dialog] span,dialog span,.cdk-overlay-pane span')]
     .filter(e => !e.children.length && e.innerText.trim() && !/resultaten gevonden|Gefilterd/.test(e.innerText));
   // PostNL's cookie wall (a web component with a shadow root, sometimes plain page buttons) blocks the tab until
@@ -21,6 +25,10 @@
     }
     return null;
   };
+  // A click is refused on the payment page and on any button or link whose text speaks of paying or ordering.
+  const NEVER_CLICK = /betal|bestel|afrekenen|pay|order/i;
+  // Only buttons and links are read by text; an address suggestion or a country is the customer's own text ("Norderstedt").
+  const TEXT_CHECKED = new Set(['btn', 'sel', 'manualBtn', 'extraBtn']);
   const suggestionSel = '.pnl-address-suggestion-item';
 
   function find(s) {
@@ -41,7 +49,6 @@
 
   const Q = {
     path: () => location.pathname,
-    host: () => location.host,
     dest: () => (document.body.innerText.split('Wat is de bestemming?')[1] || '').split('Ander land')[0].trim(),
     qty: () => (document.querySelector('.stepper-number-input') || {}).value,
     total: () => (document.body.innerText.split('Totaalbedrag (incl. btw):').pop() || '').split(/Nog iets|Onthouden/)[0].replace(/\s+/g, ''),
@@ -84,8 +91,10 @@
     if (!e) return null;
     e.scrollIntoView({ block: 'center' });
     e.focus();
-    const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(e), 'value').set;
-    set.call(e, text);
+    let proto = Object.getPrototypeOf(e), desc;
+    while (proto && !(desc = Object.getOwnPropertyDescriptor(proto, 'value'))) proto = Object.getPrototypeOf(proto);
+    if (!desc?.set) throw new Error('field has no value setter');
+    desc.set.call(e, text);
     e.dispatchEvent(new Event('input', { bubbles: true }));
     e.dispatchEvent(new Event('change', { bubbles: true }));
     e.dispatchEvent(new FocusEvent('blur'));
@@ -98,15 +107,29 @@
     q: (name, ...args) => Q[name](...args),
     test,
     exists: spec => !!find(spec),
-    click: spec => { const e = find(spec); if (!e) return false; e.click(); return true; },
+    click: spec => {
+      if (location.pathname.endsWith('/betalen')) return false;
+      const e = find(spec);
+      if (!e) return false;
+      if (TEXT_CHECKED.has(spec.k) && NEVER_CLICK.test(e.getAttribute('aria-label') || e.innerText || e.textContent || '')) return false;
+      e.click();
+      return true;
+    },
     cookie: () => { const b = cookieBtn(); if (!b) return false; b.click(); return true; },
     fill,
     setSuffix: i => { const s = document.querySelector('select[formcontrolname=houseNumberSuffix]'); s.selectedIndex = i; s.dispatchEvent(new Event('change', { bubbles: true })); s.dispatchEvent(new FocusEvent('blur')); return s.selectedIndex; },
     // Cart merge: append other tabs' entities (NgRx entity state) with the next numeric ids, last one active.
     mergeOrders: others => {
-      const a = JSON.parse(sessionStorage.getItem('current-order'));
+      const parse = (raw, what) => {
+        let o = null;
+        try { o = JSON.parse(raw); } catch { }
+        if (!o || typeof o !== 'object' || !o.entities || !Array.isArray(o.ids)) throw new Error(`${what} has no valid PostNL cart (current-order)`);
+        return o;
+      };
+      const a = parse(sessionStorage.getItem('current-order'), 'the cart tab');
+      const bs = others.map((s, i) => parse(s, `tab ${i + 2}`));
       let n = Math.max(-1, ...Object.values(a.entities).map(e => e.id)) + 1;
-      for (const s of others) { const b = JSON.parse(s); for (const e of Object.values(b.entities)) { a.entities[String(n)] = { ...e, id: n }; a.ids.push(n); n++; } }
+      for (const b of bs) { for (const e of Object.values(b.entities)) { a.entities[String(n)] = { ...e, id: n }; a.ids.push(n); n++; } }
       a.ids = a.ids.map(Number); a.activeIds = [a.ids[a.ids.length - 1]];
       sessionStorage.setItem('current-order', JSON.stringify(a));
       return a.ids.length;

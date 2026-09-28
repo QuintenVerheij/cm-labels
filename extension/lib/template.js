@@ -5,8 +5,8 @@
 // smaller font when it is too high. Scripts and on... handlers in a template do not run (extension CSP).
 // <cml-barcode ...> becomes an SVG barcode after the fields are filled (see barcode.js).
 import { expandBarcodes } from './barcode.js';
+import { esc } from './esc.js';
 export const FIELDS = ['NAME', 'ADDRESS', 'POSTCODE', 'CITY', 'COUNTRY', 'ID'];
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // Default: the 4 address lines (name, address, postcode + city, country), vertically centred, bold, font size
 // from the label height. Stored as '' so it follows the label size.

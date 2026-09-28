@@ -34,9 +34,11 @@ async function fill(tab, spec, text, what) {
 }
 // PostNL's cookie wall blocks the tab until answered and can pop up at any moment: every wait and click loop
 // of a PostNL tab checks for it (Tab.onPoll) and answers "only needed cookies". cookieWall() also checks at
-// the fixed moments it used to.
+// the fixed steps of the flow.
 async function cookieWall(tab, log) {
-  if (await tab.safe('cookie', false)) log?.('PostNL cookie wall answered: only needed cookies');
+  const wall = await tab.safe('cookie', false);
+  if (wall) log?.('PostNL cookie wall answered: only needed cookies');
+  return !!wall;
 }
 // step(): one progress step done (see STEPS)
 async function setCountry(tab, country, log, step) {
@@ -223,7 +225,12 @@ export async function buildCart({ stamps, tracked, fallbackEmail, conc = 6, wind
         else Object.assign(r, await trackedFlow(tab, it.p, { fallbackEmail, log, step }));
         r.ok = true; r.ms = Date.now() - t;
         r.order = await tab.call('q', 'order'); r.total = euro(await tab.call('q', 'total'));
-      } catch (e) { r.ok = false; r.error = e.message; log(`${it.key}: FAILED: ${e.message}`); }
+        if (!r.order) throw new Error('PostNL has no cart (current-order) in this tab');
+      } catch (e) {
+        r.ok = false; r.error = e.message;
+        if (String(await tab.safe('q', '', 'path')).endsWith('/betalen')) r.error += ' (its tab is on the PostNL payment page /betalen, with the item in its cart)';
+        log(`${it.key}: FAILED: ${r.error}`);
+      }
       results.push(r);
       done += STEPS[it.kind] - steps;   // the rest of a failed item
       report();
@@ -233,19 +240,28 @@ export async function buildCart({ stamps, tracked, fallbackEmail, conc = 6, wind
   const summary = { items: results.map(r => ({ kind: r.kind, key: r.key, ok: r.ok, error: r.error || null, manual: !!r.manual, total: r.total ?? null, ms: r.ms ?? null })) };
   if (!ok.length) { done = total; report(); return { ...summary, merged: false }; }   // failed tabs stay open to look at
   const base = ok[0];
-  const entities = await base.tab.call('mergeOrders', ok.slice(1).map(r => r.order));
-  done++; report();
-  await base.tab.reload();
-  await base.tab.waitFor({ text: 'Totaalbedrag' }, 20000, 'merged cart');
-  done++; report();
-  const sum = euro(await base.tab.call('q', 'total'));
-  const expected = Math.round(ok.reduce((s, r) => s + (r.total || 0), 0) * 100) / 100;
-  const lines = await base.tab.call('q', 'cartLines');
-  for (const r of ok.slice(1)) await r.tab.close();
-  try { await ext.tabs.ungroup?.(base.tab.id); } catch { }   // tab groups: not in every Firefox
-  await base.tab.activate();
+  const holding = () => `tab(s) still holding items: ${ok.map(r => r.key).join(', ')}`;
+  let entities, sum, expected, lines;
+  try {
+    entities = await base.tab.call('mergeOrders', ok.slice(1).map(r => r.order));
+    done++; report();
+    await base.tab.reload();
+    await base.tab.waitFor({ text: 'Totaalbedrag' }, 20000, 'merged cart');
+    done++; report();
+    sum = euro(await base.tab.call('q', 'total'));
+    expected = Math.round(ok.reduce((s, r) => s + (r.total || 0), 0) * 100) / 100;
+    lines = await base.tab.call('q', 'cartLines');
+  } catch (e) {
+    done = total; report();
+    log(`Cart merge FAILED: ${e.message}. No tab was closed; ${holding()}`);
+    return { ...summary, merged: false, error: `Cart merge failed: ${e.message}` };
+  }
   // A quantity of 2 is two entities but one line: compare lines with items, the total with the tab carts.
   const check = sum === expected && lines === ok.length;
+  if (check) for (const r of ok.slice(1)) await r.tab.close();
+  else log(`Cart merge check failed: no tab was closed; ${holding()}`);
+  try { await ext.tabs.ungroup?.(base.tab.id); } catch { }   // tab groups: not in every Firefox
+  await base.tab.activate();
   done = total; report();
   log(`Cart: ${ok.length} line(s) (${entities} entities), total € ${sum?.toFixed(2)} (expected € ${expected.toFixed(2)}, ${lines} line(s) on the page)${check ? '' : ' - CHECK THE CART'}`);
   return { ...summary, merged: true, count: ok.length, entities, total: sum, expected, check };

@@ -1,7 +1,7 @@
 ﻿Iso,Country,Method,Tracked,MaxValue,MaxWeight,StampPrice,Price,Days
 AT,Austria,Letter,False,25.00,20,2.11,2.41,9
 AT,Austria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.95,11.45,9
-AT,Austria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,9
+AT,Austria,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,11.95,12.45,9
 AT,Austria,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.60,13.60,9
 AT,Austria,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,13.65,14.65,9
 AT,Austria,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,14.70,15.70,9
@@ -146,7 +146,7 @@ CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insuranc
 CZ,Czech Republic,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,10
 DK,Denmark,Letter,False,25.00,20,2.11,2.41,11
 DK,Denmark,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.95,11.45,11
-DK,Denmark,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,11
+DK,Denmark,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,11.95,12.45,11
 DK,Denmark,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.60,13.60,11
 DK,Denmark,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,13.65,14.65,11
 DK,Denmark,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,14.70,15.70,11
@@ -401,7 +401,7 @@ LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,5
 LV,Latvia,SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance,True,1000000.00,20000,20049.00,20050.00,13
 LI,Liechtenstein,Letter,False,25.00,20,2.11,2.41,12
 LI,Liechtenstein,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,10.95,11.45,12
-LI,Liechtenstein,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,500,11.95,12.45,12
+LI,Liechtenstein,Brievenbuspakje met track & trace (Tracked Letterbox packet),True,150.00,1000,11.95,12.45,12
 LI,Liechtenstein,Klein pakket aangetekend (Registered packet) R - Insured up to 50€,True,150.00,500,12.60,13.60,12
 LI,Liechtenstein,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,1000,13.65,14.65,12
 LI,Liechtenstein,Klein pakket aangetekend (Registered packet) - Insured up to 50€,True,150.00,2000,14.70,15.70,12

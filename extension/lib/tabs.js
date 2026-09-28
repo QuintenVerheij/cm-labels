@@ -1,10 +1,13 @@
 // Work tabs for the app page: hidden (inactive) tabs in a collapsed "cm-labels" tab group, driven through a
-// content script (ext.scripting). Replaces the CDP client of the Node version.
+// content script (ext.scripting).
 import { ext, callInTab, injectFile } from './ext.js';
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 let groupId = null;
-async function addToGroup(tabId) {
+let groupQueue = Promise.resolve();
+// One at a time, so parallel opens find the group the first one created.
+const addToGroup = tabId => (groupQueue = groupQueue.then(() => addToGroupNow(tabId)));
+async function addToGroupNow(tabId) {
   try {
     if (groupId !== null) { await ext.tabs.group({ tabIds: [tabId], groupId }); return; }
   } catch { groupId = null; }
@@ -15,20 +18,22 @@ async function addToGroup(tabId) {
 }
 
 export class Tab {
-  // file: the content script; ns: the global it defines in the isolated world.
-  constructor(id, file, ns) { this.id = id; this.file = file; this.ns = ns; this.onPoll = null; this.lastPoll = 0; }
+  // file: the content script; ns: the global it defines in the isolated world; hash: appended to every URL the
+  // tab loads (a marker the panel content script looks for).
+  constructor(id, file, ns, hash = '') { this.id = id; this.file = file; this.ns = ns; this.hash = hash; this.onPoll = null; this.lastPoll = 0; this.lastError = null; this.wall = false; }
   // Optional hook, run at most once per second inside every wait and click loop (PostNL: answer a cookie wall
-  // that pops up at any moment).
+  // that pops up at any moment). Resolves true when the hook reports a cookie wall; the tab remembers it in wall.
   async poll() {
-    if (!this.onPoll || Date.now() - this.lastPoll < 1000) return;
+    if (!this.onPoll || Date.now() - this.lastPoll < 1000) return false;
     this.lastPoll = Date.now();
-    try { await this.onPoll(this); } catch { }
+    try { if (await this.onPoll(this)) this.wall = true; } catch { }
+    return this.wall;
   }
 
-  static async open(url, { file, ns, windowId }) {
-    const t = await ext.tabs.create({ url, active: false, windowId });
+  static async open(url, { file, ns, windowId, hash = '' }) {
+    const t = await ext.tabs.create({ url: url === 'about:blank' ? url : url + hash, active: false, windowId });
     await addToGroup(t.id);
-    return new Tab(t.id, file, ns);
+    return new Tab(t.id, file, ns, hash);
   }
 
   raw(name, args) { return callInTab(this.id, this.ns, name, args); }
@@ -42,34 +47,46 @@ export class Tab {
     return r.v;
   }
   // Same, but a page that is loading or navigating gives the fallback instead of an error.
-  async safe(name, fallback, ...args) { try { return await this.call(name, ...args); } catch { return fallback; } }
+  async safe(name, fallback, ...args) { try { return await this.call(name, ...args); } catch (e) { this.lastError = e; return fallback; } }
 
   async waitFor(cond, ms = 15000, what = JSON.stringify(cond)) {
+    this.lastError = null; this.wall = false;
     for (const t = Date.now(); ; await sleep(150)) {
       await this.poll();
       if (await this.safe('test', false, cond)) return;
-      if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}`);
+      if (Date.now() - t > ms) throw new Error(`timeout waiting for ${what}${this.wall ? ' (cookie wall)' : ''}${this.lastError ? `: ${this.lastError.message}` : ''}`);
     }
   }
-  // Click, wait up to 1 s for the result, repeat: a click right after load, before Angular is ready, does nothing.
+  // Test, click, wait up to 1 s for the result, repeat: a click right after load, before Angular is ready, does
+  // nothing. The test comes first in every round, so a click that worked late is never followed by another one.
   async clickUntil(spec, cond, { tries = 15, what = JSON.stringify(spec) } = {}) {
+    this.lastError = null; this.wall = false;
     for (let i = 0; i < tries; i++) {
       await this.poll();
+      if (await this.safe('test', false, cond)) return i;
       await this.safe('click', false, spec);
       for (const t = Date.now(); Date.now() - t < 1000; await sleep(100)) if (await this.safe('test', false, cond)) return i + 1;
     }
-    throw new Error(`no effect after ${tries} clicks: ${what}`);
+    const cause = this.lastError;
+    const page = await this.safe('q', '', 'errors');
+    throw new Error(`no effect after ${tries} clicks: ${what}${this.wall ? ' (cookie wall)' : ''}${page ? ` (page: ${page})` : ''}${cause ? ` (last error: ${cause.message})` : ''}`);
   }
   // Start a page load and wait until Chrome reports it (status 'loading' or the new URL), so the previous
   // page is never read by mistake.
   async navigate(url) {
+    url += this.hash;
     await ext.tabs.update(this.id, { url });
     for (const t = Date.now(); Date.now() - t < 3000; await sleep(50)) {
       const s = await ext.tabs.get(this.id);
       if (s.status === 'loading' || (s.pendingUrl || s.url) === url) break;
     }
   }
-  async reload() { await ext.tabs.reload(this.id); await sleep(500); }
+  // Reload and wait for the new document: first 'loading', then 'complete', so the old page is never read.
+  async reload() {
+    await ext.tabs.reload(this.id);
+    for (const t = Date.now(); Date.now() - t < 3000; await sleep(50)) if ((await ext.tabs.get(this.id)).status === 'loading') break;
+    for (const t = Date.now(); Date.now() - t < 20000; await sleep(100)) if ((await ext.tabs.get(this.id)).status === 'complete') return;
+  }
   async activate() { const t = await ext.tabs.update(this.id, { active: true }); await ext.windows.update(t.windowId, { focused: true }); }
   async close() { try { await ext.tabs.remove(this.id); } catch { } }
 }

@@ -6,20 +6,28 @@
 //    also keeps a service worker awake while a run goes.
 const ext = globalThis.browser ?? globalThis.chrome;
 
+// The app page sets runLive in session storage while a job runs; a reload would end that job.
+const RUN_LIVE_MS = 60 * 60 * 1000;
+async function runLive() {
+  try { const { runLive: at } = await ext.storage.session.get('runLive'); return typeof at === 'number' && Date.now() - at < RUN_LIVE_MS; }
+  catch { return false; }
+}
+
 async function openPage(page, reuse = true) {
   const url = ext.runtime.getURL(page);
   const [open] = reuse ? await ext.tabs.query({ url }) : [];
   if (open) {
     await ext.tabs.update(open.id, { active: true });
     await ext.windows.update(open.windowId, { focused: true });
-    if (page.startsWith('app.html')) await ext.tabs.reload(open.id);   // show the latest run
+    if (page.startsWith('app.html') && !(await runLive())) await ext.tabs.reload(open.id);   // show the latest run
     return open.id;
   }
   return (await ext.tabs.create({ url })).id;
 }
 ext.action.onClicked.addListener(() => openPage('app.html'));
 
-// Same function as inTab in lib/ext.js: runs window[ns][name](...args) in the tab.
+// Same function as inTab in lib/ext.js, copied because background.js is a classic script (the manifest does not
+// declare it as a module) and cannot import. Runs window[ns][name](...args) in the tab.
 const inTab = (ns, name, args) => {
   const lib = globalThis[ns];
   if (!lib) return { missing: true };

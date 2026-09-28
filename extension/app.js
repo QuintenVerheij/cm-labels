@@ -1,45 +1,38 @@
 // cm-labels app page: Load (Cardmarket) -> breakdown -> Print (browser print dialog) / Add to PostNL cart.
 // The jobs run in this page, so keep it open while one runs.
 import { ext } from './lib/ext.js';
+import { esc } from './lib/esc.js';
 import { loadSales } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
 import { buildCart } from './lib/postnl.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { defaultTemplate } from './lib/template.js';
-import { saveRun, getRun, getSettings, DEFAULTS } from './lib/store.js';
+import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, loadData, DEFAULTS } from './lib/store.js';
 
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const PX = 96 / 25.4;
 const SAMPLE = { NAME: 'Jan Jansen', ADDRESS: ['Voorbeeldstraat 12 B'], POSTCODE: '1234AB', CITY: 'Voorbeeldstad', COUNTRY: 'Netherlands', ID: '1234567890' };
 
 const state = { job: null, progress: null, list: null, only: null, loadedAt: null, login: false, plan: null, cart: null, printed: null, error: null, log: [] };
 let settings = { ...DEFAULTS };
-let data = null;   // methods, countries, rates, byName
 
 const log = m => { state.log.push(`${new Date().toLocaleTimeString('nl-NL')}  ${m}`); if (state.log.length > 800) state.log.shift(); render(); };
-
-async function loadData() {
-  if (data) return data;
-  const get = async n => (await fetch(ext.runtime.getURL(`data/${n}.json`))).json();
-  const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
-  data = { methods, countries, rates, byName: Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso])) };
-  return data;
-}
 
 async function run(name, fn) {
   if (state.job) return;
   state.job = name; state.error = null; state.progress = null; render();
+  await ext.storage.session?.set({ runLive: Date.now() }).catch(() => {});   // background.js does not reload this page while set
   try { await fn(); }
   catch (e) { state.error = e.message; log(`${name} FAILED: ${e.message}`); }
-  finally { state.job = null; state.progress = null; state.login = false; render(); }
+  finally { state.job = null; state.progress = null; state.login = false; await ext.storage.session?.remove('runLive').catch(() => {}); render(); }
 }
 
 // the order numbers in the "Specific order numbers" field (10 digits each), or null when it is empty
 const onlyIds = () => { const ids = [...new Set($('#only').value.match(/\b\d{10}\b/g) || [])]; return ids.length ? ids : null; };
 async function load(list, only) {
   Object.assign(state, { plan: null, cart: null, printed: null, list: null, only: null, loadedAt: null });
+  await clearRun();   // a failed load leaves no earlier run behind
   const cfg = await loadData();
   const me = await ext.tabs.getCurrent();
   const sales = await loadSales(list, {
@@ -57,13 +50,16 @@ async function load(list, only) {
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
 async function cart(withCodes, withLabels) {
+  settings = await getSettings();
   const stamps = withCodes ? state.plan.stamps : [];
   const tracked = withLabels ? state.plan.tracked.filter(t => !t.error) : [];
   const me = await ext.tabs.getCurrent();
   state.cart = { running: true }; render();
   log(`PostNL: ${stamps.length} stamp code group(s) + ${tracked.length} shipping label(s), in parallel tabs...`);
   const t = Date.now();
-  state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
+  try {
+    state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
+  } catch (e) { state.cart = { items: [], merged: false, error: e.message, seconds: 0 }; throw e; }
   state.cart.seconds = Math.round((Date.now() - t) / 100) / 10;
   log(`PostNL done in ${state.cart.seconds} s.${state.cart.merged ? ' The cart tab is in front: check it and pay there.' : ''}`);
 }
@@ -114,7 +110,7 @@ function renderPlan() {
   const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}`;
   if (key !== lastKey) {
     lastKey = key;
-    $('#resulttitle').textContent = `Breakdown: ${state.only ? `${state.only.length} chosen order(s)` : 'paid orders'}, loaded ${state.loadedAt.toLocaleTimeString('nl-NL')}`;
+    $('#resulttitle').textContent = `Breakdown: ${runScope(state.only, `${(state.list || 'Paid').toLowerCase()} orders`)}, loaded ${state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })} (${runAge(state.loadedAt)})`;
     const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0);
     $('#chips').innerHTML = [`${p.count} sale(s)`, `${p.print.length} address label(s)`, `${nStamps} stamp(s)`, `${p.tracked.length} tracked`, `${p.skipped.length} by hand`].map(c => `<span class="chip">${c}</span>`).join('');
     $('#stamps').innerHTML = p.stamps.length ? `<thead><tr><th>Code</th><th>Country</th><th class="num">Weight</th><th class="num">Qty</th><th>Sales</th></tr></thead><tbody>${p.stamps.map(g => `<tr><td class="mono">${g.code}</td><td>${esc(g.country)}</td><td class="num">${g.weight} g</td><td class="num">${g.qty}</td><td class="mono">${g.ids.join(', ')}</td></tr>`).join('')}</tbody>` : '<tbody><tr><td class="hint">None.</td></tr></tbody>';
@@ -137,13 +133,14 @@ function renderPlan() {
   const nCodes = p.stamps.length, nLabels = p.tracked.filter(t => !t.error).length;
   $('#pickcodes').disabled = busy || !nCodes; if (!nCodes) $('#pickcodes').checked = false;
   $('#picklabels').disabled = busy || !nLabels; if (!nLabels) $('#picklabels').checked = false;
-  $('#cart').disabled = busy || !($('#pickcodes').checked || $('#picklabels').checked);
+  $('#cart').disabled = busy || !paid || !($('#pickcodes').checked || $('#picklabels').checked);
+  $('#cart').title = paid ? '' : 'Only after a load of the Paid list';
   const c = state.cart;
   $('#cartresult').hidden = !c || c.running;
   if (c && !c.running) {
     $('#cartitems').innerHTML = `<thead><tr><th>Item</th><th>Result</th><th class="num">Price</th><th class="num">Time</th></tr></thead><tbody>${c.items.map(i => `<tr><td class="mono">${esc(i.key)}</td><td>${i.ok ? `<span class="ok">in the cart</span>${i.manual ? ' <span class="tag warn">manual address</span>' : ''}` : `<span class="bad">${esc(i.error)}</span>`}</td><td class="num">${eur(i.total)}</td><td class="num">${i.ms != null ? (i.ms / 1000).toFixed(1) + ' s' : ''}</td></tr>`).join('')}</tbody>`;
     $('#cartsummary').innerHTML = c.merged ? `${c.count} item(s) in one cart, total <b>${eur(c.total)}</b>${c.check ? '' : ` <span class="bad">expected ${eur(c.expected)}: check the cart</span>`}, in ${c.seconds} s. The cart tab is in front: check it and pay there.`
-      : 'Nothing was added. Failed items keep their tab open.';
+      : c.error ? `${esc(c.error)} No tab was closed: check the PostNL tabs.` : 'Nothing was added. Failed items keep their tab open.';
   }
 }
 // Progress bars while a job runs, as in the Cardmarket panel: loading under the load button (per sale), the
@@ -226,7 +223,7 @@ function fillSettingsForm() {
   htmlPreview();
 }
 async function loadSettings() {
-  settings = await getSettings();   // also migrates the old ZPL / return-address settings once
+  settings = await getSettings();   // also migrates the old return-address setting once
   fillSettingsForm();
 }
 async function saveSettings(patch) { settings = { ...settings, ...patch }; await ext.storage.local.set({ settings }); }
@@ -332,13 +329,14 @@ $('#previews').addEventListener('click', e => {
 for (const id of ['#pickcodes', '#picklabels']) $(id).onchange = () => render();
 $('#cart').onclick = () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
-  if (!withCodes && !withLabels) return;
+  if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
+  if ((state.cart?.merged || state.cart?.error) && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
   run('Adding to PostNL cart', () => cart(withCodes, withLabels));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
 
-// Firefox (Manifest V3) treats host permissions as optional: ask for them, from a click, when they are missing.
-// Chromium grants them at install, so this stays hidden there.
+// Host permissions can be missing (Firefox lets the user turn them off): ask for them, from a click. The prompt
+// stays hidden while they are granted.
 const ORIGINS = ['https://www.cardmarket.com/*', 'https://jouw.postnl.nl/*'];
 async function checkAccess() {
   const ok = await ext.permissions.contains({ origins: ORIGINS }).catch(() => true);
@@ -349,6 +347,7 @@ async function checkAccess() {
 $('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(`Permission request failed: ${e.message}`); } await checkAccess(); };
 
 await loadSettings();
+await purgeStale();
 // the last load (also one made in the Cardmarket page panel), if it is recent
 const last = await getRun();
 if (last) {

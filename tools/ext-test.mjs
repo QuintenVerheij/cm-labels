@@ -1,10 +1,15 @@
-// Test harness for the extension: starts Chrome (profile %LOCALAPPDATA%\cm-labels\chrome-cdp) with a CDP pipe,
-// loads extension/ unpacked (Extensions.loadUnpacked needs --remote-debugging-pipe and
-// --enable-unsafe-extension-debugging), opens app.html and runs the steps given on the command line:
-//   node tools/ext-test.mjs load:Arrived cart:labels tab:settings shot:<png>   (steps in order; Chrome stays open)
-//   cart = both cards, cart:labels = only the shipping labels. Note: Cardmarket's Cloudflare check loops in this
-//   pipe-launched Chrome, so test the Cardmarket part in a normal browser.
-// A test tool only: the extension itself needs none of this.
+// Manual test driver for the extension, not part of `npm test`. It needs Google Chrome installed at
+// %ProgramFiles%\Google\Chrome\Application\chrome.exe, and Cardmarket and PostNL must already be logged in
+// in the profile %LOCALAPPDATA%\cm-labels\chrome-cdp (log in once in a normal window of that profile).
+// It starts Chrome with a CDP pipe, loads extension/ unpacked (Extensions.loadUnpacked needs
+// --remote-debugging-pipe and --enable-unsafe-extension-debugging), opens app.html and runs the steps given on
+// the command line, in order (Chrome stays open):
+//   node tools/ext-test.mjs load cart:labels tab:settings shot:<png>
+// Steps: load[:<order ids>], cart[:labels], tab:<run|settings|methods>, size:<W>x<H>, html:<template>, save,
+// reload, read, printtest:<rotate>:<png>, js:<expression>, shot:<png>, probe.
+//   cart = both cards, cart:labels = only the shipping labels.
+// An unknown step or a failed step ends the run with exit code 1. Cardmarket's Cloudflare check loops in this
+// pipe-launched Chrome, so test the Cardmarket part in a normal browser.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,6 +20,11 @@ const exe = `${process.env.ProgramFiles}\\Google\\Chrome\\Application\\chrome.ex
 const profile = path.join(process.env.LOCALAPPDATA, 'cm-labels', 'chrome-cdp');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const t0 = Date.now(); const say = m => console.log(`${((Date.now() - t0) / 1000).toFixed(1).padStart(6)}s  ${m}`);
+
+const STEPS = ['load', 'cart', 'tab', 'size', 'html', 'save', 'reload', 'read', 'printtest', 'js', 'shot', 'probe'];
+const steps = process.argv.slice(2);
+const unknown = steps.filter(s => !STEPS.includes(s.split(':')[0]));
+if (unknown.length) { console.error(`unknown step: ${unknown.join(', ')}\nknown steps: ${STEPS.join(', ')}`); process.exit(1); }
 
 const chrome = spawn(exe, [`--user-data-dir=${profile}`, '--remote-debugging-pipe', '--enable-unsafe-extension-debugging', '--no-first-run', '--no-default-browser-check', 'about:blank'],
   { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'], detached: true });
@@ -44,21 +54,21 @@ async function waitIdle(ms = 600000) {
   }
   throw new Error('timeout');
 }
-for (const step of process.argv.slice(2)) {
+async function run(step) {
   const i = step.indexOf(':'), what = i < 0 ? step : step.slice(0, i), arg = i < 0 ? '' : step.slice(i + 1);
   say(`step ${step}`);
-  if (what === 'load') await js(`(document.querySelector('#list').value=${JSON.stringify(arg || 'Arrived')}, document.querySelector('#list').dispatchEvent(new Event('change')), document.querySelector('#load').click(), 'ok')`);
-  if (what === 'tab') { await js(`document.querySelector('nav button[data-tab="${arg}"]').click(), 'ok'`); await sleep(800); continue; }
-  if (what === 'size') { const [w, h] = arg.split('x'); await js(`(()=>{for (const [id,v] of [['#lw','${w}'],['#lh','${h}']]) { const e=document.querySelector(id); e.value=v; e.dispatchEvent(new Event('input')); } return 'ok'})()`); await sleep(500); continue; }
-  if (what === 'raddr') { await js(`(e=>{e.value=${JSON.stringify(arg || '')};e.dispatchEvent(new Event('input'));return 'ok'})(document.querySelector('#raddr'))`); await sleep(500); continue; }
-  if (what === 'save') { await js(`document.querySelector('#savesettings').click(), 'ok'`); await sleep(800); say('save: ' + await js(`document.querySelector('#settingsmsg').textContent`)); continue; }
-  if (what === 'reload') { await send('Page.reload', {}, sessionId); await sleep(2000); continue; }
-  if (what === 'read') { say('settings form: ' + await js(`JSON.stringify({w: document.querySelector('#lw').value, h: document.querySelector('#lh').value, ret: document.querySelector('#raddr').value, stored: 0})`) + ' | storage: ' + await js(`chrome.storage.local.get('settings').then(s => JSON.stringify(s.settings))`)); continue; }
+  if (what === 'load') await js(`(()=>{ const o=document.querySelector('#only'); o.value=${JSON.stringify(arg)}; o.dispatchEvent(new Event('input')); document.querySelector('#load').click(); return 'ok'; })()`);
+  if (what === 'tab') { await js(`document.querySelector('nav button[data-tab="${arg}"]').click(), 'ok'`); await sleep(800); return; }
+  if (what === 'size') { const [w, h] = arg.split('x'); await js(`(()=>{for (const [id,v] of [['#lw','${w}'],['#lh','${h}']]) { const e=document.querySelector(id); e.value=v; e.dispatchEvent(new Event('input')); } return 'ok'})()`); await sleep(500); return; }
+  if (what === 'html') { await js(`(e=>{e.value=${JSON.stringify(arg)};e.dispatchEvent(new Event('input'));return 'ok'})(document.querySelector('#html'))`); await sleep(500); return; }
+  if (what === 'save') { await js(`document.querySelector('#savesettings').click(), 'ok'`); await sleep(800); say('save: ' + await js(`document.querySelector('#settingsmsg').textContent`)); return; }
+  if (what === 'reload') { await send('Page.reload', {}, sessionId); await sleep(2000); return; }
+  if (what === 'read') { say('settings form: ' + await js(`JSON.stringify({w: document.querySelector('#lw').value, h: document.querySelector('#lh').value, html: document.querySelector('#html').value})`) + ' | storage: ' + await js(`chrome.storage.local.get('settings').then(s => JSON.stringify(s.settings))`)); return; }
   if (what === 'printtest') {
     // printtest:<rotate>:<png>  build the print HTML in the app page, print it to PDF (CSS page size), report the
     // PDF page size and take a screenshot of the page in print emulation
     const [rot, png] = [arg.slice(0, arg.indexOf(':')), arg.slice(arg.indexOf(':') + 1)];
-    const html = await js(`import('./lib/labels.js').then(L => { const s = { width: 70, height: 40, rotate: ${+rot}, returnAddress: 'Retour: Voorbeeldstraat 1, 1234AB Voorbeeldstad', zpl: '' };
+    const html = await js(`import('./lib/labels.js').then(L => { const s = { width: 70, height: 40, rotate: ${+rot}, html: '' };
       const f = { NAME: 'Jan Jansen', ADDRESS: ['Voorbeeldstraat 12 B'], POSTCODE: '1234AB', CITY: 'Voorbeeldstad', COUNTRY: 'Netherlands' };
       return '<!doctype html><html><head><meta charset=utf-8><style>' + L.printCss(s) + '</style></head><body>' + L.pageHtml(f, s) + '</body></html>'; })`);
     const t = await send('Target.createTarget', { url: 'about:blank', background: true });
@@ -76,19 +86,19 @@ for (const step of process.argv.slice(2)) {
     const { data } = await send('Page.captureScreenshot', { format: 'png' }, sid);
     fs.writeFileSync(png, Buffer.from(data, 'base64')); say(`screenshot ${png}`);
     await send('Target.closeTarget', { targetId: t.targetId });
-    continue;
+    return;
   }
-  if (what === 'js') { say('js: ' + JSON.stringify(await js(arg)).slice(0, 600)); continue; }
+  if (what === 'js') { say('js: ' + JSON.stringify(await js(arg)).slice(0, 600)); return; }
   if (what === 'shot') {
     const { data } = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true }, sessionId);
-    fs.writeFileSync(arg, Buffer.from(data, 'base64')); say(`screenshot ${arg}`); continue;
+    fs.writeFileSync(arg, Buffer.from(data, 'base64')); say(`screenshot ${arg}`); return;
   }
   if (what === 'probe') {
     say('probe: ' + await js(`(async () => {
-      const t = await chrome.tabs.create({ url: 'https://www.cardmarket.com/en/Magic/Orders/Sales/Arrived', active: false });
+      const t = await chrome.tabs.create({ url: 'https://www.cardmarket.com/en/Magic/Orders/Sales/Paid', active: false });
       for (let i = 0; i < 40; i++) { await new Promise(r => setTimeout(r, 500)); if ((await chrome.tabs.get(t.id)).status === 'complete') break; }
       const run = async world => (await chrome.scripting.executeScript({ target: { tabId: t.id }, world, func: async () => {
-        const r = await fetch('/en/Magic/Orders/Sales/Arrived', { credentials: 'include' });
+        const r = await fetch('/en/Magic/Orders/Sales/Paid', { credentials: 'include' });
         const h = await r.text();
         const d = new DOMParser().parseFromString(h, 'text/html');
         const txt = (d.body?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400);
@@ -98,13 +108,18 @@ for (const step of process.argv.slice(2)) {
       await chrome.tabs.remove(t.id);
       return out;
     })()`));
-    continue;
+    return;
   }
-  if (what === 'cart') await js(`(()=>{ window.confirm=()=>true; for (const id of ['#pickcodes','#picklabels']) { const e=document.querySelector(id); if (!e.disabled) { e.checked=${JSON.stringify('ARG')}!=='labels'||id==='#picklabels'; e.dispatchEvent(new Event('change')); } } document.querySelector('#cart').click(); return 'ok'; })()`.replace('ARG', arg));
+  if (what === 'cart') await js(`(()=>{ for (const id of ['#pickcodes','#picklabels']) { const e=document.querySelector(id); if (!e.disabled) { e.checked=${JSON.stringify('ARG')}!=='labels'||id==='#picklabels'; e.dispatchEvent(new Event('change')); } } document.querySelector('#cart').click(); return 'ok'; })()`.replace('ARG', arg));
   await sleep(1500);
-  await waitIdle();
-  if (what === 'load') say('breakdown: ' + await js(`document.querySelector('#chips').innerText.replace(/\\n/g,' | ') + ' || stamps: ' + document.querySelector('#stampline').textContent + ' || previews: ' + document.querySelectorAll('#previews figure').length`));
+  const st = await waitIdle();
+  if (/^failed/.test(st.status)) throw new Error(st.status);
+  if (what === 'load') say('breakdown: ' + await js(`document.querySelector('#chips').innerText.replace(/\\n/g,' | ') + ' || stamp rows: ' + document.querySelectorAll('#stamps tr').length + ' || previews: ' + document.querySelectorAll('#previews figure').length`));
   if (what === 'cart') say('cart: ' + await js(`document.querySelector('#cartsummary').innerText + ' || ' + document.querySelector('#cartitems').innerText.replace(/\\n/g,' | ')`));
 }
-say('done; Chrome stays open');
-out.end(); inp.destroy(); chrome.unref(); process.exit(0);
+let code = 0;
+for (const step of steps) {
+  try { await run(step); } catch (e) { say(`FAILED step ${step}: ${e.message}`); code = 1; break; }
+}
+say(code ? 'failed; Chrome stays open' : 'done; Chrome stays open');
+out.end(); inp.destroy(); chrome.unref(); process.exit(code);

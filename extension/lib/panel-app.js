@@ -5,12 +5,13 @@
 // Sale page: an "Add to PostNL cart" button at the same place puts this one sale in the PostNL cart.
 // The run lives in this page: keep it open while a run goes. Tab work goes through the background script.
 import { ext, openPage } from './ext.js';
-import { loadSales } from './cardmarket.js';
+import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { planSales } from './plan.js';
 import { buildCart } from './postnl.js';
-import { getSettings, saveRun, getRun, loadData } from './store.js';
+import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
+import { esc } from './esc.js';
 
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const AGAIN_PROMPT = 'A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?';
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = d => d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 
@@ -57,9 +58,7 @@ const CSS = `
 `;
 
 export async function start({ saleId, list }) {
-  const test = list && list !== 'Paid';   // Arrived / Unpaid: a test list (page 1): no printing
-  const word = (list || 'Paid').toLowerCase();
-  const settings = await getSettings();
+  const readable = isReadablePath(location.pathname);
   const state = { job: null, plan: null, list: null, loadedAt: null, cart: null, error: null, progress: null, lines: [] };
   // progress comes from the onProgress callbacks of loadSales (every sale) and buildCart (every step of every
   // cart item: the bar moves per step, the text counts the finished items)
@@ -169,9 +168,11 @@ export async function start({ saleId, list }) {
   ];
 
   async function load() {
+    state.plan = null; state.only = null;
+    await clearRun();   // a failed load leaves no earlier run behind
     const cfg = await loadData();
     const me = await ext.tabs.getCurrent();
-    const sales = await loadSales(list, { log, windowId: me.windowId, onLogin: () => {}, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
+    const sales = await loadSales(list, { log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
     state.plan = planSales(sales, cfg); state.list = list; state.loadedAt = new Date(); state.cart = null;
     state.pick = { codes: state.plan.stamps.length > 0, labels: nLabels(state.plan) > 0 };
     await saveRun(list, state.plan);
@@ -179,7 +180,8 @@ export async function start({ saleId, list }) {
   async function cart(stamps, tracked) {
     const me = await ext.tabs.getCurrent();
     state.cart = null;
-    state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; render(); } });
+    const { fallbackEmail } = await getSettings();
+    state.cart = await buildCart({ stamps, tracked, fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; render(); } });
   }
   async function print() {
     if (state.list !== 'Paid') return;   // printing only after a Paid load
@@ -224,7 +226,9 @@ export async function start({ saleId, list }) {
     for (const b of [btn, printBtn]) if (b) { b.setAttribute('aria-disabled', String(!!state.job)); b.style.pointerEvents = state.job ? 'none' : ''; b.style.opacity = state.job ? '.6' : ''; }
     const p = state.plan, last = state.lines[state.lines.length - 1];
     let html = '';
-    if (state.job) {
+    if (!readable) {
+      html = '<div>cm-labels works only on the English Magic pages (cardmarket.com/en/Magic).</div>';
+    } else if (state.job) {
       const [n, of, it] = state.progress || [0, 0];
       html = `<div class="sum">${esc(state.job)}…${it ? ` ${it.items}/${it.of}` : of ? ` ${n}/${of}` : ''}</div>${of ? `<div class="bar"><i style="width:${Math.round(100 * n / of)}%"></i></div>` : '<div class="bar"><i style="width:0%"></i></div>'}
         <div class="log">${esc(last || '')}</div><div class="muted">Keep this page open until the run is done.</div>`;
@@ -234,28 +238,33 @@ export async function start({ saleId, list }) {
     } else if (!p) {
       const rows = document.querySelectorAll('div[data-url*="/Orders/"]').length;
       const pages = +((document.body.textContent.match(/Page \d+ of (\d+)/) || [])[1] || 1);
-      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${rows} ${word} sale(s) on this page${test ? ' (test: page 1 only)' : pages > 1 ? `, ${pages} pages` : ''}.</div>
-        <div class="actions"><button class="btn" id="load">Load ${word} sales</button></div>`;
+      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${rows} paid sale(s) on this page${pages > 1 ? `, ${pages} pages` : ''}.</div>
+        <div class="actions"><button class="btn" id="load">Load paid sales</button></div>`;
     } else {
       const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0), is = issues(p);
       html = `<div class="sum">${p.print.length} label(s) · ${nStamps} stamp(s) in ${p.stamps.length} code(s) · ${nLabels(p)} tracked${p.skipped.length ? ` · ${p.skipped.length} by hand` : ''}</div>
-        <div class="muted">Loaded ${time(state.loadedAt)}. <a href="#" id="reload" style="color:inherit">Load again</a></div>
-        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="/en/Magic/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
+        <div class="muted">${state.only ? `${runScope(state.only)}, loaded` : 'Loaded'} ${state.loadedAt.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} ${time(state.loadedAt)} (${runAge(state.loadedAt)}). <a href="#" id="reload" style="color:inherit">Load again</a></div>
+        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="${esc(baseFromPath(location.pathname))}/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
         ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
         <div class="cards">
           <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>Codes</b><small>${p.stamps.length ? `${nStamps} stamp(s), ${p.stamps.length} code(s)` : 'none'}</small></span></label>
           <label class="card"><input type="checkbox" id="labels" ${state.pick?.labels ? 'checked' : ''} ${nLabels(p) ? '' : 'disabled'}><span><b>Shipping labels</b><small>${nLabels(p) ? `${nLabels(p)} tracked` : 'none'}</small></span></label>
         </div>
-        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? 'Opens the print dialog' : 'Only after a load of the Paid list'}">Print labels (${p.print.length})</button><button class="btn" id="cart" ${state.pick?.codes || state.pick?.labels ? '' : 'disabled'}>Add to PostNL cart</button></div>
+        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? 'Opens the print dialog' : 'Only after a load of the Paid list'}">Print labels (${p.print.length})</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : 'Only after a load of the Paid list'}">Add to PostNL cart</button></div>
         ${cartLine()}`;
     }
     $('#body').innerHTML = html + (state.job || !last ? '' : `<div class="log">${esc(last)}</div>`);
-    $('#load')?.addEventListener('click', () => run(`Loading ${word} sales`, load));
-    $('#reload')?.addEventListener('click', e => { e.preventDefault(); run(`Loading ${word} sales`, load); });
-    $('#again')?.addEventListener('click', () => run('Adding this sale', addThisSale));
+    $('#load')?.addEventListener('click', () => run('Loading paid sales', load));
+    $('#reload')?.addEventListener('click', e => { e.preventDefault(); run('Loading paid sales', load); });
+    $('#again')?.addEventListener('click', () => {
+      if ((state.cart?.merged || state.cart?.error) && !confirm(AGAIN_PROMPT)) return;
+      run('Adding this sale', addThisSale);
+    });
     for (const k of ['codes', 'labels']) $(`#${k}`)?.addEventListener('change', e => { state.pick = { ...state.pick, [k]: e.target.checked }; render(); });
     $('#print')?.addEventListener('click', () => run('Opening the print dialog', print));
     $('#cart')?.addEventListener('click', () => {
+      if (state.list !== 'Paid') return;
+      if ((state.cart?.merged || state.cart?.error) && !confirm(AGAIN_PROMPT)) return;
       const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(t => !t.error) : [];
       run('Adding to the PostNL cart', () => cart(stamps, tracked));
     });
@@ -263,14 +272,15 @@ export async function start({ saleId, list }) {
 
   btn.onclick = () => {
     panel.hidden = false;
-    if (saleId && !state.job && !state.cart) run('Adding this sale', addThisSale);
+    if (!readable) render();
+    else if (saleId && !state.job && !state.cart) run('Adding this sale', addThisSale);
     else render();
   };
-  if (printBtn) printBtn.onclick = () => { if (!state.job) { panel.hidden = false; run('Opening the print dialog', printThisSale); } };
+  if (printBtn) printBtn.onclick = () => { if (!readable) { panel.hidden = false; render(); } else if (!state.job) { panel.hidden = false; run('Opening the print dialog', printThisSale); } };
   // Paid page: show the last Paid load (same as the full page), if it is recent.
-  if (list) {
+  if (list && readable) {
     const last = await getRun();
-    if (last?.list === list) { state.plan = last.plan; state.list = list; state.loadedAt = last.loadedAt; state.pick = { codes: last.plan.stamps.length > 0, labels: nLabels(last.plan) > 0 }; }
+    if (last?.list === list) { state.plan = last.plan; state.list = list; state.loadedAt = last.loadedAt; state.only = last.only || null; state.pick = { codes: last.plan.stamps.length > 0, labels: nLabels(last.plan) > 0 }; }
   }
   render();
 }
