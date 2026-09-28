@@ -6,9 +6,10 @@
 // The run lives in this page: keep it open while a run goes. Tab work goes through the background script.
 import { ext, openPage } from './ext.js';
 import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
+import { langFromPath } from './locale.js';
 import { planSales } from './plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS } from './carriers.js';
-import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
+import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData, saveLang } from './store.js';
 import { esc } from './esc.js';
 
 const AGAIN_PROMPT = 'A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?';
@@ -59,6 +60,7 @@ const CSS = `
 
 export async function start({ saleId, list }) {
   const readable = isReadablePath(location.pathname);
+  if (readable) saveLang(langFromPath(location.pathname)).catch(() => {});
   const state = { job: null, plan: null, list: null, loadedAt: null, cart: null, error: null, progress: null, lines: [] };
   // progress comes from the onProgress callbacks of loadSales (every sale) and buildCart (every step of every
   // cart item: the bar moves per step, the text counts the finished items)
@@ -175,7 +177,7 @@ export async function start({ saleId, list }) {
     await clearRun();   // a failed load leaves no earlier run behind
     const cfg = await loadData('NL');
     const me = await ext.tabs.getCurrent();
-    const sales = await loadSales(list, { log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
+    const sales = await loadSales(list, { lang: langFromPath(location.pathname) || 'en', log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
     state.plan = planSales(sales, cfg, (await getSettings()).country, BRACKETS); state.list = list; state.loadedAt = new Date(); state.cart = null;
     state.pick = { codes: state.plan.stamps.length > 0, labels: nLabels(state.plan) > 0 };
     await saveRun(list, state.plan);
@@ -243,7 +245,7 @@ export async function start({ saleId, list }) {
     const p = state.plan, last = state.lines[state.lines.length - 1];
     let html = '';
     if (!readable) {
-      html = '<div>cm-labels works only on the English Magic pages (cardmarket.com/en/Magic).</div>';
+      html = '<div>cm-labels works only on the English and German Magic pages (cardmarket.com/en/Magic, cardmarket.com/de/Magic).</div>';
     } else if (state.job) {
       const [n, of, it] = state.progress || [0, 0];
       html = `<div class="sum">${esc(state.job)}…${it ? ` ${it.items}/${it.of}` : of ? ` ${n}/${of}` : ''}</div>${of ? `<div class="bar"><i style="width:${Math.round(100 * n / of)}%"></i></div>` : '<div class="bar"><i style="width:0%"></i></div>'}

@@ -8,7 +8,7 @@ import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarr
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
-import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, loadData, DEFAULTS } from './lib/store.js';
+import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadData, DEFAULTS } from './lib/store.js';
 
 const $ = s => document.querySelector(s);
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -37,7 +37,7 @@ async function load(list, only) {
   const cfg = await loadData('NL');
   const me = await ext.tabs.getCurrent();
   const sales = await loadSales(list, {
-    log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
+    lang: await getLang(), log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
     onLogin: async on => { state.login = on; render(); if (!on) await ext.tabs.update(me.id, { active: true }); },
   });
   state.plan = planSales(sales, cfg, settings.country, BRACKETS);

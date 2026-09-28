@@ -52,6 +52,7 @@
         "lib/esc.js",
         "lib/carriers.js",
         "lib/ext.js",
+        "lib/locale.js",
         "lib/panel-app.js",
         "lib/plan.js",
         "lib/postnl.js",

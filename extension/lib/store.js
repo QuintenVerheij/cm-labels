@@ -2,6 +2,7 @@
 // print page.
 import { ext } from './ext.js';
 import { esc } from './esc.js';
+import { byNameOf } from './locale.js';
 
 // html '' = the default layout, made from the label size (so it scales when the size changes)
 export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL', postcode: '' };
@@ -62,11 +63,15 @@ export function runAge(loadedAt, now = Date.now()) {
 }
 export const runScope = (only, all) => only?.length ? `${only.length} chosen order${only.length === 1 ? '' : 's'}` : all;
 
+// The language of the Cardmarket pages the user browses; the app page has no Cardmarket page of its own to read it from.
+export const saveLang = lang => ext.storage.local.set({ cmLang: lang });
+export const getLang = async () => (await ext.storage.local.get('cmLang')).cmLang || 'en';
+
 // The data files of the extension (methods, countries, rates) for one origin country; NL's files carry no suffix.
 const data = {};
 export async function loadData(origin) {
   if (data[origin]) return data[origin];
   const get = async n => (await fetch(ext.runtime.getURL(`data/${n}${origin === 'NL' ? '' : '.' + origin}.json`))).json();
   const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
-  return data[origin] = { methods, countries, rates, byName: Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso])) };
+  return data[origin] = { methods, countries, rates, byName: byNameOf(countries) };
 }
