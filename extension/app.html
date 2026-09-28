@@ -165,13 +165,13 @@
             <tr><th>type</th><td>Barcode type. Default <code>code128</code>. Also for example <code>code39</code>, <code>ean13</code>, <code>qrcode</code>, <code>datamatrix</code>, <code>pdf417</code>.</td></tr>
             <tr><th>value</th><td>The data. Fields are filled, for example <code>{ID}</code>.</td></tr>
             <tr><th>height</th><td>Height of the bars in mm. Default <code>8mm</code>. For 2D codes, do not set it: the code keeps its shape.</td></tr>
-            <tr><th>module</th><td>Width of the thinnest bar in mm. Default <code>0.25mm</code> (2 dots at 203 dpi). The barcode width follows from it.</td></tr>
+            <tr><th>module</th><td>Width of the thinnest bar in mm. Default <code>0.25mm</code> (2 dots at 203 dpi, where one dot is 0.125&nbsp;mm). The barcode width follows from it.</td></tr>
             <tr><th>size</th><td>Total width in mm, instead of <code>module</code>. Use it for 2D codes.</td></tr>
             <tr><th>quiet</th><td>Empty zone left and right, in modules. Default 10 (linear) or 4 (2D).</td></tr>
             <tr><th>text</th><td><code>true</code> shows the value under the bars. Other text shows that text.</td></tr>
           </table>
           <ul>
-            <li>For a thermal printer, set <code>module</code> to a multiple of one dot: 0.125&nbsp;mm at 203&nbsp;dpi, 0.085&nbsp;mm at 300&nbsp;dpi.</li>
+            <li>For a thermal printer, set <code>module</code> to a whole number of dots: 0.125&nbsp;mm is one dot at 203&nbsp;dpi, 0.085&nbsp;mm is one dot at 300&nbsp;dpi.</li>
             <li>If the value is not correct for the type, the label shows a red box with the reason.</li>
           </ul>
         </section>
