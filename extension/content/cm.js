@@ -6,13 +6,24 @@
   const T = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
   const head = () => document.title + ' ' + (document.body?.innerText || '').slice(0, 600);
 
-  // 'block' = Cloudflare refused this browser (stop everything); 'check' = the normal "Just a moment" check.
+  // Cloudflare localises its pages, so the markup decides and the English text is only a fallback.
+  // 'block' = Cloudflare refused this browser (stop everything); 'limited' = rate limit page (429);
+  // 'check' = the normal "Just a moment" check.
+  const has = sel => !!document.querySelector(sel);
+  const isBlock = h => has('#cf-wrapper') || has('#cf-error-details')
+    || /Attention Required|Sorry, you have been blocked|Access denied|Error 10\d\d/i.test(h);
+  const isLimited = h => /Too Many Requests|Error 429|HTTP ERROR 429/i.test(h);
+  const isCheck = h => has('#challenge-form') || has('#challenge-running') || has('#challenge-stage') || has('[id^="cf-chl"]')
+    || (has('script[src*="/cdn-cgi/challenge-platform"]') && (document.body?.innerText || '').trim().length < 200)
+    || /Just a moment|Performing security verification|Verify you are human/i.test(h);
+
   function state() {
     const h = head();
     return {
       ready: document.readyState,
-      block: /Attention Required|Sorry, you have been blocked|Access denied|Error 10\d\d/i.test(h),
-      check: /Just a moment|Performing security verification|Verify you are human/i.test(h),
+      block: isBlock(h),
+      limited: isLimited(h),
+      check: isCheck(h),
       loggedIn: !!document.querySelector('a[href*="User_Logout"]'),
       url: location.href,
     };
