@@ -56,7 +56,7 @@ export const carrierName = (name, modules = MODULES) => modules[name]?.NAME ?? S
 // The carriers of the items, in the order of first appearance (stamp groups first).
 export const carriersOf = (stamps = [], tracked = []) => [...new Set([...stamps, ...tracked].map(x => x.carrier))];
 // The carriers an origin's methods name (none left out): for text before any sale is planned.
-export const methodCarriers = methods => [...new Set(Object.values(methods || {}).map(m => m.Carrier || 'none'))].filter(c => c !== 'none');
+export const methodCarriers = methods => [...new Set(Object.values(methods || {}).filter(m => m.Service !== 'manual').map(m => m.Carrier || 'none'))].filter(c => c !== 'none');
 // 'PostNL cart', 'PostNL and DHL carts', or 'cart' when no carrier is known.
 export function cartTitle(names, modules = MODULES) {
   const n = names.map(c => carrierName(c, modules));

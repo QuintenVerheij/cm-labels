@@ -8,7 +8,7 @@ import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarr
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
-import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadData, DEFAULTS } from './lib/store.js';
+import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadOwnData, DEFAULTS } from './lib/store.js';
 
 const $ = s => document.querySelector(s);
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -19,6 +19,10 @@ const state = { job: null, progress: null, list: null, only: null, loadedAt: nul
 let settings = { ...DEFAULTS };
 
 const log = m => { state.log.push(`${new Date().toLocaleTimeString('nl-NL')}  ${m}`); if (state.log.length > 800) state.log.shift(); render(); };
+
+// The data of the seller's country setting (NL when there are no files for it), as last loaded.
+let own = null;
+const loadOwn = async () => own = await loadOwnData();
 
 async function run(name, fn) {
   if (state.job) return;
@@ -34,7 +38,7 @@ const onlyIds = () => { const ids = [...new Set($('#only').value.match(/\b\d{10}
 async function load(list, only) {
   Object.assign(state, { plan: null, cart: null, printed: null, list: null, only: null, loadedAt: null });
   await clearRun();   // a failed load leaves no earlier run behind
-  const cfg = await loadData('NL');
+  const cfg = await loadOwn();
   const me = await ext.tabs.getCurrent();
   const sales = await loadSales(list, {
     lang: await getLang(), log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
@@ -67,13 +71,13 @@ async function cart(withCodes, withLabels) {
   const merged = state.cart.carts.filter(c => c.merged).length;
   log(`${state.cart.carts.map(c => carrierName(c.carrier)).join(' and ')} done in ${state.cart.seconds} s.${merged === 1 ? ' The cart tab is in front: check it and pay there.' : merged ? ' Each cart is in a tab of its own: check them and pay there.' : ''}`);
 }
-// The carriers the cart button is for: the chosen items', else all items', else the ones the NL methods name.
+// The carriers the cart button is for: the chosen items', else all items', else the ones the seller's methods name.
 function cartCarriers(p, withCodes, withLabels) {
   const ok = p ? p.tracked.filter(t => !t.error) : [];
   const picked = p ? carriersOf(withCodes ? p.stamps : [], withLabels ? ok : []) : [];
   if (picked.length) return picked;
   const all = p ? carriersOf(p.stamps, ok) : [];
-  return all.length ? all : methodCarriers(data.NL?.methods);
+  return all.length ? all : methodCarriers(own?.methods);
 }
 // The line under the cart items: one per carrier when there are several.
 function cartSummary(c) {
@@ -295,6 +299,7 @@ $('#savesettings').onclick = async () => {
   const where = f.sheet.on ? `${f.sheet.cols}×${f.sheet.rows} labels of ${mm(e.width)}×${mm(e.height)} mm on ${mm(f.sheet.paperW)}×${mm(f.sheet.paperH)} mm paper`
     : `${f.width}×${f.height} mm${f.rotate ? `, turned ${f.rotate}° on a ${f.rotate % 180 ? `${f.height}×${f.width}` : `${f.width}×${f.height}`} mm page` : ''}`;
   $('#settingsmsg').textContent = `Saved: ${where}, ${isDefault ? 'default' : 'own'} layout.`;
+  await loadOwn().catch(() => {});
   fillSettingsForm();
   lastKey = '';
   render();
@@ -303,8 +308,9 @@ $('#savesettings').onclick = async () => {
 // ---------------------------------------------------------------- methods
 let methodsData;
 async function loadMethods() {
-  const d = methodsData = await loadData('NL');
-  if (!$('#country').options.length) {
+  const d = await loadOwn();
+  if (methodsData !== d) {
+    methodsData = d;
     const have = new Set(d.rates.map(r => r.Iso));
     $('#country').innerHTML = Object.entries(d.countries).filter(([iso]) => have.has(iso)).sort().map(([iso, v]) => `<option value="${iso}">${esc(v[0])} (${iso})</option>`).join('');
     $('#country').value = 'DE';
@@ -379,7 +385,7 @@ async function checkAccess() {
 $('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(`Permission request failed: ${e.message}`); } await checkAccess(); };
 
 await loadSettings();
-await loadData('NL').catch(() => {});   // the carriers of the methods name the cart button before any load
+await loadOwn().catch(() => {});   // the carriers of the methods name the cart button before any load
 await purgeStale();
 // the last load (also one made in the Cardmarket page panel), if it is recent
 const last = await getRun();

@@ -9,7 +9,7 @@ import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { langFromPath, pageText } from './locale.js';
 import { planSales } from './plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS } from './carriers.js';
-import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData, saveLang } from './store.js';
+import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadOwnData, saveLang } from './store.js';
 import { esc } from './esc.js';
 
 const AGAIN_PROMPT = 'A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?';
@@ -81,7 +81,7 @@ export async function start({ saleId, list }) {
   const h1 = document.querySelector('h1');
   const anchor = document.createElement('div');
   // Before a sale is planned, the cart is named by the carriers of the origin's methods (NL: PostNL).
-  const originCarriers = methodCarriers((await loadData('NL').catch(() => null))?.methods);
+  const originCarriers = methodCarriers((await loadOwnData().catch(() => null))?.methods);
   const originCart = cartTitle(originCarriers);
   const labelText = saleId ? `Add to ${originCart}` : 'cm-labels';
   const ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h7.2l6.3 6.3v7.2A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/></svg>';
@@ -176,7 +176,7 @@ export async function start({ saleId, list }) {
   async function load() {
     state.plan = null; state.only = null;
     await clearRun();   // a failed load leaves no earlier run behind
-    const cfg = await loadData('NL');
+    const cfg = await loadOwnData();
     const me = await ext.tabs.getCurrent();
     const sales = await loadSales(list, { lang: langFromPath(location.pathname) || 'en', log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
     state.plan = planSales(sales, cfg, (await getSettings()).country, BRACKETS); state.list = list; state.loadedAt = new Date(); state.cart = null;
@@ -200,7 +200,7 @@ export async function start({ saleId, list }) {
   }
   // Single sale page: read this page, plan it, put it in the cart.
   async function addThisSale() {
-    const cfg = await loadData('NL');
+    const cfg = await loadOwnData();
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
     const p = planSales([sale], cfg, (await getSettings()).country, BRACKETS);
@@ -213,11 +213,11 @@ export async function start({ saleId, list }) {
 
   // Single sale page: read this page, plan it, open the print dialog for its address label.
   async function printThisSale() {
-    const cfg = await loadData('NL');
+    const cfg = await loadOwnData();
     const sale = globalThis.__cmlCM?.sale(saleId);
     if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
     const s = await getSettings();
-    const p = planSales([sale], cfg, s.country);
+    const p = planSales([sale], cfg, s.country, BRACKETS);
     if (!p.print.length) throw new Error(issues(p)[0]?.text || 'no label for this sale');
     await ext.storage.local.set({ printJob: { orders: p.print, settings: s, at: Date.now() } });
     await openPage('print.html', { reuse: false });

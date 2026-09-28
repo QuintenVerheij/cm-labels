@@ -75,3 +75,8 @@ export async function loadData(origin) {
   const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
   return data[origin] = { methods, countries, rates, byName: byNameOf(countries) };
 }
+// The data of the seller's country setting; NL when there are no files for it.
+export async function loadOwnData() {
+  const { country } = await getSettings();
+  return loadData(country).catch(() => loadData('NL'));
+}

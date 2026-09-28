@@ -24,3 +24,17 @@ test('loadData for origin NL returns the methods, countries and rates in the NL 
   assert.equal(d.byName[read('countries').DE[0]], 'DE');
   assert.equal(await loadData('NL'), d);
 });
+
+test('loadData for origin DE returns the DE files and leaves the NL objects unchanged', async () => {
+  const nl = await loadData('NL'), nlMethods = JSON.stringify(nl.methods);
+  const d = await loadData('DE');
+  assert.ok(fetched.includes('data/methods.DE.json'));
+  assert.deepEqual(d.methods, read('methods.DE'));
+  assert.deepEqual(d.countries, read('countries.DE'));
+  assert.deepEqual(d.rates, read('rates.DE'));
+  assert.equal(d.byName.Germany, 'DE');
+  assert.notEqual(d, nl);
+  assert.equal(await loadData('NL'), nl);
+  assert.equal(JSON.stringify(nl.methods), nlMethods);
+  assert.deepEqual(nl.methods, read('methods'));
+});

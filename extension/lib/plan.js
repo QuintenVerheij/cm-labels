@@ -179,7 +179,7 @@ export function planSales(sales, cfg, origin = 'NL', brackets = {}) {
       try { tracked.push({ ...trackedPlan(s, m, cfg, origin), address: s.address, method: s.method, value: s.value, carrier: s.carrier }); }
       catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [], carrier: s.carrier }); }
     } else {
-      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : m && s.carrier === 'none' ? `method '${r.methodName}' has no carrier in the method data (source file methods.psd1): buy by hand` : `unknown tracked method '${r.methodName}': add it to the method data (source file methods.psd1)` });
+      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': ${m.Reason || 'buy by hand'}` : m && s.carrier === 'none' ? `method '${r.methodName}' has no carrier in the method data (source file methods.psd1): buy by hand` : `unknown tracked method '${r.methodName}': add it to the method data (source file methods.psd1)` });
     }
   }
   const stampList = [...stamps.values()].sort((a, b) => (a.iso !== origin) - (b.iso !== origin) || a.iso.localeCompare(b.iso) || a.weight - b.weight);
