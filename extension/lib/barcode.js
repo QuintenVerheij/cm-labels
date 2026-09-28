@@ -8,9 +8,9 @@
 // The SVG has shape-rendering crispEdges, so the bars stay sharp on a thermal printer. A value that the barcode
 // type cannot encode shows a red box with the reason (also on the print: fix the template).
 import { toSVG } from '../vendor/bwip-js/bwip-js.mjs';
+import { esc } from './esc.js';
 
 const TWO_D = /^(qrcode|microqrcode|rectangularmicroqrcode|gs1qrcode|gs1dlqrcode|hibcqrcode|swissqrcode|datamatrix|datamatrixrectangular|datamatrixrectangularextension|gs1datamatrix|gs1datamatrixrectangular|gs1dldatamatrix|hibcdatamatrix|hibcdatamatrixrectangular|azteccode|azteccodecompact|aztecrune|hibcazteccode|maxicode|dotcode|gs1dotcode|hanxin|codeone|ultracode|pdf417|pdf417compact|micropdf417|hibcpdf417|hibcmicropdf417)$/i;
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const unesc = s => String(s ?? '').replace(/&(amp|lt|gt|quot|#39);/g, (_, e) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }[e]));
 const mm = (v, dflt) => { const m = String(v ?? '').match(/^\s*(\d+(?:\.\d+)?)\s*(?:mm)?\s*$/i); return m ? +m[1] : dflt; };
 const attrs = s => Object.fromEntries([...s.matchAll(/([a-z-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi)].map(m => [m[1].toLowerCase(), unesc(m[2] ?? m[3] ?? m[4])]));

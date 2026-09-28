@@ -1,7 +1,7 @@
 // One WebExtension API for Chromium and Firefox, for extension pages and for content scripts.
 // Firefox has browser.* (promises), Chromium chrome.* (promises in Manifest V3).
 // Content scripts (the panel in the Cardmarket page) have no tabs/scripting/windows API: there the same calls go
-// through the background script (background.js, message 'cml-rpc'), which runs them and answers. So the run code
+// through the background script (background.js, message { cml: 'rpc' }), which runs them and answers. So the run code
 // (lib/cardmarket.js, lib/postnl.js) is the same in the app page and in the Cardmarket page.
 const raw = globalThis.browser ?? globalThis.chrome;
 export const isContentScript = !raw.tabs;

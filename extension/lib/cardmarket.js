@@ -16,7 +16,7 @@ export const baseFromPath = path => {
 // The only pages the code can read: English labels, Magic.
 export const isReadablePath = path => baseFromPath(path) === BASE;
 export const LISTS = {
-  Paid: { path: '/Orders/Sales/Paid', query: 'presaleStatus=2', allPages: true },   // incl. presale; all pages
+  Paid: { path: '/Orders/Sales/Paid', query: 'presaleStatus=2' },   // incl. presale
 };
 const listUrl = (list, page = 1) => {
   const l = LISTS[list];
@@ -58,7 +58,7 @@ async function loadPage(tab, url, done = () => true, ms = 60000, missing = null)
 // onProgress(done, total): after every sale page (for a progress bar); the log gets a line every 10.
 // only: sale ids (10 digits). When given, only those sale pages are read, not the ids on the list pages (the
 // first list page still loads, for the login check).
-export async function loadSales(list, { log, onLogin, windowId, onProgress = () => {}, only = null, saleMs = 45000, loginMs = 600000, loginPollMs = 3000 }) {
+export async function loadSales(list, { log, onLogin = () => {}, windowId, onProgress = () => {}, only = null, saleMs = 45000, loginMs = 600000, loginPollMs = 3000 }) {
   const tab = await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId, hash: WORKER_HASH });
   const workers = [];
   try {
@@ -85,13 +85,13 @@ export async function loadSales(list, { log, onLogin, windowId, onProgress = () 
     } else {
       const first = await tab.call('list');
       ids = first.ids;
-      const pages = LISTS[list].allPages ? first.pages : 1;
+      const pages = first.pages;
       for (let p = 2; p <= pages; p++) {
         await pause();
         await loadPage(tab, listUrl(list, p), st => st.url.includes(`site=${p}`));
         ids = [...new Set(ids.concat((await tab.call('list')).ids))];
       }
-      log(`${list}: ${ids.length} sale(s)${LISTS[list].allPages ? ` on ${pages} page(s)` : ' on page 1'}. Reading the sale pages, ${WORKERS} at a time...`);
+      log(`${list}: ${ids.length} sale(s) on ${pages} page(s). Reading the sale pages, ${WORKERS} at a time...`);
     }
 
     const t = Date.now(), out = []; let next = 0, stop = null, stuck = 0;

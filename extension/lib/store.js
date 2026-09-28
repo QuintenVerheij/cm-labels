@@ -1,14 +1,13 @@
 // Settings and the last run, in storage.local: shared by the app page, the panel in the Cardmarket page and the
 // print page.
 import { ext } from './ext.js';
+import { esc } from './esc.js';
 
 // html '' = the default layout, made from the label size (so it scales when the size changes)
-export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', list: 'Paid' };
+export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '' };
 
-// One-time migration from the ZPL settings (up to 1.6): the ZPL layout is gone, and so is the return-address
-// setting. A return address that was set becomes part of an own HTML template (the default 4 lines, centred above
-// a small return line), so nothing changes on the label.
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Migration of the old settings: a stored return address becomes part of an own HTML template (the default 4
+// lines, centred above a small return line); the keys of the old settings are dropped.
 export function templateWithReturn(W, H, text) {
   const size = Math.max(2.5, Math.min(8, (H - 8) / 4 / 1.25)).toFixed(1);
   return `<div style="position:relative; height:100%">
@@ -31,7 +30,6 @@ async function migrate(s) {
   return out;
 }
 export async function getSettings() { return { ...DEFAULTS, ...(await migrate((await ext.storage.local.get('settings')).settings || {})) }; }
-export async function setSettings(s) { await ext.storage.local.set({ settings: s }); }
 
 // The last load: the full page shows the panel's run and the other way round.
 const MAX_AGE = 12 * 3600 * 1000;

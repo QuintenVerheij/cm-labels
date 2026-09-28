@@ -1,12 +1,12 @@
 ﻿# Cardmarket shipping method (text before "(max. NNNg)") -> PostNL product and option on
 # jouw.postnl.nl/online-versturen/nl-NL/pakket/kiezen. Origin is always NL.
 #
-#   Service  stamp   = postzegelcode, 70x40 label (cm-labels + order-stamps, as today)
+#   Service  stamp   = postzegelcode and a 70x40 label
 #            postnl  = tracked PostNL label: pick Product + Option by label text, weight from max. NNNg
 #            manual  = not automated; buy by hand
 #   Product  PostNL card text under "Wat wil je versturen?"
 #   Option   PostNL radio text under "Hoe wil je het versturen?"
-#   Only     ISO codes the method exists for (from shipping-costs.csv); empty = all EU countries
+#   Only     ISO code of the one country the method exists for (from shipping-costs.csv); absent = no restriction
 #   Seen     order = matched to a past tracked sale; page = product and option seen on the PostNL page;
 #            guess = not yet confirmed on PostNL, check before the first real order
 #

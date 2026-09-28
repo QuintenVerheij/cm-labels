@@ -47,7 +47,6 @@
 
   const Q = {
     path: () => location.pathname,
-    host: () => location.host,
     dest: () => (document.body.innerText.split('Wat is de bestemming?')[1] || '').split('Ander land')[0].trim(),
     qty: () => (document.querySelector('.stepper-number-input') || {}).value,
     total: () => (document.body.innerText.split('Totaalbedrag (incl. btw):').pop() || '').split(/Nog iets|Onthouden/)[0].replace(/\s+/g, ''),

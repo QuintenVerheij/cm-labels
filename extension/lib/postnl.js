@@ -34,7 +34,7 @@ async function fill(tab, spec, text, what) {
 }
 // PostNL's cookie wall blocks the tab until answered and can pop up at any moment: every wait and click loop
 // of a PostNL tab checks for it (Tab.onPoll) and answers "only needed cookies". cookieWall() also checks at
-// the fixed moments it used to.
+// the fixed steps of the flow.
 async function cookieWall(tab, log) {
   const wall = await tab.safe('cookie', false);
   if (wall) log?.('PostNL cookie wall answered: only needed cookies');

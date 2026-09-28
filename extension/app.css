@@ -111,10 +111,10 @@ pre#log { margin: 0; background: var(--log-bg); color: var(--log-ink); border-ra
 .pick input:disabled + .box { opacity: .45; cursor: default; }
 .cartbar #cart { align-self: center; padding: 10px 18px; }
 
-/* settings: ZPL editor + preview */
+/* settings: layout editor + preview */
 textarea { font: 12px/1.45 Consolas, ui-monospace, monospace; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; width: 100%; resize: vertical; }
-.zplrow { align-items: flex-start; }
-.zplpreview { margin: 18px 0 0; }
+.layoutrow { align-items: flex-start; }
+.layoutpreview { margin: 18px 0 0; }
 .progress { margin-top: 10px; }
 #cartprogress { margin-top: 14px; }
 .progresstext { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
@@ -137,6 +137,6 @@ details.help[open] > summary { border-bottom: 1px solid var(--line); }
 .helpbody pre { margin: 0 0 8px; padding: 6px 8px; border-radius: 4px; background: var(--chip); font: 11px/1.4 Consolas, ui-monospace, monospace; overflow-x: auto; }
 .helpbody table.attrs th { text-align: left; vertical-align: top; font-family: Consolas, ui-monospace, monospace; font-weight: 600; color: inherit; font-size: 12px; white-space: nowrap; }
 .helpbody table.attrs th, .helpbody table.attrs td { padding: 2px 10px 2px 0; border: 0; }
-.zplpreview .frame { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: #fff; }
-.zplpreview figcaption { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.layoutpreview .frame { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: #fff; }
+.layoutpreview figcaption { font-size: 11px; color: var(--muted); margin-top: 3px; }
 code { font: 11px Consolas, ui-monospace, monospace; background: var(--chip); padding: 0 3px; border-radius: 3px; }

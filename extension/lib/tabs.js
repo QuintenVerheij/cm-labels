@@ -1,5 +1,5 @@
 // Work tabs for the app page: hidden (inactive) tabs in a collapsed "cm-labels" tab group, driven through a
-// content script (ext.scripting). Replaces the CDP client of the Node version.
+// content script (ext.scripting).
 import { ext, callInTab, injectFile } from './ext.js';
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 

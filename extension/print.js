@@ -1,6 +1,5 @@
 // Print page for the panel in the Cardmarket page (Cardmarket's own page cannot host our print frame): it shows
-// the labels of the print job (one per page, or on sheets), opens the print dialog and closes itself afterwards. The panel
-// opens it only after your click on Print, and only after a load of the Paid list.
+// the labels of the print job (one per page, or on sheets), opens the print dialog and closes itself afterwards.
 import { ext } from './lib/ext.js';
 import { pagesHtml, printCss, paper, fitLabels, isSheet, printSummary, mm } from './lib/labels.js';
 

@@ -9,8 +9,8 @@ import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { planSales } from './plan.js';
 import { buildCart } from './postnl.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadData } from './store.js';
+import { esc } from './esc.js';
 
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = d => d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 
@@ -58,8 +58,6 @@ const CSS = `
 
 export async function start({ saleId, list }) {
   const readable = isReadablePath(location.pathname);
-  const test = list && list !== 'Paid';   // Arrived / Unpaid: a test list (page 1): no printing
-  const word = (list || 'Paid').toLowerCase();
   const state = { job: null, plan: null, list: null, loadedAt: null, cart: null, error: null, progress: null, lines: [] };
   // progress comes from the onProgress callbacks of loadSales (every sale) and buildCart (every step of every
   // cart item: the bar moves per step, the text counts the finished items)
@@ -173,7 +171,7 @@ export async function start({ saleId, list }) {
     await clearRun();   // a failed load leaves no earlier run behind
     const cfg = await loadData();
     const me = await ext.tabs.getCurrent();
-    const sales = await loadSales(list, { log, windowId: me.windowId, onLogin: () => {}, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
+    const sales = await loadSales(list, { log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
     state.plan = planSales(sales, cfg); state.list = list; state.loadedAt = new Date(); state.cart = null;
     state.pick = { codes: state.plan.stamps.length > 0, labels: nLabels(state.plan) > 0 };
     await saveRun(list, state.plan);
@@ -239,8 +237,8 @@ export async function start({ saleId, list }) {
     } else if (!p) {
       const rows = document.querySelectorAll('div[data-url*="/Orders/"]').length;
       const pages = +((document.body.textContent.match(/Page \d+ of (\d+)/) || [])[1] || 1);
-      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${rows} ${word} sale(s) on this page${test ? ' (test: page 1 only)' : pages > 1 ? `, ${pages} pages` : ''}.</div>
-        <div class="actions"><button class="btn" id="load">Load ${word} sales</button></div>`;
+      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${rows} paid sale(s) on this page${pages > 1 ? `, ${pages} pages` : ''}.</div>
+        <div class="actions"><button class="btn" id="load">Load paid sales</button></div>`;
     } else {
       const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0), is = issues(p);
       html = `<div class="sum">${p.print.length} label(s) · ${nStamps} stamp(s) in ${p.stamps.length} code(s) · ${nLabels(p)} tracked${p.skipped.length ? ` · ${p.skipped.length} by hand` : ''}</div>
@@ -255,8 +253,8 @@ export async function start({ saleId, list }) {
         ${cartLine()}`;
     }
     $('#body').innerHTML = html + (state.job || !last ? '' : `<div class="log">${esc(last)}</div>`);
-    $('#load')?.addEventListener('click', () => run(`Loading ${word} sales`, load));
-    $('#reload')?.addEventListener('click', e => { e.preventDefault(); run(`Loading ${word} sales`, load); });
+    $('#load')?.addEventListener('click', () => run('Loading paid sales', load));
+    $('#reload')?.addEventListener('click', e => { e.preventDefault(); run('Loading paid sales', load); });
     $('#again')?.addEventListener('click', () => run('Adding this sale', addThisSale));
     for (const k of ['codes', 'labels']) $(`#${k}`)?.addEventListener('change', e => { state.pick = { ...state.pick, [k]: e.target.checked }; render(); });
     $('#print')?.addEventListener('click', () => run('Opening the print dialog', print));

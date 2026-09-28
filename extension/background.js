@@ -26,7 +26,8 @@ async function openPage(page, reuse = true) {
 }
 ext.action.onClicked.addListener(() => openPage('app.html'));
 
-// Same function as inTab in lib/ext.js: runs window[ns][name](...args) in the tab.
+// Same function as inTab in lib/ext.js, copied because background.js is a classic script (the manifest does not
+// declare it as a module) and cannot import. Runs window[ns][name](...args) in the tab.
 const inTab = (ns, name, args) => {
   const lib = globalThis[ns];
   if (!lib) return { missing: true };

@@ -1,7 +1,5 @@
-// Based on cdp/plan.mjs (same rules); the extension adds the label fields for the ZPL template (Fields).
 // What to do with each sale: stamp (70x40 label + postzegelcode), PostNL tracked label, or by hand.
-// The address rules are the ones tested in order-tracked.ps1 (NL house number + suffix keys, street/extra
-// split and PostNL's extra fields outside NL).
+// Address rules: NL house number + suffix keys, street/extra split and PostNL's extra fields outside NL.
 
 export const Norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[^a-z0-9]/g, '');
 // House number suffix compare key: letters and digits only, upper case ("A-1", "a 1", "A/1" -> "A1"; "t/o" -> "TO").
@@ -98,7 +96,7 @@ function trackedPlan(s, m, cfg) {
   p.Country = c?.[1];
   if (m.Only && m.Only !== s.iso) throw new Error(`method '${s.methodName}' is for ${m.Only} only, sale goes to ${s.iso}`);
   if (!s.grams) throw new Error("no 'max. NNNg' in the method");
-  if (!c || c.length < 3) throw new Error(`country '${s.country}' has no postcode pattern in countries.psd1 (EU only)`);
+  if (!c || c.length < 3) throw new Error(`country '${s.country}' has no postcode pattern in the country data (source file countries.psd1)`);
   [p.First, p.Last] = splitName(s.name);
   const pcm = s.city.match(new RegExp(`^(?:[A-Z]{1,2}-)?(?<pc>${c[2]})\\s+(?<town>.+)$`, 'i'));
   if (!pcm) throw new Error(`line '${s.city}' does not start with a ${s.iso} postcode`);
@@ -114,7 +112,7 @@ function trackedPlan(s, m, cfg) {
     p.Manual = splitStreet(s.iso, s.street, s.extras);
     if (!p.Manual) p.warnings.push('no street + house number found; only PostNL address suggestions can be used');
   }
-  if (p.Seen === 'guess') p.warnings.push('the PostNL mapping for this method is a guess (methods.psd1); check the choice');
+  if (p.Seen === 'guess') p.warnings.push('the PostNL mapping for this method is a guess (see the method data, source file methods.psd1); check the choice');
   return p;
 }
 
@@ -126,7 +124,7 @@ function labelFields(s, cfg) {
   return { NAME: s.name, ADDRESS: [...s.extras, s.street].filter(Boolean), POSTCODE: m ? m.groups.pc.toUpperCase() : '', CITY: m ? m.groups.town.trim() : s.city, COUNTRY: s.country, ID: String(s.id ?? '') };
 }
 
-// sales: from cardmarket.readSales. Returns the breakdown for the UI and the cart.
+// sales: from loadSales in cardmarket.js. Returns the breakdown for the UI and the cart.
 export function planSales(sales, cfg) {
   const stamps = new Map(), print = [], tracked = [], skipped = [], all = [];
   for (const r of sales) {
@@ -142,9 +140,9 @@ export function planSales(sales, cfg) {
     if (s.service === 'stamp') {
       if (!Number.isFinite(s.value)) { skipped.push({ ...base, reason: 'untracked, article value could not be read from the page; check the sale' }); continue; }
       if (s.value >= THRESHOLD) { skipped.push({ ...base, reason: `untracked, article value ${s.value} >= ${THRESHOLD}; check the sale` }); continue; }
-      print.push({ Id: s.id, Value: s.value, Method: s.method, Address: s.address, Skip: null, Grams: s.grams, Iso: s.iso, Fields: labelFields(s, cfg) });
+      print.push({ Id: s.id, Value: s.value, Method: s.method, Address: s.address, Grams: s.grams, Iso: s.iso, Fields: labelFields(s, cfg) });
       let reason = null;
-      if (!s.iso) reason = `country '${s.country}' is not in countries.psd1; buy its stamp by hand`;
+      if (!s.iso) reason = `country '${s.country}' is not in the country data (source file countries.psd1); buy its stamp by hand`;
       else if (!s.grams || s.grams > 50) reason = `no stamp weight up to 50 g in '${s.method}'; buy its stamp by hand`;
       if (reason) { skipped.push({ ...base, reason: 'label printed, stamp by hand: ' + reason }); continue; }
       const w = s.grams <= 20 ? 20 : 50, code = `${s.iso}-${w}`;
@@ -154,7 +152,7 @@ export function planSales(sales, cfg) {
       try { tracked.push({ ...trackedPlan(s, m, cfg), address: s.address, method: s.method, value: s.value }); }
       catch (e) { tracked.push({ Id: s.id, Iso: s.iso, Product: m.Product, Option: m.Option, error: e.message, address: s.address, method: s.method, value: s.value, warnings: [] }); }
     } else {
-      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : `unknown tracked method '${r.methodName}': add it to methods.psd1` });
+      skipped.push({ ...base, reason: s.service === 'manual' ? `manual method '${r.methodName}': buy by hand` : `unknown tracked method '${r.methodName}': add it to the method data (source file methods.psd1)` });
     }
   }
   const stampList = [...stamps.values()].sort((a, b) => (a.iso !== 'NL') - (b.iso !== 'NL') || a.iso.localeCompare(b.iso) || a.weight - b.weight);
