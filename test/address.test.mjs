@@ -133,6 +133,7 @@ for (const [line, Street, Number, Suffix, Extra] of [
   ['Hauptstraße 12a', 'Hauptstraße', '12', 'a', ''],
   ['Straße des 17. Juni 135, Hinterhaus', 'Straße des 17. Juni', '135', '', 'Hinterhaus'],
   ['c/o Müller, Bahnhofstr. 3', 'Bahnhofstr.', '3', '', 'c/o Müller'],
+  ['Königsallee 3-5', 'Königsallee', '3-5', '', ''],
 ]) {
   test(`DE origin domestic sale splits "${line}"`, () => {
     const p = planSales([{
@@ -143,6 +144,14 @@ for (const [line, Street, Number, Suffix, Extra] of [
     assert.deepEqual({ Street: p.Street, Number: p.Number, Suffix: p.Suffix, Extra: p.Extra, Postcode: p.Postcode, Town: p.Town }, { Street, Number, Suffix, Extra, Postcode: '10623', Town: 'Berlin' });
   });
 }
+
+test('DE origin NL sale carries street and number, not an address line', () => {
+  const p = planSales([{
+    id: '1', methodName: 'Parcel', method: 'Parcel max. 2000 g', grams: 2000, tracked: true, value: 10,
+    lines: [{ kind: 'Name', text: 'Jan Jansen' }, { kind: 'Street', text: 'Kerkstraat 1' }, { kind: 'City', text: '1234AB Utrecht' }, { kind: 'Country', text: 'Netherlands' }],
+  }], trackedCfg, 'DE').tracked[0];
+  assert.deepEqual({ Street: p.Street, Number: p.Number, AddressLine: p.AddressLine }, { Street: 'Kerkstraat', Number: '1', AddressLine: undefined });
+});
 
 test('postcodeProblem checks the postcode against the origin format', () => {
   assert.equal(postcodeProblem('NL', '1234 AB'), '');

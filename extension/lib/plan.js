@@ -114,7 +114,12 @@ function trackedPlan(s, m, cfg, origin) {
     p.Manual = splitStreet(s.iso, s.street, s.extras);
     if (!p.Manual) p.warnings.push('no street + house number found; only PostNL address suggestions can be used');
     // A domestic sale outside NL shows the origin's own layout: street, number + suffix, then extras.
-    if (s.iso === origin && p.Manual) Object.assign(p, { Street: p.Manual.Street, Number: p.Manual.Nr, Suffix: p.Manual.Ext, Extra: p.Manual.Extra });
+    if (s.iso === origin && p.Manual) {
+      Object.assign(p, { Street: p.Manual.Street, Number: p.Manual.Nr, Suffix: p.Manual.Ext, Extra: p.Manual.Extra });
+      // A German house number range ("3-5") is the number, not a number plus an extra.
+      const range = origin === 'DE' && s.street.match(/^(?<street>.*\D)[\s,]+(?<nr>\d{1,5}-\d{1,5})\s*$/);
+      if (range) Object.assign(p, { Street: range.groups.street.trim(), Number: range.groups.nr, Suffix: '', Extra: s.extras.join(', ') });
+    }
   }
   if (p.Seen === 'guess') p.warnings.push('the PostNL mapping for this method is a guess (see the method data, source file methods.psd1); check the choice');
   return p;

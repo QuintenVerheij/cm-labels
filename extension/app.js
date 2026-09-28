@@ -74,7 +74,7 @@ function renderLog() {
 }
 function addressText(t) {
   if (t.error) return '';
-  if (t.Iso === settings.country && (t.Iso === 'NL' || t.Manual)) return `${esc(t.Street)} ${esc(t.Number)}${t.Suffix ? ` <span class="tag">${esc(t.Suffix)}</span>` : ''}${t.Iso !== 'NL' && t.Extra ? `<br>${esc(t.Extra)}` : ''}<br>${esc(t.Postcode)} ${esc(t.Town)}`;
+  if (t.Iso === 'NL' || (t.Iso === settings.country && t.Manual)) return `${esc(t.Street)} ${esc(t.Number)}${t.Suffix ? ` <span class="tag">${esc(t.Suffix)}</span>` : ''}${t.Iso !== 'NL' && t.Extra ? `<br>${esc(t.Extra)}` : ''}<br>${esc(t.Postcode)} ${esc(t.Town)}`;
   const m = t.Manual;
   const man = m ? `<br><span class="hint">manual if needed: ${esc(m.Street)} · ${esc(m.Nr)}${m.Ext ? ' ' + esc(m.Ext) : ''}${Object.entries(m.Fields || {}).map(([f, v]) => ` · ${esc(f)}: ${esc(v)}`).join('')}</span>` : '';
   return `${esc(t.AddressLine)}<br>${esc(t.Postcode)} ${esc(t.Town)}${man}`;
