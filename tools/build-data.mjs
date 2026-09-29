@@ -1,7 +1,11 @@
 // Converts the data sources (methods.psd1, countries.psd1, shipping-costs.csv) into the JSON files the
 // browser extension ships with. Run after editing them: node tools/build-data.mjs
+// One set of sources and JSON files per origin country. NL uses the bare names (methods.psd1, countries.psd1,
+// shipping-costs.csv -> methods.json, countries.json, rates.json); another origin puts its ISO code before the
+// extension (methods.DE.psd1, countries.DE.psd1, shipping-costs.DE.csv -> methods.DE.json, ...). Every
+// methods.<ISO>.psd1 in the repository root adds an origin.
 //   --out <dir>   write the JSON files to <dir> instead of extension/data
-//   --csv <file>  read the rates from <file> instead of shipping-costs.csv
+//   --csv <file>  read the NL rates from <file> instead of shipping-costs.csv
 //   --check       write nothing; exit 1 if extension/data differs from the sources or a rate row is duplicated
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +24,8 @@ const option = name => {
   return path.resolve(args[i + 1]);
 };
 const out = option('--out') ?? dataDir;
-const csvPath = option('--csv') ?? path.join(root, 'shipping-costs.csv');
+const csvOverride = option('--csv');
+const origins = ['NL', ...fs.readdirSync(root).map(f => /^methods\.([A-Z]{2})\.psd1$/.exec(f)?.[1]).filter(Boolean).sort()];
 
 function rateKey(r) { return [r.Iso, r.Method, r.MaxWeight, r.MaxValue].join(' | '); }
 
@@ -30,23 +35,32 @@ function findDuplicates(rates) {
   return [...groups].filter(([k, rows]) => rows.length > 1);
 }
 
-const { methods, countries } = loadConfig(root);
-const csv = fs.readFileSync(csvPath, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter(Boolean).map(line => {
-  const cells = []; let cur = '', q = false;
-  for (let i = 0; i < line.length; i++) { const c = line[i]; if (q) { if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; } else if (c === '"') q = true; else if (c === ',') { cells.push(cur); cur = ''; } else cur += c; }
-  cells.push(cur); return cells;
-});
-const [head, ...rows] = csv;
-const rates = rows.map(r => Object.fromEntries(head.map((h, i) => [h, r[i]])));
+function build(origin) {
+  const sfx = origin === 'NL' ? '' : '.' + origin;
+  const { methods, countries } = loadConfig(root, origin);
+  const csvPath = (origin === 'NL' && csvOverride) || path.join(root, `shipping-costs${sfx}.csv`);
+  const csv = fs.readFileSync(csvPath, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter(Boolean).map(line => {
+    const cells = []; let cur = '', q = false;
+    for (let i = 0; i < line.length; i++) { const c = line[i]; if (q) { if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; } else if (c === '"') q = true; else if (c === ',') { cells.push(cur); cur = ''; } else cur += c; }
+    cells.push(cur); return cells;
+  });
+  const [head, ...rows] = csv;
+  const rates = rows.map(r => Object.fromEntries(head.map((h, i) => [h, r[i]])));
 
-const duplicates = findDuplicates(rates);
-if (duplicates.length) {
-  console.error('duplicate rate rows (same Iso, Method, MaxWeight, MaxValue):');
-  for (const [k, dupRows] of duplicates) for (const r of dupRows) console.error(`  ${k} -> ${JSON.stringify(r)}`);
-  process.exit(1);
+  const duplicates = findDuplicates(rates);
+  if (duplicates.length) {
+    console.error('duplicate rate rows (same Iso, Method, MaxWeight, MaxValue):');
+    for (const [k, dupRows] of duplicates) for (const r of dupRows) console.error(`  ${k} -> ${JSON.stringify(r)}`);
+    process.exit(1);
+  }
+
+  const files = Object.entries({ methods, countries, rates }).map(([name, data]) => [`${name}${sfx}.json`, JSON.stringify(data, null, 1) + '\n']);
+  return { files, methods: Object.keys(methods).length, countries: Object.keys(countries).length, rates: rates.length };
 }
 
-const files = Object.entries({ methods, countries, rates }).map(([name, data]) => [`${name}.json`, JSON.stringify(data, null, 1) + '\n']);
+const built = origins.map(build);
+const files = built.flatMap(b => b.files);
+const sum = key => built.reduce((n, b) => n + b[key], 0);
 
 if (check) {
   // Git may check the JSON out with CRLF line endings; compare content, not line endings.
@@ -59,9 +73,9 @@ if (check) {
     console.error(`extension/data is out of date with the sources: ${stale.join(', ')}. Run: node tools/build-data.mjs`);
     process.exit(1);
   }
-  console.log(`extension/data matches the sources (${rates.length} rates)`);
+  console.log(`extension/data matches the sources (${sum('rates')} rates)`);
 } else {
   fs.mkdirSync(out, { recursive: true });
   for (const [file, text] of files) fs.writeFileSync(path.join(out, file), text, 'utf8');
-  console.log(`wrote ${Object.keys(methods).length} methods, ${Object.keys(countries).length} countries, ${rates.length} rates to ${out}`);
+  console.log(`wrote ${sum('methods')} methods, ${sum('countries')} countries, ${sum('rates')} rates to ${out}`);
 }

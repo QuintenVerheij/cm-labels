@@ -11,82 +11,82 @@
 <body>
 <header>
   <h1>cm-labels</h1>
-  <nav><button data-tab="run" class="on">Run</button><button data-tab="settings">Settings</button><button data-tab="methods">Methods</button></nav>
-  <div id="status"><span id="dot"></span><span id="statustext">idle</span></div>
+  <nav><button data-tab="run" class="on" data-i18n="nav.run">Run</button><button data-tab="settings" data-i18n="nav.settings">Settings</button><button data-tab="methods" data-i18n="nav.methods">Methods</button></nav>
+  <div id="status"><span id="dot"></span><span id="statustext" data-i18n="status.idle">idle</span></div>
 </header>
 <main>
   <section class="card banner" id="access" hidden>
-    Firefox asks for permission first: this add-on reads Cardmarket and fills in PostNL.
+    <span id="accessnote">Firefox asks for permission first: this add-on reads Cardmarket and fills in PostNL.</span>
     <div class="row"><button class="b primary" id="grant">Allow access to cardmarket.com and jouw.postnl.nl</button></div>
   </section>
 
   <section class="card" data-panel="run">
-    <h2>Load orders from Cardmarket</h2>
-    <div class="row"><button class="b primary" id="load">Load paid orders</button><span class="hint" id="onlyinfo"></span></div>
+    <h2 data-i18n="run.title">Load orders from Cardmarket</h2>
+    <div class="row"><button class="b primary" id="load" data-i18n="run.load">Load paid orders</button><span class="hint" id="onlyinfo"></span></div>
     <div class="progress" id="loadprogress" hidden><div class="progresstext"></div><div class="pbar"><i></i></div></div>
     <details class="help" id="onlywrap">
-      <summary>Specific order numbers</summary>
+      <summary data-i18n="run.only.summary">Specific order numbers</summary>
       <div class="helpbody onlybody">
-        <label class="field">Order numbers (10 digits), separated by spaces, commas or new lines. When this field has numbers, only those orders load.
+        <label class="field"><span data-i18n="run.only.label">Order numbers (10 digits), separated by spaces, commas or new lines. When this field has numbers, only those orders load.</span>
           <textarea id="only" rows="3" spellcheck="false" placeholder="1234567890, 1234567891"></textarea>
         </label>
       </div>
     </details>
-    <div class="banner" id="login" hidden>Log in to Cardmarket in the Cardmarket tab. The run continues by itself once you are logged in.</div>
+    <div class="banner" id="login" hidden data-i18n="login.notice">Log in to Cardmarket in the Cardmarket tab. The run continues by itself once you are logged in.</div>
   </section>
 
   <section class="card" data-panel="run" id="result" hidden>
-    <h2 id="resulttitle">Breakdown</h2>
+    <h2 id="resulttitle" data-i18n="result.title">Breakdown</h2>
     <div class="chips" id="chips"></div>
 
-    <h3>Stamps to get (postzegelcodes)</h3>
+    <h3 data-i18n="result.stamps">Stamps to get (postzegelcodes)</h3>
     <div class="scroll"><table id="stamps"></table></div>
 
-    <h3>Tracked labels (PostNL)</h3>
+    <h3 data-i18n="result.tracked">Tracked labels (PostNL)</h3>
     <div class="scroll"><table id="tracked"></table></div>
 
-    <div id="skippedwrap"><h3>By hand</h3><div class="scroll"><table id="skipped"></table></div></div>
+    <div id="skippedwrap"><h3 data-i18n="result.byHand">By hand</h3><div class="scroll"><table id="skipped"></table></div></div>
 
     <div class="bar labelsbar">
       <button class="expander" id="prevtoggle" aria-expanded="false" aria-controls="previews">
         <span class="chev" aria-hidden="true"></span>
-        <span class="title">Address labels</span>
+        <span class="title" data-i18n="labels.title">Address labels</span>
         <span class="count" id="prevcount">0</span>
         <span class="sub" id="prevsize"></span>
       </button>
-      <label class="startat" id="startwrap" hidden>Start at position <input type="number" id="start" min="1" class="short"></label>
-      <button class="b primary" id="print">Print</button>
+      <label class="startat" id="startwrap" hidden><span data-i18n="labels.startAt">Start at position</span> <input type="number" id="start" min="1" class="short"></label>
+      <button class="b primary" id="print" data-i18n="labels.print">Print</button>
     </div>
     <div class="previews" id="previews" hidden></div>
 
     <div class="bar cartbar">
-      <label class="pick"><input type="checkbox" id="pickcodes"><span class="box"><b>Codes</b><span id="codesinfo"></span></span></label>
-      <label class="pick"><input type="checkbox" id="picklabels"><span class="box"><b>Shipping labels</b><span id="labelsinfo"></span></span></label>
-      <button class="b primary" id="cart">Add to PostNL cart</button>
+      <label class="pick"><input type="checkbox" id="pickcodes"><span class="box"><b data-i18n="pick.codes">Codes</b><span id="codesinfo"></span></span></label>
+      <label class="pick"><input type="checkbox" id="picklabels"><span class="box"><b data-i18n="pick.labels">Shipping labels</b><span id="labelsinfo"></span></span></label>
+      <button class="b primary" id="cart" data-i18n="cart.addPostnl">Add to PostNL cart</button>
     </div>
     <div class="progress" id="cartprogress" hidden><div class="progresstext"></div><div class="pbar"><i></i></div></div>
-    <div id="cartresult" hidden><h3>PostNL cart</h3><div class="scroll"><table id="cartitems"></table></div><p class="hint" id="cartsummary"></p></div>
+    <div id="cartresult" hidden><h3 data-i18n="cart.resultTitle">PostNL cart</h3><div class="scroll"><table id="cartitems"></table></div><p class="hint" id="cartsummary"></p></div>
   </section>
 
   <section class="card" data-panel="settings" hidden>
-    <h2>Paper</h2>
-    <div class="seg" role="radiogroup" aria-label="Paper">
-      <label><input type="radio" name="papermode" value="printer"><span><b>Label printer</b><small>One label per page</small></span></label>
-      <label><input type="radio" name="papermode" value="sheet"><span><b>Sheet</b><small>Several labels on one page, in columns × rows</small></span></label>
+    <h2 data-i18n="paper.title">Paper</h2>
+    <div class="seg" role="radiogroup" data-i18n-aria-label="paper.title" aria-label="Paper">
+      <label><input type="radio" name="papermode" value="printer"><span><b data-i18n="paper.printer">Label printer</b><small data-i18n="paper.printerSub">One label per page</small></span></label>
+      <label><input type="radio" name="papermode" value="sheet"><span><b data-i18n="paper.sheet">Sheet</b><small data-i18n="paper.sheetSub">Several labels on one page, in columns × rows</small></span></label>
     </div>
     <div id="printerfields">
       <div class="row">
-        <label class="field">Label width (mm)<input type="text" id="lw" inputmode="decimal" class="short"></label>
-        <label class="field">Label height (mm)<input type="text" id="lh" inputmode="decimal" class="short"></label>
-        <span class="hint">Common: 70×40, 50×30, 100×150 (A6), 102×76</span>
+        <label class="field"><span data-i18n="paper.lw">Label width (mm)</span><input type="text" id="lw" inputmode="decimal" class="short"></label>
+        <label class="field"><span data-i18n="paper.lh">Label height (mm)</span><input type="text" id="lh" inputmode="decimal" class="short"></label>
+        <span class="hint" data-i18n="paper.common">Common: 70×40, 50×30, 100×150 (A6), 102×76</span>
       </div>
       <div class="row">
-        <label class="field">Rotation on the paper
+        <label class="field"><span data-i18n="rotate.label">Rotation on the paper</span>
           <select id="rotate" class="short" style="width:auto;min-width:0">
-            <option value="0">0° (page = label)</option>
-            <option value="90">90° (portrait page, label turned right)</option>
-            <option value="270">270° (portrait page, label turned left)</option>
-            <option value="180">180° (upside down)</option>
+            <option value="0" data-i18n="rotate.0">0° (page = label)</option>
+            <option value="90" data-i18n="rotate.90">90° (portrait page, label turned right)</option>
+            <option value="270" data-i18n="rotate.270">270° (portrait page, label turned left)</option>
+            <option value="180" data-i18n="rotate.180">180° (upside down)</option>
           </select>
         </label>
       </div>
@@ -95,116 +95,121 @@
       <div class="sheetrow">
         <div class="sheetform">
           <div class="row">
-            <label class="field">Paper
+            <label class="field"><span data-i18n="paper.paper">Paper</span>
               <select id="paper" class="short" style="width:auto;min-width:0">
                 <option value="A4">A4 (210 × 297)</option>
-                <option value="A4 landscape">A4 landscape (297 × 210)</option>
+                <option value="A4 landscape" data-i18n="paper.a4l">A4 landscape (297 × 210)</option>
                 <option value="A5">A5 (148 × 210)</option>
-                <option value="A5 landscape">A5 landscape (210 × 148)</option>
+                <option value="A5 landscape" data-i18n="paper.a5l">A5 landscape (210 × 148)</option>
                 <option value="Letter">Letter (215.9 × 279.4)</option>
-                <option value="custom">Own size</option>
+                <option value="custom" data-i18n="paper.custom">Own size</option>
               </select>
             </label>
-            <label class="field">Width (mm)<input type="text" id="pw" inputmode="decimal" class="short"></label>
-            <label class="field">Height (mm)<input type="text" id="ph" inputmode="decimal" class="short"></label>
+            <label class="field"><span data-i18n="paper.width">Width (mm)</span><input type="text" id="pw" inputmode="decimal" class="short"></label>
+            <label class="field"><span data-i18n="paper.height">Height (mm)</span><input type="text" id="ph" inputmode="decimal" class="short"></label>
           </div>
           <div class="row">
-            <label class="field">Columns<input type="number" id="cols" min="1" max="12" class="short"></label>
-            <label class="field">Rows<input type="number" id="rows" min="1" max="30" class="short"></label>
+            <label class="field"><span data-i18n="paper.cols">Columns</span><input type="number" id="cols" min="1" max="12" class="short"></label>
+            <label class="field"><span data-i18n="paper.rows">Rows</span><input type="number" id="rows" min="1" max="30" class="short"></label>
           </div>
           <p class="hint" id="sheetinfo"></p>
         </div>
-        <figure class="sheetpreview"><div class="sheetview" id="sheetgrid"></div><figcaption>Positions on the sheet</figcaption></figure>
+        <figure class="sheetpreview"><div class="sheetview" id="sheetgrid"></div><figcaption data-i18n="paper.positions">Positions on the sheet</figcaption></figure>
       </div>
     </div>
-    <h2 style="margin-top:18px">Label layout</h2>
+    <h2 style="margin-top:18px" data-i18n="layout.title">Label layout</h2>
     <div class="row layoutrow">
-      <label class="field grow"><span>Layout (HTML). Fields: <code>{NAME}</code> <code>{ADDRESS}</code> <code>{POSTCODE}</code> <code>{CITY}</code> <code>{COUNTRY}</code> <code>{ID}</code>, <code>&lt;cml-barcode&gt;</code></span>
+      <label class="field grow"><span data-i18n-html="layout.field">Layout (HTML). Fields: <code>{NAME}</code> <code>{ADDRESS}</code> <code>{POSTCODE}</code> <code>{CITY}</code> <code>{COUNTRY}</code> <code>{ID}</code>, <code>&lt;cml-barcode&gt;</code></span>
         <textarea id="html" rows="12" spellcheck="false"></textarea>
       </label>
-      <figure class="layoutpreview"><div class="frame" id="htmlpreview"></div><figcaption>Preview with a sample address</figcaption></figure>
+      <figure class="layoutpreview"><div class="frame" id="htmlpreview"></div><figcaption data-i18n="layout.preview">Preview with a sample address</figcaption></figure>
     </div>
-    <div class="row"><button class="b" id="htmldefault">Default layout for this size</button><span class="hint" id="htmlinfo"></span></div>
+    <div class="row"><button class="b" id="htmldefault" data-i18n="layout.default">Default layout for this size</button><span class="hint" id="htmlinfo"></span></div>
     <details class="help">
-      <summary>How the layout works: fields, fit, barcodes, printing</summary>
+      <summary data-i18n="help.summary">How the layout works: fields, fit, barcodes, printing</summary>
       <div class="helpbody">
         <section>
-          <h4>Fields</h4>
-          <p>Filled per sale. The text is HTML-escaped.</p>
+          <h4 data-i18n="help.fields.h">Fields</h4>
+          <p data-i18n="help.fields.intro">Filled per sale. The text is HTML-escaped.</p>
           <dl>
-            <dt><code>{NAME}</code></dt><dd>Name of the buyer</dd>
-            <dt><code>{ADDRESS}</code></dt><dd>Extra lines and the street, with <code>&lt;br&gt;</code> between them</dd>
-            <dt><code>{POSTCODE}</code> <code>{CITY}</code></dt><dd>From the city line of Cardmarket. If the postcode is not found, <code>{CITY}</code> has the full line.</dd>
-            <dt><code>{COUNTRY}</code></dt><dd>Country name</dd>
-            <dt><code>{ID}</code></dt><dd>Cardmarket sale number, for example <code>1234567890</code></dd>
+            <dt><code>{NAME}</code></dt><dd data-i18n="help.fields.name">Name of the buyer</dd>
+            <dt><code>{ADDRESS}</code></dt><dd data-i18n-html="help.fields.address">Extra lines and the street, with <code>&lt;br&gt;</code> between them</dd>
+            <dt><code>{POSTCODE}</code> <code>{CITY}</code></dt><dd data-i18n-html="help.fields.postcode">From the city line of Cardmarket. If the postcode is not found, <code>{CITY}</code> has the full line.</dd>
+            <dt><code>{COUNTRY}</code></dt><dd data-i18n="help.fields.country">Country name</dd>
+            <dt><code>{ID}</code></dt><dd data-i18n-html="help.fields.id">Cardmarket sale number, for example <code>1234567890</code></dd>
           </dl>
         </section>
         <section>
-          <h4>Layout</h4>
+          <h4 data-i18n="help.layout.h">Layout</h4>
           <ul>
-            <li>The label is a box of the label size. Your HTML fills it: use <code>height:100%</code> on the outer element.</li>
-            <li>Use <code>mm</code> for sizes. Then the layout is the same on the preview and on the label.</li>
-            <li>Put your own text, for example a return address, directly in the HTML.</li>
-            <li>Scripts and <code>on...</code> attributes do not run.</li>
+            <li data-i18n-html="help.layout.l1">The label is a box of the label size. Your HTML fills it: use <code>height:100%</code> on the outer element.</li>
+            <li data-i18n-html="help.layout.l2">Use <code>mm</code> for sizes. Then the layout is the same on the preview and on the label.</li>
+            <li data-i18n="help.layout.l3">Put your own text, for example a return address, directly in the HTML.</li>
+            <li data-i18n-html="help.layout.l4">Scripts and <code>on...</code> attributes do not run.</li>
           </ul>
         </section>
         <section>
-          <h4>Fit</h4>
+          <h4 data-i18n="help.fit.h">Fit</h4>
           <ul>
-            <li><code>class="fit"</code> on a line: if a line is too wide, all fit lines get a smaller font by the same factor.</li>
-            <li>If the content is higher than the label, the fit lines get smaller again.</li>
+            <li data-i18n-html="help.fit.f1"><code>class="fit"</code> on a line: if a line is too wide, all fit lines get a smaller font by the same factor.</li>
+            <li data-i18n="help.fit.f2">If the content is higher than the label, the fit lines get smaller again.</li>
           </ul>
         </section>
         <section>
-          <h4>Barcodes (SVG)</h4>
-          <p>Put a <code>&lt;cml-barcode&gt;</code> tag in the layout. The extension makes an SVG barcode from it (bwip-js, in the extension, no network).</p>
+          <h4 data-i18n="help.bc.h">Barcodes (SVG)</h4>
+          <p data-i18n-html="help.bc.intro">Put a <code>&lt;cml-barcode&gt;</code> tag in the layout. The extension makes an SVG barcode from it (bwip-js, in the extension, no network).</p>
           <pre>&lt;cml-barcode type="code128" value="{ID}" text="true"&gt;&lt;/cml-barcode&gt;
 &lt;cml-barcode type="qrcode" size="14mm"
   value="https://www.cardmarket.com/en/Magic/Orders/{ID}"&gt;&lt;/cml-barcode&gt;</pre>
           <table class="attrs">
-            <tr><th>type</th><td>Barcode type. Default <code>code128</code>. Also for example <code>code39</code>, <code>ean13</code>, <code>qrcode</code>, <code>datamatrix</code>, <code>pdf417</code>.</td></tr>
-            <tr><th>value</th><td>The data. Fields are filled, for example <code>{ID}</code>.</td></tr>
-            <tr><th>height</th><td>Height of the bars in mm. Default <code>8mm</code>. For 2D codes, do not set it: the code keeps its shape.</td></tr>
-            <tr><th>module</th><td>Width of the thinnest bar in mm. Default <code>0.25mm</code> (2 dots at 203 dpi, where one dot is 0.125&nbsp;mm). The barcode width follows from it.</td></tr>
-            <tr><th>size</th><td>Total width in mm, instead of <code>module</code>. Use it for 2D codes.</td></tr>
-            <tr><th>quiet</th><td>Empty zone left and right, in modules. Default 10 (linear) or 4 (2D).</td></tr>
-            <tr><th>text</th><td><code>true</code> shows the value under the bars. Other text shows that text.</td></tr>
+            <tr><th>type</th><td data-i18n-html="help.bc.type">Barcode type. Default <code>code128</code>. Also for example <code>code39</code>, <code>ean13</code>, <code>qrcode</code>, <code>datamatrix</code>, <code>pdf417</code>.</td></tr>
+            <tr><th>value</th><td data-i18n-html="help.bc.value">The data. Fields are filled, for example <code>{ID}</code>.</td></tr>
+            <tr><th>height</th><td data-i18n-html="help.bc.height">Height of the bars in mm. Default <code>8mm</code>. For 2D codes, do not set it: the code keeps its shape.</td></tr>
+            <tr><th>module</th><td data-i18n-html="help.bc.module">Width of the thinnest bar in mm. Default <code>0.25mm</code> (2 dots at 203 dpi, where one dot is 0.125&nbsp;mm). The barcode width follows from it.</td></tr>
+            <tr><th>size</th><td data-i18n-html="help.bc.size">Total width in mm, instead of <code>module</code>. Use it for 2D codes.</td></tr>
+            <tr><th>quiet</th><td data-i18n="help.bc.quiet">Empty zone left and right, in modules. Default 10 (linear) or 4 (2D).</td></tr>
+            <tr><th>text</th><td data-i18n-html="help.bc.text"><code>true</code> shows the value under the bars. Other text shows that text.</td></tr>
           </table>
           <ul>
-            <li>For a thermal printer, set <code>module</code> to a whole number of dots: 0.125&nbsp;mm is one dot at 203&nbsp;dpi, 0.085&nbsp;mm is one dot at 300&nbsp;dpi.</li>
-            <li>If the value is not correct for the type, the label shows a red box with the reason.</li>
+            <li data-i18n-html="help.bc.b1">For a thermal printer, set <code>module</code> to a whole number of dots: 0.125&nbsp;mm is one dot at 203&nbsp;dpi, 0.085&nbsp;mm is one dot at 300&nbsp;dpi.</li>
+            <li data-i18n="help.bc.b2">If the value is not correct for the type, the label shows a red box with the reason.</li>
           </ul>
         </section>
         <section>
-          <h4>Printing</h4>
+          <h4 data-i18n="help.print.h">Printing</h4>
           <ul>
-            <li>What the preview shows is what prints.</li>
-            <li>Select the printer in the print dialog.</li>
-            <li>Label printer: set the paper size to the label size. Sheet: set it to the sheet size (e.g. A4).</li>
-            <li>Set the margins to "None" and the scale to 100%.</li>
-            <li>Sheet: click a position on sheet 1 in the Run tab to start there (for a sheet with used labels).</li>
+            <li data-i18n="help.print.p1">What the preview shows is what prints.</li>
+            <li data-i18n="help.print.p2">Select the printer in the print dialog.</li>
+            <li data-i18n="help.print.p3">Label printer: set the paper size to the label size. Sheet: set it to the sheet size (e.g. A4).</li>
+            <li data-i18n="help.print.p4">Set the margins to "None" and the scale to 100%.</li>
+            <li data-i18n="help.print.p5">Sheet: click a position on sheet 1 in the Run tab to start there (for a sheet with used labels).</li>
           </ul>
         </section>
       </div>
     </details>
+    <h2 style="margin-top:18px" data-i18n="lang.title">Language</h2>
+    <div class="row"><label class="field"><span data-i18n="lang.label">Interface language</span> <select id="uilang" class="short" style="width:auto;min-width:0"><option value="auto" data-i18n="lang.auto">Automatic (browser language)</option><option value="en">English</option><option value="de">Deutsch</option></select></label></div>
     <h2 style="margin-top:18px">PostNL</h2>
     <div class="row">
-      <label class="field grow">Fallback e-mail (for tracked sales to countries where PostNL requires one, e.g. FR, when Cardmarket has none)
+      <label class="field grow"><span data-i18n="postnl.femail">Fallback e-mail (for tracked sales to countries where PostNL requires one, e.g. FR, when Cardmarket has none)</span>
         <input type="text" id="femail" placeholder="you@example.com" autocomplete="off">
       </label>
     </div>
-    <div class="row"><button class="b primary" id="savesettings">Save</button><span class="hint" id="settingsmsg"></span></div>
+    <h2 data-i18n="country.title">Country</h2>
+    <div class="row"><label class="field"><span data-i18n="country.shop">Shop country</span> <select id="shopcountry" class="short" style="width:auto;min-width:0"><option value="NL" data-i18n="country.nl">Netherlands</option><option value="DE" data-i18n="country.de">Germany</option></select></label></div>
+    <div class="row"><label class="field"><span data-i18n="country.postcode">Shop postcode</span> <input type="text" id="shoppostcode" class="short" placeholder="1234 AB / 12345" autocomplete="off"></label></div>
+    <div class="row"><button class="b primary" id="savesettings" data-i18n="settings.save">Save</button><span class="hint" id="settingsmsg"></span></div>
   </section>
 
   <section class="card" data-panel="methods" hidden>
-    <h2>Cardmarket method → PostNL</h2>
-    <div class="row"><label class="field">Destination <select id="country"></select></label></div>
-    <p class="hint">Rates from help.cardmarket.com, origin NL. A red "guess" = check on PostNL before the first order.</p>
+    <h2 id="methodstitle">Cardmarket method → PostNL</h2>
+    <div class="row"><label class="field"><span data-i18n="methods.destination">Destination</span> <select id="country"></select></label></div>
+    <p class="hint" id="methodshint">Rates from help.cardmarket.com, origin NL. A red "guess" = check on PostNL before the first order.</p>
     <div class="scroll"><table id="mtable"></table></div>
   </section>
 
   <section class="card">
-    <h2>Log</h2>
+    <h2 data-i18n="log.title">Log</h2>
     <pre id="log"></pre>
   </section>
 </main>

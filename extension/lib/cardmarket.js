@@ -5,23 +5,26 @@
 // three times in a row on a challenge or an unknown page.
 import { Tab, sleep } from './tabs.js';
 import { ext } from './ext.js';
+import { LANGS } from './locale.js';
 const tabGone = async tab => { try { await ext.tabs.get(tab.id); return false; } catch { return true; } };
 
-export const BASE = 'https://www.cardmarket.com/en/Magic';
+// The hosts loading sales needs: the only ones the app page requires before Load (a cart asks for its shops).
+export const ORIGINS = ['https://www.cardmarket.com/*'];
+const baseFor = lang => `https://www.cardmarket.com/${lang}/Magic`;
 // Language and game base of a Cardmarket path ('/de/Pokemon/Orders/1' -> '.../de/Pokemon'); null for any other path.
 export const baseFromPath = path => {
   const m = String(path).match(/^\/([A-Za-z]{2})\/([^/?#]+)(?:[/?#]|$)/);
   return m ? `https://www.cardmarket.com/${m[1]}/${m[2]}` : null;
 };
-// The only pages the code can read: English labels, Magic.
-export const isReadablePath = path => baseFromPath(path) === BASE;
+// The only pages the code can read: Magic, in a language content/cm.js has labels for.
+export const isReadablePath = path => LANGS.some(l => baseFromPath(path) === baseFor(l));
 export const LISTS = {
   Paid: { path: '/Orders/Sales/Paid', query: 'presaleStatus=2' },   // incl. presale
 };
-const listUrl = (list, page = 1) => {
+const listUrl = (list, page = 1, lang = 'en') => {
   const l = LISTS[list];
   const qs = [l.query, page > 1 ? `site=${page}` : ''].filter(Boolean).join('&');
-  return BASE + l.path + (qs ? '?' + qs : '');
+  return baseFor(lang) + l.path + (qs ? '?' + qs : '');
 };
 // content/panel.js does not start in a tab whose URL ends in this
 const WORKER_HASH = '#cml-worker';
@@ -58,11 +61,11 @@ async function loadPage(tab, url, done = () => true, ms = 60000, missing = null)
 // onProgress(done, total): after every sale page (for a progress bar); the log gets a line every 10.
 // only: sale ids (10 digits). When given, only those sale pages are read, not the ids on the list pages (the
 // first list page still loads, for the login check).
-export async function loadSales(list, { log, onLogin = () => {}, windowId, onProgress = () => {}, only = null, saleMs = 45000, loginMs = 600000, loginPollMs = 3000 }) {
+export async function loadSales(list, { lang = 'en', log, onLogin = () => {}, windowId, onProgress = () => {}, only = null, saleMs = 45000, loginMs = 600000, loginPollMs = 3000 }) {
   const tab = await Tab.open('about:blank', { file: 'content/cm.js', ns: '__cmlCM', windowId, hash: WORKER_HASH });
   const workers = [];
   try {
-    let s = await loadPage(tab, listUrl(list));
+    let s = await loadPage(tab, listUrl(list, 1, lang));
     if (!s.loggedIn) {
       log('Not logged in to Cardmarket: log in in the Cardmarket tab. The run continues by itself.');
       onLogin(true);
@@ -76,7 +79,7 @@ export async function loadSales(list, { log, onLogin = () => {}, windowId, onPro
       onLogin(false);
       log('Logged in.');
       await pause();
-      s = await loadPage(tab, listUrl(list), st => st.loggedIn);
+      s = await loadPage(tab, listUrl(list, 1, lang), st => st.loggedIn);
     }
     let ids;
     if (only?.length) {
@@ -85,10 +88,11 @@ export async function loadSales(list, { log, onLogin = () => {}, windowId, onPro
     } else {
       const first = await tab.call('list');
       ids = first.ids;
-      const pages = first.pages;
+      if (first.pages == null) log('Warning: the list has more than one page but its page count could not be read. Only page 1 is loaded.');
+      const pages = first.pages ?? 1;
       for (let p = 2; p <= pages; p++) {
         await pause();
-        await loadPage(tab, listUrl(list, p), st => st.url.includes(`site=${p}`));
+        await loadPage(tab, listUrl(list, p, lang), st => st.url.includes(`site=${p}`));
         ids = [...new Set(ids.concat((await tab.call('list')).ids))];
       }
       log(`${list}: ${ids.length} sale(s) on ${pages} page(s). Reading the sale pages, ${WORKERS} at a time...`);
@@ -103,7 +107,7 @@ export async function loadSales(list, { log, onLogin = () => {}, windowId, onPro
         const id = ids[next++];
         await pause();
         try {
-          const page = await loadPage(w, `${BASE}/Orders/${id}`, () => w.safe('hasSale', false, id), saleMs, `Sale ${id} not found: not your sale or no such order.`);
+          const page = await loadPage(w, `${baseFor(lang)}/Orders/${id}`, () => w.safe('hasSale', false, id), saleMs, `Sale ${id} not found: not your sale or no such order.`);
           if (!page.loggedIn) throw new PageTimeout(`Sale ${id} not read: logged out of Cardmarket.`, false);
           out.push(await w.call('sale', id));
           stuck = 0;

@@ -10,8 +10,9 @@ test('baseFromPath keeps the language and game of the path', () => {
   assert.equal(baseFromPath('/'), null);
 });
 
-test('only the English Magic pages are readable', () => {
+test('only the English and German Magic pages are readable', () => {
   assert.equal(isReadablePath('/en/Magic/Orders/Sales/Paid'), true);
-  assert.equal(isReadablePath('/de/Magic/Orders/Sales/Paid'), false);
+  assert.equal(isReadablePath('/de/Magic/Orders/Sales/Paid'), true);
+  assert.equal(isReadablePath('/fr/Magic/Orders/Sales/Paid'), false);
   assert.equal(isReadablePath('/en/Pokemon/Orders/Sales/Paid'), false);
 });

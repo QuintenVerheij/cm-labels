@@ -10,7 +10,7 @@ globalThis.browser = {
   } },
   tabs: {}, runtime: {},
 };
-const { saveRun, getRun, clearRun, purgeStale, runAge, runScope } = await import('../extension/lib/store.js');
+const { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings } = await import('../extension/lib/store.js');
 
 const HOUR = 3600 * 1000;
 beforeEach(() => { db = {}; });
@@ -20,6 +20,19 @@ test('getRun returns a fresh run and keeps it', async () => {
   const r = await getRun();
   assert.deepEqual(r.only, ['1234567890']);
   assert.ok('lastRun' in db);
+});
+
+test('a run saved before the carrier field reads as PostNL; a newer run keeps its carriers', async () => {
+  db.lastRun = { list: 'Paid', only: null, loadedAt: new Date().toISOString(), plan: {
+    print: [], stamps: [{ code: 'DE-20', qty: 1, ids: ['1'] }], tracked: [{ Id: '2' }, { Id: '3', error: 'x' }],
+  } };
+  const old = await getRun();
+  assert.deepEqual(old.plan.stamps.map(g => g.carrier), ['postnl']);
+  assert.deepEqual(old.plan.tracked.map(t => t.carrier), ['postnl', 'postnl']);
+  assert.deepEqual(old.plan.print, []);
+  await saveRun('Paid', { stamps: [{ code: 'DE-20', carrier: 'deutschepost' }], tracked: [{ Id: '4', carrier: 'dhl' }] });
+  const now = await getRun();
+  assert.deepEqual([now.plan.stamps[0].carrier, now.plan.tracked[0].carrier], ['deutschepost', 'dhl']);
 });
 
 test('getRun removes a run older than 12 hours from storage', async () => {
@@ -63,4 +76,11 @@ test('runAge and runScope describe a restored run', () => {
   assert.equal(runScope(['1', '2', '3'], 'paid orders'), '3 chosen orders');
   assert.equal(runScope(['1'], 'paid orders'), '1 chosen order');
   assert.equal(runScope(null, 'paid orders'), 'paid orders');
+});
+
+test('settings stored before the country setting existed read as NL', async () => {
+  db.settings = { width: 50, height: 30, rotate: 0, html: '', fallbackEmail: '', list: 'Paid' };
+  const s = await getSettings();
+  assert.equal(s.country, 'NL');
+  assert.equal(s.width, 50);
 });

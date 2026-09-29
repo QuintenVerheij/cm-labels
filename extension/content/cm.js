@@ -6,16 +6,50 @@
   const T = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
   const head = () => document.title + ' ' + (document.body?.innerText || '').slice(0, 600);
 
-  // Cloudflare localises its pages, so the markup decides and the English text is only a fallback.
+  // The texts read from a Cardmarket page, per language of the page (the /en/ or /de/ of its URL). A page is read
+  // with its own language first and English second, so a page in either language still parses.
+  // Entries marked (guess) are best guesses for the German page: no German seller page was available to check them.
+  const LABELS = {
+    en: {
+      block: /Attention Required|Sorry, you have been blocked|Access denied|Error 10\d\d/i,
+      limited: /Too Many Requests|Error 429|HTTP ERROR 429/i,
+      check: /Just a moment|Performing security verification|Verify you are human/i,
+      pages: /Page \d+ of (\d+)/,
+      method: /^Shipping Method$/i,
+      max: /max\.?\s*(\d{1,3}(?:[,.]\d{3})+|\d+)\s*g/i,
+      mail: /mail/i,
+      noTracking: /No tracking/i,
+      trackingCode: /^Tracking Code$/i,
+      phone: /^Phone Number$/i,
+      saleNo: ['Sale #'],
+    },
+    de: {
+      block: /Attention Required|Sorry, you have been blocked|Access denied|Error 10\d\d/i,   // as served on /de/
+      limited: /Zu viele Anfragen/i,                                                     // (guess)
+      check: /Einen Moment|Sicherheitsüberprüfung|Bestätigen Sie, dass Sie ein Mensch sind/i,   // (guess)
+      pages: /Seite \d+ von (\d+)/,                                                      // (guess)
+      method: /^Versandart$/i,                                                           // (guess)
+      max: /max(?:\.|imal)?\s*(\d{1,3}(?:[,.]\d{3})+|\d+)\s*g/i,                          // (guess)
+      mail: /mail/i,                                                                     // (guess) "E-Mail"
+      noTracking: /Keine Sendungsverfolgung|Kein Tracking|Ohne Tracking/i,               // (guess)
+      trackingCode: /^(?:Sendungsnummer|Tracking-?Code)$/i,                              // (guess)
+      phone: /^Telefonnummer$/i,                                                         // (guess)
+      saleNo: ['Verkauf #', 'Bestellung #'],                                             // (guess)
+    },
+  };
+  const lang = () => (location.href.match(/cardmarket\.com\/(en|de)\//) || [])[1] || 'en';
+  const labels = () => [...new Set([LABELS[lang()], LABELS.en])];
+  const firstMatch = (key, text) => { for (const l of labels()) { const m = text.match(l[key]); if (m) return m; } return null; };
+
+  // Cloudflare's markup decides; its text is only a fallback, read with the page's own language and English.
   // 'block' = Cloudflare refused this browser (stop everything); 'limited' = rate limit page (429);
   // 'check' = the normal "Just a moment" check.
   const has = sel => !!document.querySelector(sel);
-  const isBlock = h => has('#cf-wrapper') || has('#cf-error-details')
-    || /Attention Required|Sorry, you have been blocked|Access denied|Error 10\d\d/i.test(h);
-  const isLimited = h => /Too Many Requests|Error 429|HTTP ERROR 429/i.test(h);
+  const isBlock = h => has('#cf-wrapper') || has('#cf-error-details') || labels().map(l => l.block).some(r => r.test(h));
+  const isLimited = h => labels().map(l => l.limited).some(r => r.test(h));
   const isCheck = h => has('#challenge-form') || has('#challenge-running') || has('#challenge-stage') || has('[id^="cf-chl"]')
     || (has('script[src*="/cdn-cgi/challenge-platform"]') && (document.body?.innerText || '').trim().length < 200)
-    || /Just a moment|Performing security verification|Verify you are human/i.test(h);
+    || labels().map(l => l.check).some(r => r.test(h));
 
   function state() {
     const h = head();
@@ -31,8 +65,9 @@
 
   function list() {
     const ids = [...new Set([...document.querySelectorAll('div[data-url*="/Orders/"]')].map(d => (d.getAttribute('data-url').match(/Orders\/(\d{10})/) || [])[1]).filter(Boolean))];
-    const m = (document.body.textContent.match(/Page \d+ of (\d+)/) || [])[1];
-    return { ids, pages: m ? +m : 1 };
+    const m = (firstMatch('pages', document.body.textContent) || [])[1];
+    // A pager without a readable page count: null, so the caller does not take the page for the only one.
+    return { ids, pages: m ? +m : has('a[href*="site="]') ? null : 1 };
   }
 
   // The loaded sale page -> the fields the plan needs. The shipping blocks are Bootstrap collapses: read the
@@ -44,25 +79,26 @@
     const info = {};
     const dts = [...doc.querySelectorAll('#collapsibleOtherInfo dt')];
     for (const dt of dts) info[T(dt).replace(/:$/, '')] = dt.nextElementSibling;
-    const md = info['Shipping Method'];
+    const byLabel = key => Object.entries(info).find(([k]) => labels().some(l => l[key].test(k)))?.[1];
+    const md = byLabel('method');
     if (!md) return { id, error: 'shipping method not found on page' };
     const spans = md ? [...md.querySelectorAll(':scope > span')] : [];
     const methodName = T(spans.find(s => !s.classList.contains('text-muted')));
     const max = T(spans.find(s => s.classList.contains('text-muted')));
-    const grams = (max.match(/max\.?\s*(\d{1,3}(?:[,.]\d{3})+|\d+)\s*g/i) || [])[1]?.replace(/[,.]/g, '');
+    const grams = (firstMatch('max', max) || [])[1]?.replace(/[,.]/g, '');
     const flags = md ? T(md.querySelector('div')) : '';
     const all = dts.map(dt => T(dt.nextElementSibling)).join(' ');
-    const mailDd = Object.entries(info).find(([k]) => /mail/i.test(k))?.[1];
+    const mailDd = byLabel('mail');
     const mail = /[^@\s:<>()]+@[^@\s:<>()]+\.[A-Za-z]{2,}/;
     const email = (T(mailDd).match(mail) || all.match(mail) || [])[0] || null;
     const sum = doc.querySelector('[data-item-value]');
     return {
       id, lines, methodName, method: (methodName + max).trim(), grams: grams ? +grams : null,
-      tracked: md ? !/No tracking/i.test(flags) : null, trackingCode: T(info['Tracking Code']) || null,
-      phone: T(info['Phone Number']) || null, email,
+      tracked: md ? !firstMatch('noTracking', flags) : null, trackingCode: T(byLabel('trackingCode')) || null,
+      phone: T(byLabel('phone')) || null, email,
       value: sum && Number.isFinite(parseFloat(sum.getAttribute('data-item-value'))) ? +sum.getAttribute('data-item-value') : null, articles: sum ? +sum.getAttribute('data-article-count') : null,
     };
   }
 
-  window.__cmlCM = { state, list, sale, hasSale: id => document.body?.textContent.includes('Sale #' + id) && !!document.querySelector('#ShippingAddress') };
+  window.__cmlCM = { state, list, sale, hasSale: id => labels().some(l => l.saleNo.some(n => document.body?.textContent.includes(n + id))) && !!document.querySelector('#ShippingAddress') };
 })();

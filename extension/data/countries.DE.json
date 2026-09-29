@@ -1,0 +1,165 @@
+{
+ "LI": [
+  "Liechtenstein",
+  "Liechtenstein"
+ ],
+ "PL": [
+  "Poland",
+  "Polen",
+  "\\d{2}-\\d{3}"
+ ],
+ "IE": [
+  "Ireland",
+  "Irland",
+  "[A-Z]\\d[\\dW] ?[A-Z\\d]{4}"
+ ],
+ "LT": [
+  "Lithuania",
+  "Litauen",
+  "(?:LT-)?\\d{5}"
+ ],
+ "GR": [
+  "Greece",
+  "Griechenland",
+  "\\d{3} ?\\d{2}"
+ ],
+ "MT": [
+  "Malta",
+  "Malta",
+  "[A-Z]{3} ?\\d{4}"
+ ],
+ "SK": [
+  "Slovakia",
+  "Slowakei",
+  "\\d{3} ?\\d{2}"
+ ],
+ "LU": [
+  "Luxembourg",
+  "Luxemburg",
+  "(?:L-)?\\d{4}"
+ ],
+ "IT": [
+  "Italy",
+  "Italien",
+  "\\d{5}"
+ ],
+ "LV": [
+  "Latvia",
+  "Lettland",
+  "(?:LV-)?\\d{4}"
+ ],
+ "DE": [
+  "Germany",
+  "Deutschland",
+  "\\d{5}"
+ ],
+ "AT": [
+  "Austria",
+  "Österreich",
+  "\\d{4}"
+ ],
+ "ES": [
+  "Spain",
+  "Spanien",
+  "\\d{5}"
+ ],
+ "SI": [
+  "Slovenia",
+  "Slowenien",
+  "(?:SI-)?\\d{4}"
+ ],
+ "PT": [
+  "Portugal",
+  "Portugal",
+  "\\d{4}-\\d{3}"
+ ],
+ "CY": [
+  "Cyprus",
+  "Zypern",
+  "\\d{4}"
+ ],
+ "HR": [
+  "Croatia",
+  "Kroatien",
+  "\\d{5}"
+ ],
+ "SG": [
+  "Singapore",
+  "Singapur"
+ ],
+ "RO": [
+  "Romania",
+  "Rumänien",
+  "\\d{6}"
+ ],
+ "FR": [
+  "France",
+  "Frankreich",
+  "\\d{5}"
+ ],
+ "HU": [
+  "Hungary",
+  "Ungarn",
+  "\\d{4}"
+ ],
+ "SE": [
+  "Sweden",
+  "Schweden",
+  "\\d{3} ?\\d{2}"
+ ],
+ "EE": [
+  "Estonia",
+  "Estland",
+  "\\d{5}"
+ ],
+ "FI": [
+  "Finland",
+  "Finnland",
+  "\\d{5}"
+ ],
+ "CH": [
+  "Switzerland",
+  "Schweiz"
+ ],
+ "BE": [
+  "Belgium",
+  "Belgien",
+  "\\d{4}"
+ ],
+ "CZ": [
+  "Czech Republic",
+  "Tschechien",
+  "\\d{3} ?\\d{2}"
+ ],
+ "JP": [
+  "Japan",
+  "Japan"
+ ],
+ "DK": [
+  "Denmark",
+  "Dänemark",
+  "\\d{4}"
+ ],
+ "NO": [
+  "Norway",
+  "Norwegen"
+ ],
+ "IS": [
+  "Iceland",
+  "Island"
+ ],
+ "BG": [
+  "Bulgaria",
+  "Bulgarien",
+  "\\d{4}"
+ ],
+ "GB": [
+  "United Kingdom",
+  "Vereinigtes Königreich"
+ ],
+ "NL": [
+  "Netherlands",
+  "Niederlande",
+  "\\d{4} ?[A-Z]{2}"
+ ]
+}

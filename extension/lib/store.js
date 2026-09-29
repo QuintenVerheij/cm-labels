@@ -2,9 +2,12 @@
 // print page.
 import { ext } from './ext.js';
 import { esc } from './esc.js';
+import { byNameOf } from './locale.js';
+import { t } from './messages.js';
 
 // html '' = the default layout, made from the label size (so it scales when the size changes)
-export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '' };
+// uiLang: the interface language, 'auto' (the browser's), 'en' or 'de'
+export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL', postcode: '', uiLang: 'auto' };
 
 // Migration of the old settings: a stored return address becomes part of an own HTML template (the default 4
 // lines, centred above a small return line); the keys of the old settings are dropped.
@@ -39,7 +42,14 @@ export async function getRun() {
   const r = (await ext.storage.local.get('lastRun')).lastRun;
   if (!r) return null;
   if (!(Date.now() - Date.parse(r.loadedAt) < MAX_AGE)) { await clearRun(); return null; }   // buyer data does not outlive the cache
-  return { ...r, loadedAt: new Date(r.loadedAt) };
+  return { ...r, plan: withCarrier(r.plan), loadedAt: new Date(r.loadedAt) };
+}
+// A run saved before stamp groups and tracked labels named their carrier: every such run was PostNL's.
+export function withCarrier(plan) {
+  if (!plan) return plan;
+  const out = { ...plan };
+  for (const k of ['stamps', 'tracked']) if (Array.isArray(plan[k])) out[k] = plan[k].map(x => x.carrier ? x : { ...x, carrier: 'postnl' });
+  return out;
 }
 // The print page takes a print job within seconds; one that is still there was never opened.
 const JOB_MAX_AGE = 10 * 60 * 1000;
@@ -51,16 +61,26 @@ export async function purgeStale() {
 // Age and scope of a restored run, for the line above the breakdown.
 export function runAge(loadedAt, now = Date.now()) {
   const min = Math.max(0, Math.floor((now - +loadedAt) / 60000));
-  return min < 1 ? 'just now' : min < 60 ? `${min} min ago` : `${Math.floor(min / 60)} h ${min % 60} min ago`;
+  return min < 1 ? t('age.now') : min < 60 ? t('age.min', { min }) : t('age.hour', { h: Math.floor(min / 60), min: min % 60 });
 }
-export const runScope = (only, all) => only?.length ? `${only.length} chosen order${only.length === 1 ? '' : 's'}` : all;
+export const runScope = (only, all) => only?.length ? t('scope.chosen', { n: only.length }) : all;
 
-// The data files of the extension (methods, countries, rates).
-let data = null;
-export async function loadData() {
-  if (data) return data;
-  const get = async n => (await fetch(ext.runtime.getURL(`data/${n}.json`))).json();
+// The language of the Cardmarket pages the user browses; the app page has no Cardmarket page of its own to read it from.
+export const saveLang = lang => ext.storage.local.set({ cmLang: lang });
+export const getLang = async () => (await ext.storage.local.get('cmLang')).cmLang || 'en';
+
+// The data files of the extension (methods, countries, rates) for one origin country; NL's files carry no suffix.
+const data = {};
+export async function loadData(origin) {
+  if (data[origin]) return data[origin];
+  const get = async n => (await fetch(ext.runtime.getURL(`data/${n}${origin === 'NL' ? '' : '.' + origin}.json`))).json();
   const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
-  data = { methods, countries, rates, byName: Object.fromEntries(Object.entries(countries).map(([iso, v]) => [v[0], iso])) };
-  return data;
+  return data[origin] = { origin, methods, countries, rates, byName: byNameOf(countries) };
+}
+// The countries that have data files (the origins tools/build-data.mjs emits).
+const ORIGINS_WITH_DATA = ['NL', 'DE'];
+// The data of the seller's country setting; NL for a country without files. A failed fetch for a country with files throws.
+export async function loadOwnData() {
+  const { country } = await getSettings();
+  return loadData(ORIGINS_WITH_DATA.includes(country) ? country : 'NL');
 }

@@ -26,7 +26,8 @@ test('--out writes to the given directory and leaves extension/data untouched', 
   const before = snapshot();
   const r = run('--out', dir);
   assert.equal(r.status, 0, r.stderr);
-  assert.deepEqual(fs.readdirSync(dir).sort(), ['countries.json', 'methods.json', 'rates.json']);
+  const origins = ['', ...fs.readdirSync(root).map(f => /^methods\.([A-Z]{2})\.psd1$/.exec(f)?.[1]).filter(Boolean).map(o => '.' + o)].sort();
+  assert.deepEqual(fs.readdirSync(dir).sort(), origins.flatMap(o => ['countries', 'methods', 'rates'].map(n => `${n}${o}.json`)).sort());
   assert.deepEqual(snapshot(), before);
 }));
 
@@ -49,6 +50,20 @@ test('the duplicate check fails on a synthetic duplicate and prints the rows', (
   assert.equal(r.stderr.split('\n').filter(l => l.startsWith('  AT | Letter | ')).length, 2, r.stderr);
   assert.equal(fs.existsSync(path.join(dir, 'out')), false);
 }));
+
+test('every method of every origin names a carrier; a manual method of a non-NL origin has a reason', () => {
+  const files = fs.readdirSync(dataDir).filter(f => /^methods(\.[A-Z]{2})?\.json$/.test(f));
+  assert.ok(files.includes('methods.json'));
+  for (const f of files) {
+    for (const [name, m] of Object.entries(JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')))) {
+      assert.ok(['postnl', 'deutschepost', 'dhl', 'none'].includes(m.Carrier), `${f}: ${name}`);
+      if (m.Service === 'manual' && f !== 'methods.json') assert.ok(m.Reason, `${f}: ${name}`);
+      if (m.Service === 'manual' && f === 'methods.json') assert.equal(m.Carrier, 'none', `${f}: ${name}`);
+    }
+  }
+  const nl = JSON.parse(fs.readFileSync(path.join(dataDir, 'methods.json'), 'utf8'));
+  assert.deepEqual(Object.values(nl).filter(m => m.Carrier === 'none').map(m => m.Service), ['manual']);
+});
 
 test('AT, DK and LI each list the tracked letter at 500 g and 1000 g', () => {
   const tracked = 'Brievenbuspakje met track & trace (Tracked Letterbox packet)';
