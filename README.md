@@ -48,6 +48,15 @@ The tools run on Windows and macOS.
 
 The `.xpi` from `pack.mjs` is unsigned and is the same archive as the `.zip`. Release Firefox refuses an unsigned add-on except as a temporary add-on. To get a signed `.xpi`, set `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` (from the addons.mozilla.org API key page), then run `node tools/sign.mjs`. It signs as an unlisted add-on and writes the signed file to `dist/`; each upload needs a new `version` in `extension/manifest.json`.
 
+## Settings
+
+- **Label printer, die-cut or continuous roll.** On a continuous roll the label height is the cut length, and a feed adds blank space after each label so the cut does not touch the text. The cut itself is a setting of the printer driver: choose the roll and the cut after each label there. To cut along the other side, turn the label with the rotation.
+- **Images and fonts in the layout.** Upload an image (PNG, JPG, GIF, WebP, BMP or SVG) or a font (TTF, OTF, WOFF or WOFF2). An image is made black and white with one pixel for each printer dot, with a threshold and an optional dither. Use it as `<img src="asset:name">`. Use a font by its name in `font-family`. Together they may take 2 MB of the browser's storage.
+
+## The Run tab
+
+After a load, a table lists every order with its number, last name, country, quantity, article value and total. The Delete button takes an order out of the run, and the breakdown, the address labels and the cart choices follow at once. Loading the paid orders again replaces all of them.
+
 ## Shipping rules
 
 - An untracked (stamp) sale with an article value of 25 or more is skipped and left for you to check. So is one whose value cannot be read from the page.

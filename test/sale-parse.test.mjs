@@ -6,7 +6,7 @@ import { planSales } from '../extension/lib/plan.js';
 const el = (text, classes = [], extra = {}) => ({ textContent: text, classList: { contains: c => classes.includes(c) }, className: classes.join(' '), ...extra });
 
 // A fake sale page: just the queries content/cm.js makes in sale().
-function readSale({ lines, method = ['Standard Letter', 'max. 20 g', 'No tracking'], value = '12.50' }) {
+function readSale({ lines, method = ['Standard Letter', 'max. 20 g', 'No tracking'], value = '12.50', text = '' }) {
   const dts = [];
   if (method) {
     const spans = [el(method[0]), el(method[1], ['text-muted'])];
@@ -16,7 +16,7 @@ function readSale({ lines, method = ['Standard Letter', 'max. 20 g', 'No trackin
   const document = {
     querySelector: sel => (sel === '#ShippingAddress' ? {} : sel === '[data-item-value]' ? sum : null),
     querySelectorAll: sel => (sel === '#ShippingAddress > div' ? lines : sel === '#collapsibleOtherInfo dt' ? dts : []),
-    body: { textContent: '', innerText: '' },
+    body: { textContent: text, innerText: '' },
   };
   const window = {};
   new Function('window', 'document', 'location', readFileSync(new URL('../extension/content/cm.js', import.meta.url), 'utf8'))(window, document, { href: 'https://www.cardmarket.com/en/Magic/Orders/1' });
@@ -67,4 +67,27 @@ test('an untracked sale with no readable value is skipped with a reason that say
     assert.equal(p.print.length, 0);
     assert.match(p.skipped[0].reason, /could not be read/);
   }
+});
+
+// The Summary block of a sale page, as its text reads (English page; the amounts use a decimal comma).
+const SUMMARY_EN = 'Summary Contents 1 Articles Article Value 10,95 € Shipping 1,70 € Total 12,65 € Shipping address';
+test('the summary gives the shipping cost and the total order cost', () => {
+  const r = readSale({ lines: addr, text: SUMMARY_EN });
+  assert.equal(r.shipping, 1.7);
+  assert.equal(r.total, 12.65);
+  assert.equal(r.value, 12.5);   // the article value still comes from data-item-value
+  assert.equal(r.articles, 3);
+});
+
+test('the summary reads thousands separators and text without spaces between label and amount', () => {
+  const r = readSale({ lines: addr, text: 'Article Value1.234,50 €Shipping12,00 €Total1.246,50 €' });
+  assert.equal(r.shipping, 12);
+  assert.equal(r.total, 1246.5);
+});
+
+test('a page without a readable summary gives no shipping and no total', () => {
+  const r = readSale({ lines: addr, text: 'Article Value about 10 euro' });
+  assert.equal(r.shipping, null);
+  assert.equal(r.total, null);
+  assert.equal(readSale({ lines: addr }).total, null);
 });

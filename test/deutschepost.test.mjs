@@ -185,7 +185,7 @@ test('buildCart fills one cart in one tab, one line per product, and ends on the
   assert.equal(shop.opened.length, 1);
   assert.deepEqual(shop.cart.map(l => [l.name, l.qty]), [['Standardbrief', 2], ['Großbrief', 1], ['Standardbrief International', 3]]);
   assert.deepEqual(r.items.map(i => [i.key, i.ok, i.total]), [['DE-20 x2', true, 1.9], ['DE-500 x1', true, 1.8], ['FR-20 x1', true, 1.25], ['AT-20 x2', true, 2.5]]);
-  // count is the items (4: the UI says "4 item(s)"), though FR-20 and AT-20 share one of the 3 lines
+  // count is the items (4: the UI says "4 items"), though FR-20 and AT-20 share one of the 3 lines
   assert.deepEqual([r.merged, r.count, r.entities, r.total, r.expected, r.check], [true, 4, 6, 7.45, 7.45, true]);
   assert.equal(location.pathname, '/checkout');
 });
@@ -196,7 +196,7 @@ test('buildCart refuses a cart that already holds lines, and adds nothing', asyn
   const r = await run([g('DE-20', 1)]);
   assert.equal(shop.adds, 0);
   assert.equal(r.merged, false);
-  assert.match(r.error, /cart already holds 1 line\(s\): Maxibrief\. Nothing was added/);
+  assert.match(r.error, /cart already holds 1 line: Maxibrief\. Nothing was added/);
   assert.deepEqual(r.items.map(i => [i.ok, i.error === r.error]), [[false, true]]);
 });
 
@@ -239,7 +239,7 @@ test('a cart with an extra line after In den Warenkorb fails the product, and th
   const r = await run([g('DE-20', 2), g('DE-50', 1)]);
   assert.equal(shop.adds, 1);
   assert.deepEqual(r.items.map(i => i.ok), [false, false]);
-  assert.match(r.items[0].error, /the cart shows 2 line\(s\) after adding Standardbrief, expected 1: 2 x Standardbrief, Maxibrief/);
+  assert.match(r.items[0].error, /the cart shows 2 lines after adding Standardbrief, expected 1: 2 x Standardbrief, Maxibrief/);
   assert.match(r.items[1].error, /not tried: DE-20 x2 failed first/);
   assert.equal(r.merged, false);
 });

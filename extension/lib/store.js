@@ -5,9 +5,11 @@ import { esc } from './esc.js';
 import { byNameOf } from './locale.js';
 import { t } from './messages.js';
 
+// assets: the images and fonts of the layout (see assets.js)
+// media: 'label' (die-cut labels) or 'roll' (continuous roll: height = cut length, feed = mm of blank space after each label)
 // html '' = the default layout, made from the label size (so it scales when the size changes)
 // uiLang: the interface language, 'auto' (the browser's), 'en' or 'de'
-export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL', postcode: '', uiLang: 'auto' };
+export const DEFAULTS = { width: 70, height: 40, rotate: 0, media: 'label', feed: 0, assets: [], html: '', fallbackEmail: '', country: 'NL', postcode: '', uiLang: 'auto' };
 
 // Migration of the old settings: a stored return address becomes part of an own HTML template (the default 4
 // lines, centred above a small return line); the keys of the old settings are dropped.
@@ -36,7 +38,11 @@ export async function getSettings() { return { ...DEFAULTS, ...(await migrate((a
 
 // The last load: the full page shows the panel's run and the other way round.
 const MAX_AGE = 12 * 3600 * 1000;
-export async function saveRun(list, plan, only = null) { await ext.storage.local.set({ lastRun: { list, plan, only, loadedAt: new Date().toISOString() } }); }
+// sales: the sales as loaded, which the orders table lists and which the plan is made from again when an order is deleted.
+// loadedAt: keeps the time of the load when the plan is made again.
+export async function saveRun(list, plan, only = null, sales = null, loadedAt = null) {
+  await ext.storage.local.set({ lastRun: { list, plan, only, sales, loadedAt: new Date(loadedAt || Date.now()).toISOString() } });
+}
 export async function clearRun() { await ext.storage.local.remove('lastRun'); }
 export async function getRun() {
   const r = (await ext.storage.local.get('lastRun')).lastRun;

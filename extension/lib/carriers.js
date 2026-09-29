@@ -1,7 +1,7 @@
 // Carriers: who sells the postage for a cart item, and so whose cart it goes in. none = no cart.
 //
 // A carrier module exports:
-//   NAME       its display name ('PostNL'): the UI says "Add to PostNL cart", "3 item(s) in the PostNL cart".
+//   NAME       its display name ('PostNL'): the UI says "Add to PostNL cart", "3 items in the PostNL cart".
 //   ORIGINS    the host patterns of its shop (['https://jouw.postnl.nl/*']). The hosts a carrier module needs are
 //              requested at cart time, from the cart click, unless already granted (the browser then answers
 //              without a prompt): a host in the manifest's host_permissions is granted at install (PostNL's), any

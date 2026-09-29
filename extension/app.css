@@ -44,6 +44,15 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-size: 12px; color: var(--muted); font-weight: 600; }
 td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th.num { text-align: right; }
+th.end, td.end { text-align: right; white-space: nowrap; }
+button.b.small { padding: 3px 10px; font-size: 12px; }
+.inline { display: inline-flex; gap: 6px; align-items: center; margin: 0 0 8px 12px; }
+.imgview { margin: 8px 0; max-height: 320px; overflow: auto; }
+#imgcanvas { border: 1px solid var(--line); background: #fff; image-rendering: pixelated; max-width: 100%; }
+.assetthumb { max-height: 32px; max-width: 96px; background: #fff; border: 1px solid var(--line); image-rendering: pixelated; vertical-align: middle; }
+.assetfont { font-size: 20px; }
+.cml-label img[src^="data:image/png"] { image-rendering: pixelated; }
 .mono { font-family: Consolas, ui-monospace, monospace; font-size: 12px; }
 .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; background: var(--chip); }
 .bad { color: var(--bad); } .warn { color: var(--warn); } .ok { color: var(--ok); }

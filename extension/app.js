@@ -3,10 +3,12 @@
 import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';
 import { loadSales, ORIGINS as LOAD_ORIGINS } from './lib/cardmarket.js';
-import { planSales } from './lib/plan.js';
+import { planSales, orderRows, dropSale } from './lib/plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, accessOrigins, hostOf, BRACKETS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
+import { initAssets } from './lib/assets-ui.js';
+import { sortedCountries } from './lib/locale.js';
 import { defaultTemplate } from './lib/template.js';
 import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadOwnData, DEFAULTS } from './lib/store.js';
 import { t, cartName, cartVars, setLang, resolveLang, applyI18n } from './lib/messages.js';
@@ -16,7 +18,7 @@ const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { m
 const PX = 96 / 25.4;
 const SAMPLE = { NAME: 'Jan Jansen', ADDRESS: ['Voorbeeldstraat 12 B'], POSTCODE: '1234AB', CITY: 'Voorbeeldstad', COUNTRY: 'Netherlands', ID: '1234567890' };
 
-const state = { job: null, kind: null, progress: null, list: null, only: null, loadedAt: null, login: false, plan: null, cart: null, printed: null, error: null, log: [] };
+const state = { job: null, kind: null, progress: null, list: null, only: null, loadedAt: null, login: false, sales: null, plan: null, cart: null, printed: null, error: null, log: [] };
 let settings = { ...DEFAULTS };
 
 // cls: the colour of the line ('e', 'g', 'y'); lines from the lib modules have none and get it from their text.
@@ -42,7 +44,7 @@ async function run(kind, name, fn) {
 // the order numbers in the "Specific order numbers" field (10 digits each), or null when it is empty
 const onlyIds = () => { const ids = [...new Set($('#only').value.match(/\b\d{10}\b/g) || [])]; return ids.length ? ids : null; };
 async function load(list, only) {
-  Object.assign(state, { plan: null, cart: null, printed: null, list: null, only: null, loadedAt: null });
+  Object.assign(state, { sales: null, plan: null, cart: null, printed: null, list: null, only: null, loadedAt: null });
   await clearRun();   // a failed load leaves no earlier run behind
   const cfg = await loadOwn();
   const me = await ext.tabs.getCurrent();
@@ -50,13 +52,31 @@ async function load(list, only) {
     lang: await getLang(), log, windowId: me.windowId, only, onProgress: (n, of) => { state.progress = [n, of]; renderProgress(); },
     onLogin: async on => { state.login = on; render(); if (!on) await ext.tabs.update(me.id, { active: true }); },
   });
+  state.sales = sales;
   state.plan = planSales(sales, cfg, settings.country, BRACKETS);
   state.list = list; state.only = only; state.loadedAt = new Date();
   $('#pickcodes').checked = state.plan.stamps.length > 0;
   $('#picklabels').checked = state.plan.tracked.some(x => !x.error);
-  await saveRun(list, state.plan, only);   // the panel in the Cardmarket page shows it too
+  await saveRun(list, state.plan, only, sales, state.loadedAt);   // the panel in the Cardmarket page shows it too
   const p = state.plan;
   log(t('log.plan', { stamps: p.stampLine || '-', labels: p.print.length, tracked: p.tracked.length, byHand: p.skipped.length }));
+}
+
+// Delete on the orders table: the sale leaves this run, the run is planned again from the sales that remain, and the
+// breakdown, the label previews and the cart choices follow. The time of the load stays.
+let removing = false;   // a delete is under way: no second delete, load or cart meanwhile
+async function removeOrder(id) {
+  if (state.job || removing || !state.sales) return;
+  removing = true; render();
+  try {
+    const cfg = await loadOwn();   // first: nothing changes when this fails
+    Object.assign(state, dropSale(state, id));
+    state.plan = planSales(state.sales, cfg, settings.country, BRACKETS);
+    $('#pickcodes').checked = state.plan.stamps.length > 0;
+    $('#picklabels').checked = state.plan.tracked.some(x => !x.error);
+    await saveRun(state.list, state.plan, state.only, state.sales, state.loadedAt);
+  } catch (e) { log(t('log.failed', { name: t('orders.delete'), message: e.message }), 'e'); }
+  finally { removing = false; lastKey = ''; render(); }
 }
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
@@ -137,12 +157,24 @@ async function setStart(n) {
   await saveSettings({ sheet: { ...sheetOf(settings), start } });
   lastKey = ''; render();
 }
+// The orders table: one row per loaded sale. A sale that could not be read shows its error and can be deleted too.
+function renderOrders(sales) {
+  const rows = orderRows(sales);
+  $('#orderstitle').textContent = `${t('orders.title')} (${rows.length})`;
+  const del = r => `<td class="end"><button class="b small" data-delete="${esc(r.id)}" title="${esc(t('orders.deleteTitle', { id: r.id }))}">${t('orders.delete')}</button></td>`;
+  $('#orderstable').innerHTML = rows.length
+    ? `<thead><tr><th>${t('tbl.order')}</th><th>${t('tbl.lastName')}</th><th>${t('tbl.country')}</th><th class="num">${t('tbl.qty')}</th><th class="num">${t('tbl.value')}</th><th class="num">${t('tbl.total')}</th><th class="end"></th></tr></thead><tbody>${rows.map(r => r.error
+      ? `<tr><td class="mono">${esc(r.id)}</td><td colspan="5" class="bad">${esc(r.error)}</td>${del(r)}</tr>`
+      : `<tr><td class="mono">${esc(r.id)}</td><td>${esc(r.lastName)}</td><td>${esc(r.country)}</td><td class="num">${r.qty ?? ''}</td><td class="num">${eur(r.value)}</td><td class="num">${eur(r.total)}</td>${del(r)}</tr>`).join('')}</tbody>`
+    : `<tbody><tr><td class="hint">${t('orders.none')}</td></tr></tbody>`;
+}
 const trackedCarriers = p => carriersOf([], p.tracked).filter(c => c !== 'none').map(c => carrierName(c)).join(' / ') || t('tbl.carrier');
 function renderPlan() {
   const p = state.plan;
   $('#result').hidden = !p || $('nav button.on').dataset.tab !== 'run';
+  $('#orders').hidden = $('#result').hidden || !state.sales;
   if (!p) return;
-  const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}`;
+  const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}|${state.sales?.length ?? -1}|${(settings.assets || []).map(a => a.name)}`;
   if (key !== lastKey) {
     lastKey = key;
     $('#resulttitle').textContent = t('result.titleFull', { scope: runScope(state.only, t('scope.paid')), at: state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' }), age: runAge(state.loadedAt) });
@@ -161,8 +193,10 @@ function renderPlan() {
     $('#codesinfo').textContent = nCodes ? t('info.codes', { stamps: nStamps, codes: nCodes, line: p.stampLine }) : t('info.none');
     $('#labelsinfo').textContent = nLabels ? nBad ? t('info.labelsBad', { n: nLabels, bad: nBad }) : t('info.labels', { n: nLabels }) : t('info.none');
     renderPreviews();
+    if (state.sales) renderOrders(state.sales);
   }
-  const busy = !!state.job, paid = state.list === 'Paid';
+  for (const b of document.querySelectorAll('#orderstable button')) b.disabled = !!state.job || removing;
+  const busy = !!state.job || removing, paid = state.list === 'Paid';
   $('#print').disabled = busy || !paid || !p.print.length;
   $('#print').title = paid ? t('print.title', { summary: printSummary(p.print, settings) }) : t('print.onlyPaid');
   const nCodes = p.stamps.length, nLabels = p.tracked.filter(x => !x.error).length;
@@ -195,7 +229,7 @@ function renderProgress() {
 function render() {
   $('#dot').className = state.job ? 'run' : state.error ? 'bad' : state.plan ? 'ok' : '';
   $('#statustext').textContent = state.job ? t('status.running', { job: state.job }) : state.error ? t('status.failed', { error: state.error }) : state.plan ? t('status.ready') : t('status.idle');
-  $('#load').disabled = !!state.job || !$('#access').hidden;
+  $('#load').disabled = !!state.job || removing || !$('#access').hidden;
   $('#login').hidden = !state.login;
   renderAccess();
   renderProgress();
@@ -209,11 +243,15 @@ function render() {
 const num = id => +$(id).value.replace(',', '.');
 const paperMode = () => document.querySelector('input[name=papermode]:checked')?.value || 'printer';
 const formSize = () => ({
-  width: num('#lw'), height: num('#lh'), rotate: +$('#rotate').value,
+  width: num('#lw'), height: num('#lh'), rotate: +$('#rotate').value, media: $('#media').value, feed: num('#feed') || 0,
   sheet: { ...sheetOf(settings), on: paperMode() === 'sheet', paperW: num('#pw'), paperH: num('#ph'), cols: Math.round(num('#cols')), rows: Math.round(num('#rows')) },
 });
 // null = the form is valid; else the reason
 function sizeProblem(f) {
+  if (!f.sheet.on && f.media === 'roll') {
+    if (!(f.width >= 15 && f.width <= 300 && f.height >= 15 && f.height <= 1000)) return t('size.roll');
+    return f.feed >= 0 && f.feed <= 50 ? null : t('size.feed');
+  }
   if (!f.sheet.on) return f.width >= 15 && f.width <= 300 && f.height >= 15 && f.height <= 300 ? null : t('size.label');
   const g = f.sheet;
   if (!(g.paperW >= 50 && g.paperW <= 1000 && g.paperH >= 50 && g.paperH <= 1000)) return t('size.paper');
@@ -233,6 +271,9 @@ function sheetFigures(orders, s, max, caption) {
 function renderSheetForm() {
   const f = formSize(), sheet = f.sheet.on;
   $('#printerfields').hidden = sheet; $('#sheetfields').hidden = !sheet;
+  const roll = !sheet && f.media === 'roll';
+  $('#feedwrap').hidden = !roll; $('#rollhint').hidden = !roll;
+  $('#lhlabel').textContent = t(roll ? 'paper.cut' : 'paper.lh');
   $('#pw').disabled = $('#ph').disabled = $('#paper').value !== 'custom';
   if (!sheet) return;
   const bad = sizeProblem(f), e = effective(f);
@@ -256,27 +297,45 @@ const showLayoutNote = own => { $('#htmlinfo').dataset.own = own ? '1' : ''; $('
 const paperName = g => Object.keys(PAPERS).find(k => PAPERS[k][0] === +g.paperW && PAPERS[k][1] === +g.paperH) || 'custom';
 function fillSettingsForm() {
   const g = sheetOf(settings);
-  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country; $('#shoppostcode').value = settings.postcode;
+  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#media').value = settings.media || 'label'; $('#feed').value = settings.feed || 0; $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country; $('#shoppostcode').value = settings.postcode;
   for (const r of document.querySelectorAll('input[name=papermode]')) r.checked = r.value === (g.on ? 'sheet' : 'printer');
   $('#paper').value = paperName(g); $('#pw').value = g.paperW; $('#ph').value = g.paperH; $('#cols').value = g.cols; $('#rows').value = g.rows;
   $('#html').value = settings.html || defaultFor(settings);
   $('#uilang').value = settings.uiLang;
   showLayoutNote(!!settings.html);
   htmlPreview();
+  assets.refresh();
 }
 async function loadSettings() {
   settings = await getSettings();   // also migrates the old return-address setting once
   applyLang();
   fillSettingsForm();
 }
-async function saveSettings(patch) { settings = { ...settings, ...patch }; await ext.storage.local.set({ settings }); }
+async function saveSettings(patch) {
+  const before = settings;
+  settings = { ...settings, ...patch };
+  try { await ext.storage.local.set({ settings }); } catch (e) { settings = before; throw e; }
+}
+// Images and fonts of the layout: stored at once (not with Save), so an upload is never lost.
+const assets = initAssets({
+  get: () => settings.assets || [],
+  save: list => saveSettings({ assets: list }),
+  changed: () => { lastKey = ''; htmlPreview(); render(); },
+  insert: text => {   // on a line of its own
+    const ta = $('#html'), at = ta.selectionStart ?? ta.value.length, lead = at > 0 && ta.value[at - 1] !== '\n' ? '\n' : '';
+    ta.setRangeText(`${lead}${text}\n`, at, ta.selectionEnd ?? at, 'end');
+    ta.dispatchEvent(new Event('input')); ta.focus();
+  },
+  labelWidth: () => num('#lw'),
+});
 // a size change: a default layout follows the (cell) size while you type
 function sizeChanged() {
   const f = formSize();
   if (!$('#htmlinfo').dataset.own && !sizeProblem(f)) $('#html').value = defaultFor(f);
   htmlPreview();
 }
-for (const id of ['#lw', '#lh', '#pw', '#ph', '#cols', '#rows']) $(id).addEventListener('input', sizeChanged);
+for (const id of ['#lw', '#lh', '#pw', '#ph', '#cols', '#rows', '#feed']) $(id).addEventListener('input', sizeChanged);
+$('#media').addEventListener('change', sizeChanged);
 for (const r of document.querySelectorAll('input[name=papermode]')) r.addEventListener('change', sizeChanged);
 $('#paper').addEventListener('change', () => {
   const p = PAPERS[$('#paper').value];
@@ -308,6 +367,7 @@ $('#savesettings').onclick = async () => {
   const e = effective(f);
   applyLang();
   const where = f.sheet.on ? t('saved.sheet', { cols: f.sheet.cols, rows: f.sheet.rows, w: mm(e.width), h: mm(e.height), pw: mm(f.sheet.paperW), ph: mm(f.sheet.paperH) })
+    : f.media === 'roll' ? t('saved.roll', { w: f.width, h: f.height, feed: f.feed })
     : f.rotate ? t('saved.turned', { w: f.width, h: f.height, r: f.rotate, pageW: f.rotate % 180 ? f.height : f.width, pageH: f.rotate % 180 ? f.width : f.height }) : t('saved.printer', { w: f.width, h: f.height });
   $('#settingsmsg').textContent = t('saved.msg', { where, kind: t(isDefault ? 'saved.default' : 'saved.own') });
   await loadOwn().catch(() => {});
@@ -325,7 +385,7 @@ async function loadMethods() {
   if (methodsData !== d) {
     methodsData = d;
     const have = new Set(d.rates.map(r => r.Iso));
-    $('#country').innerHTML = Object.entries(d.countries).filter(([iso]) => have.has(iso)).sort().map(([iso, v]) => `<option value="${iso}">${esc(v[0])} (${iso})</option>`).join('');
+    $('#country').innerHTML = sortedCountries(d.countries, have).map(([iso, v]) => `<option value="${iso}">${esc(v[0])} (${iso})</option>`).join('');
     $('#country').value = 'DE';
     $('#country').onchange = drawMethods;
   }
@@ -346,7 +406,7 @@ function drawMethods() {
 // ---------------------------------------------------------------- wiring
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
   document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
-  document.querySelectorAll('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== b.dataset.tab || (p.id === 'result' && !state.plan));
+  document.querySelectorAll('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== b.dataset.tab || (p.id === 'result' && !state.plan) || (p.id === 'orders' && !state.sales));
   if (b.dataset.tab === 'methods') loadMethods();
   if (b.dataset.tab === 'run') fitLabels($('#previews'));
   if (b.dataset.tab === 'settings') fillSettingsForm();
@@ -374,6 +434,7 @@ $('#print').onclick = () => {
     log(t('log.printClosed'));
   });
 };
+$('#orderstable').addEventListener('click', e => { const id = e.target.closest('[data-delete]')?.dataset.delete; if (id) removeOrder(id); });
 $('#start').addEventListener('change', () => setStart($('#start').value));
 $('#previews').addEventListener('click', e => {
   const cell = e.target.closest('.cml-cell');
@@ -420,7 +481,7 @@ await purgeStale();
 // the last load (also one made in the Cardmarket page panel), if it is recent
 const last = await getRun();
 if (last) {
-  Object.assign(state, { plan: last.plan, list: last.list, only: last.only || null, loadedAt: last.loadedAt });
+  Object.assign(state, { sales: last.sales || null, plan: last.plan, list: last.list, only: last.only || null, loadedAt: last.loadedAt });
   $('#pickcodes').checked = last.plan.stamps.length > 0;
   $('#picklabels').checked = last.plan.tracked.some(x => !x.error);
 }

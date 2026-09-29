@@ -185,7 +185,7 @@ export async function start({ saleId, list }) {
     const sales = await loadSales(list, { lang: langFromPath(location.pathname) || 'en', log, windowId: me.windowId, onProgress: (n, of) => { state.progress = [n, of]; render(); } });
     state.plan = planSales(sales, cfg, (await getSettings()).country, BRACKETS); state.list = list; state.loadedAt = new Date(); state.cart = null;
     state.pick = { codes: state.plan.stamps.length > 0, labels: nLabels(state.plan) > 0 };
-    await saveRun(list, state.plan);
+    await saveRun(list, state.plan, null, sales, state.loadedAt);
   }
   async function cart(stamps, tracked) {
     // This page cannot ask for a shop's access (only an extension page can): without it, send the user there.

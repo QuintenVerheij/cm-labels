@@ -35,6 +35,12 @@
     <div class="banner" id="login" hidden data-i18n="login.notice">Log in to Cardmarket in the Cardmarket tab. The run continues by itself once you are logged in.</div>
   </section>
 
+  <section class="card" data-panel="run" id="orders" hidden>
+    <h2 id="orderstitle" data-i18n="orders.title">Loaded orders</h2>
+    <div class="scroll"><table id="orderstable"></table></div>
+    <p class="hint" data-i18n="orders.note">Delete takes an order out of this run only. Nothing changes on Cardmarket.</p>
+  </section>
+
   <section class="card" data-panel="run" id="result" hidden>
     <h2 id="resulttitle" data-i18n="result.title">Breakdown</h2>
     <div class="chips" id="chips"></div>
@@ -76,10 +82,20 @@
     </div>
     <div id="printerfields">
       <div class="row">
+        <label class="field"><span data-i18n="media.label">Media</span>
+          <select id="media" class="short" style="width:auto;min-width:0">
+            <option value="label" data-i18n="media.die">Die-cut labels</option>
+            <option value="roll" data-i18n="media.roll">Continuous roll</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
         <label class="field"><span data-i18n="paper.lw">Label width (mm)</span><input type="text" id="lw" inputmode="decimal" class="short"></label>
-        <label class="field"><span data-i18n="paper.lh">Label height (mm)</span><input type="text" id="lh" inputmode="decimal" class="short"></label>
+        <label class="field"><span id="lhlabel" data-i18n="paper.lh">Label height (mm)</span><input type="text" id="lh" inputmode="decimal" class="short"></label>
+        <label class="field" id="feedwrap" hidden><span data-i18n="paper.feed">Feed after the cut (mm)</span><input type="text" id="feed" inputmode="decimal" class="short"></label>
         <span class="hint" data-i18n="paper.common">Common: 70×40, 50×30, 100×150 (A6), 102×76</span>
       </div>
+      <p class="hint" id="rollhint" data-i18n="media.rollHint" hidden>On a continuous roll the width is the width of the roll and the cut length is the height of each label. The feed is blank space after the label, so the cut does not touch the text. To cut along the other side, turn the label with the rotation below. The cut itself is a setting of the printer driver.</p>
       <div class="row">
         <label class="field"><span data-i18n="rotate.label">Rotation on the paper</span>
           <select id="rotate" class="short" style="width:auto;min-width:0">
@@ -125,6 +141,29 @@
       <figure class="layoutpreview"><div class="frame" id="htmlpreview"></div><figcaption data-i18n="layout.preview">Preview with a sample address</figcaption></figure>
     </div>
     <div class="row"><button class="b" id="htmldefault" data-i18n="layout.default">Default layout for this size</button><span class="hint" id="htmlinfo"></span></div>
+    <h3 style="margin-top:18px" data-i18n="assets.title">Images and fonts</h3>
+    <p class="hint" data-i18n-html="assets.intro">Upload an image or a font for the layout.</p>
+    <div class="row">
+      <button class="b" id="addimg" data-i18n="assets.addImage">Add image</button><input type="file" id="imgfile" accept="image/*,.svg" hidden>
+      <button class="b" id="addfont" data-i18n="assets.addFont">Add font</button><input type="file" id="fontfile" accept=".ttf,.otf,.woff,.woff2" hidden>
+      <span class="hint" id="assetmsg"></span>
+    </div>
+    <div id="imgpanel" hidden>
+      <div class="row">
+        <label class="field"><span data-i18n="assets.name">Name</span><input type="text" id="imgname" class="short" maxlength="32" autocomplete="off"></label>
+        <label class="field"><span data-i18n="assets.widthMm">Width on the label (mm)</span><input type="text" id="imgw" inputmode="decimal" class="short"></label>
+        <label class="field"><span data-i18n="assets.dpi">Printer resolution (dpi)</span>
+          <select id="imgdpi" class="short" style="width:auto;min-width:0"><option value="203">203</option><option value="300">300</option></select>
+        </label>
+      </div>
+      <div class="row">
+        <label class="field"><span data-i18n="assets.threshold">Threshold</span><input type="range" id="imgthr" min="0" max="100" value="50"></label>
+        <label class="inline"><input type="checkbox" id="imgdither"><span data-i18n="assets.dither">Dither (grey as a pattern of dots)</span></label>
+      </div>
+      <div class="imgview"><canvas id="imgcanvas" width="1" height="1"></canvas></div>
+      <div class="row"><button class="b primary" id="imgadd" data-i18n="assets.add">Add</button><button class="b" id="imgcancel" data-i18n="assets.cancel">Cancel</button></div>
+    </div>
+    <div class="scroll"><table id="assetlist"></table></div>
     <details class="help">
       <summary data-i18n="help.summary">How the layout works: fields, fit, barcodes, printing</summary>
       <div class="helpbody">
@@ -183,6 +222,7 @@
             <li data-i18n="help.print.p3">Label printer: set the paper size to the label size. Sheet: set it to the sheet size (e.g. A4).</li>
             <li data-i18n="help.print.p4">Set the margins to "None" and the scale to 100%.</li>
             <li data-i18n="help.print.p5">Sheet: click a position on sheet 1 in the Run tab to start there (for a sheet with used labels).</li>
+            <li data-i18n="help.print.p6">Continuous roll: in the printer driver, choose the roll (not die-cut labels) and turn on the cut after each label.</li>
           </ul>
         </section>
       </div>

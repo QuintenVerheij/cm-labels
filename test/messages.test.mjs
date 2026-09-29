@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'extension');
 const { MESSAGES, t, cartName, setLang, currentLang, resolveLang, applyI18n } = await import('../extension/lib/messages.js');
-const { cartVars } = await import('../extension/lib/messages.js');
+const { cartVars, count } = await import('../extension/lib/messages.js');
 globalThis.chrome ??= { tabs: {}, runtime: {}, storage: { local: {} } };
 const { DEFAULTS } = await import('../extension/lib/store.js');
 
@@ -49,28 +49,28 @@ test('English output is the text of the interface before it had languages', () =
     [t('status.failed', { error: 'boom' }), 'failed: boom'],
     [t('log.failed', { name: 'print dialog', message: 'x' }), 'print dialog FAILED: x'],
     [t('log.plan', { stamps: '3 x NL-20', labels: 5, tracked: 2, byHand: 1 }), 'Stamps: 3 x NL-20 | address labels: 5 | tracked: 2 | by hand: 1'],
-    [t('log.cartStart', { carrier: 'PostNL', codes: 2, labels: 1 }), 'PostNL: 2 stamp code group(s) + 1 shipping label(s), in parallel tabs...'],
+    [t('log.cartStart', { carrier: 'PostNL', codes: 2, labels: 1 }), 'PostNL: 2 stamp code groups + 1 shipping label, in parallel tabs...'],
     [t('log.cartDone', { names: 'PostNL and DHL', seconds: 4.2 }), 'PostNL and DHL done in 4.2 s.'],
-    [t('cart.merged', { count: 3, total: '€ 4,50' }) + t('cart.inSeconds', { seconds: 5 }), '3 item(s) in one cart, total <b>€ 4,50</b>, in 5 s. The cart tab is in front: check it and pay there.'],
+    [t('cart.merged', { count: 3, total: '€ 4,50' }) + t('cart.inSeconds', { seconds: 5 }), '3 items in one cart, total <b>€ 4,50</b>, in 5 s. The cart tab is in front: check it and pay there.'],
     [t('cart.noTabClosed', { name: 'PostNL' }), 'No tab was closed: check the PostNL tabs.'],
     [t('cart.doneMulti', { seconds: 9 }), 'Done in 9 s. Each cart is in a tab of its own: check them and pay there.'],
     [t('sheet.captionFirst', { i: 1, n: 2 }), 'Sheet 1 of 2: click a position to start there'],
     [t('sheet.caption', { i: 2, n: 2 }), 'Sheet 2 of 2'],
     [t('sheet.info', { w: 70, h: 40, n: 6 }), 'Label size: 70 × 40 mm, 6 labels per sheet.'],
-    [t('prev.sheet', { w: 70, h: 40, cols: 3, rows: 7, sheets: 2 }), '70×40 mm, 3×7 per sheet, 2 sheet(s)'],
+    [t('prev.sheet', { w: 70, h: 40, cols: 3, rows: 7, sheets: 2 }), '70×40 mm, 3×7 per sheet, 2 sheets'],
     [t('scope.chosen', { n: 1 }), '1 chosen order'],
     [t('scope.chosen', { n: 3 }), '3 chosen orders'],
     [t('age.hour', { h: 3, min: 7 }), '3 h 7 min ago'],
-    [t('chip.sales', { n: 4 }), '4 sale(s)'],
-    [t('info.codes', { stamps: 5, codes: 2, line: 'x' }), '5 stamp(s) in 2 code(s): x'],
-    [t('info.labelsBad', { n: 3, bad: 1 }), '3 tracked label(s), 1 to do by hand'],
-    [t('print.summarySheet', { n: 8, w: 70, h: 40, sheets: 1, pw: 210, ph: 297 }), '8 label(s) of 70×40 mm on 1 sheet(s) of 210×297 mm'],
+    [t('chip.sales', { n: 4 }), '4 sales'],
+    [t('info.codes', { stamps: 5, codes: 2, line: 'x' }), '5 stamps in 2 codes: x'],
+    [t('info.labelsBad', { n: 3, bad: 1 }), '3 tracked labels, 1 to do by hand'],
+    [t('print.summarySheet', { n: 8, w: 70, h: 40, sheets: 1, pw: 210, ph: 297 }), '8 labels of 70×40 mm on 1 sheet of 210×297 mm'],
     [t('saved.msg', { where: t('saved.turned', { w: 70, h: 40, r: 90, pageW: 40, pageH: 70 }), kind: t('saved.own') }), 'Saved: 70×40 mm, turned 90° on a 40×70 mm page, own layout.'],
     [t('postcode.bad', { country: 'NL', example: '1234 AB' }), 'That is not a NL postcode (like 1234 AB).'],
-    [t('job.loadN', { n: 3 }), 'Loading 3 order(s)'],
+    [t('job.loadN', { n: 3 }), 'Loading 3 orders'],
     [t('job.cartThe', { cart: 'PostNL cart' }), 'Adding to the PostNL cart'],
-    [t('panel.sum', { labels: 4, stamps: 3, codes: 2, tracked: 1 }), '4 label(s) · 3 stamp(s) in 2 code(s) · 1 tracked'],
-    [t('panel.merged', { count: 2, name: 'DHL', total: '€ 3,00' }), '2 item(s) in the DHL cart, € 3,00'],
+    [t('panel.sum', { labels: 4, stamps: 3, codes: 2, tracked: 1 }), '4 labels · 3 stamps in 2 codes · 1 tracked'],
+    [t('panel.merged', { count: 2, name: 'DHL', total: '€ 3,00' }), '2 items in the DHL cart, € 3,00'],
     [t('err.nothing', { carriers: 'PostNL or DHL' }), 'nothing for PostNL or DHL in this sale'],
     [t('printpage.turned', { r: 90 }), ' (the label is turned 90° on it)'],
     [t('size.cell'), 'A label must be at least 10 × 10 mm: use fewer columns or rows.'],
@@ -83,6 +83,23 @@ test('English output is the text of the interface before it had languages', () =
   assert.equal(cartName(['PostNL']), 'PostNL cart');
   assert.equal(cartName(['PostNL', 'DHL']), 'PostNL and DHL carts');
   assert.equal(cartName(['A', 'B', 'C']), 'A, B and C carts');
+});
+
+test('English counts say one label, two labels, and never (s)', () => {
+  setLang('en');
+  assert.equal(t('chip.labels', { n: 1 }), '1 address label');
+  assert.equal(t('chip.labels', { n: 0 }), '0 address labels');
+  assert.equal(t('panel.sum', { labels: 1, stamps: 1, codes: 1, tracked: 1 }), '1 label · 1 stamp in 1 code · 1 tracked');
+  assert.equal(t('panel.rows', { rows: 1 }), '1 paid sale on this page.');
+  assert.equal(t('print.summary', { n: 1, w: 70, h: 40 }), '1 label of 70×40 mm');
+  assert.equal(t('cart.merged', { count: 1, total: 'x' }), '1 item in one cart, total <b>x</b>');
+  assert.equal(count(1, 'sale page'), '1 sale page');
+  assert.equal(count(2, 'entity', 'entities'), '2 entities');
+  for (const lang of ['en', 'de'])
+    for (const [key, text] of Object.entries(MESSAGES[lang])) assert.ok(!/\w\(s\)|\(en\)/.test(text), `${lang} ${key} counts with (s)`);
+  // the log lines and warnings of the lib modules, which are not in the message tables
+  for (const [f, src] of sources.filter(([f]) => f.endsWith('.js')))
+    for (const m of src.matchAll(/\b(?:label|sale|stamp|code|page|item|line|order|sheet|tab|group|entity|article)\(s\)/g)) assert.fail(`${f}: ${m[0]}`);
 });
 
 test('German output picks the plural and keeps the carrier names', () => {

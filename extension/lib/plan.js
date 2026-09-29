@@ -1,5 +1,6 @@
 // What to do with each sale: stamp (70x40 label + postzegelcode), PostNL tracked label, or by hand.
 // Address rules: NL house number + suffix keys, street/extra split and PostNL's extra fields outside NL.
+import { plural } from './messages.js';
 
 export const Norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[^a-z0-9]/g, '');
 // House number suffix compare key: letters and digits only, upper case ("A-1", "a 1", "A/1" -> "A1"; "t/o" -> "TO").
@@ -104,7 +105,7 @@ function trackedPlan(s, m, cfg, origin) {
   if (!pcm) throw new Error(`line '${s.city}' does not start with a ${s.iso} postcode`);
   p.Postcode = pcm.groups.pc.toUpperCase(); p.Town = pcm.groups.town.trim();
   if (s.iso === 'NL') {
-    if (s.extras.length) p.warnings.push(`extra address line(s) '${s.extras.join(', ')}' are not sent: the NL form has no field for them`);
+    if (s.extras.length) p.warnings.push(`extra address ${plural(s.extras.length, 'line')} '${s.extras.join(', ')}' ${s.extras.length === 1 ? 'is' : 'are'} not sent: the NL form has no field for them`);
     Object.assign(p, splitNL(s.street));
     p.Postcode = p.Postcode.replace(/\s/g, '').toUpperCase();
     if (p.Phone) p.warnings.push('the NL form has no phone field; the phone number is not sent');
@@ -187,4 +188,31 @@ export function planSales(sales, cfg, origin = 'NL', brackets = {}) {
     stamps: stampList, stampLine: stampList.map(g => `${g.code}x${g.qty}`).join(' '),
     print, tracked, skipped, count: sales.length,
   };
+}
+
+// A last name starts at the first name particle after the first word ("David Adriaan Van Ameijde" -> "Van Ameijde"),
+// else after the first word. A one-word name is its own last name.
+const PARTICLES = new Set(['van', 'von', 'de', 'der', 'den', 'del', 'della', 'di', 'da', 'dos', 'du', 'la', 'le', 'ter', 'te', 'ten', 'el', 'al', 'bin']);
+export function lastName(name) {
+  const w = String(name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (w.length < 2) return w[0] || '';
+  const i = w.findIndex((x, k) => k >= 1 && PARTICLES.has(x.toLowerCase()));
+  return w.slice(i >= 1 ? i : 1).join(' ');
+}
+
+const fin = v => Number.isFinite(v) ? v : null;
+
+// The sales and the chosen order numbers after one sale is taken out (no chosen numbers left: null, so the scope reads paid orders).
+// One row per loaded sale for the orders table (the sales as loadSales gives them, before planSales). A sale that could
+// not be read has an error and no more fields. qty is the number of articles (cards) in the sale.
+export function dropSale({ sales, only }, id) {
+  const rest = only?.filter(x => x !== id);
+  return { sales: sales.filter(s => s.id !== id), only: rest?.length ? rest : null };
+}
+export function orderRows(sales) {
+  return sales.map(r => {
+    if (r.error) return { id: r.id, error: r.error };
+    const text = kind => (r.lines || []).find(l => l.kind === kind)?.text || '';
+    return { id: r.id, lastName: lastName(text('Name')), country: text('Country'), qty: fin(r.articles), value: fin(r.value), total: fin(r.total) };
+  });
 }

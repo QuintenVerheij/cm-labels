@@ -9,6 +9,7 @@
 //   again).
 import { defaultTemplate, labelHtml as oneLabel, fitLabels } from './template.js';
 import { t } from './messages.js';
+import { withAssets, fontFaceCss } from './assets.js';
 
 export const PAPERS = { 'A4': [210, 297], 'A4 landscape': [297, 210], 'A5': [148, 210], 'A5 landscape': [210, 148], 'Letter': [215.9, 279.4] };
 export const SHEET = { on: false, paperW: 210, paperH: 297, cols: 3, rows: 8, start: 1 };
@@ -25,25 +26,33 @@ export function effective(s) {
 export const mm = v => String(Math.round(v * 100) / 100);   // 37.125 -> "37.13", 70 -> "70"
 
 export const template = s => { const e = effective(s); return (e.html && e.html.trim()) || defaultTemplate(e.width, e.height); };
-export const labelHtml = (fields, s) => { const e = effective(s); return oneLabel(template(e), fields, e.width, e.height); };
+export const labelHtml = (fields, s) => { const e = effective(s); return oneLabel(withAssets(template(e), e.assets), fields, e.width, e.height); };
 export { fitLabels };
 
-// Paper size of one printed page: the sheet, or the label size (swapped for 90/270 degrees).
+// Continuous roll (label printer mode): the roll has one fixed width, the height of the label is the cut length, and
+// `feed` mm of blank space follows each label so the cut does not touch the text. The printer driver does the cutting.
+export const isRoll = s => !isSheet(s) && s.media === 'roll';
+export const feedOf = s => isRoll(s) ? Math.min(50, Math.max(0, +s.feed || 0)) : 0;
+
+// Paper size of one printed page: the sheet, or the label size (swapped for 90/270 degrees). The page is as long as
+// the label plus the feed, along the way the paper leaves the printer (the page height).
 export function paper(s) {
   if (isSheet(s)) { const g = sheetOf(s); return { w: g.paperW, h: g.paperH, r: 0 }; }
-  const r = ((+s.rotate || 0) % 360 + 360) % 360;
-  return r % 180 ? { w: s.height, h: s.width, r } : { w: s.width, h: s.height, r };
+  const r = ((+s.rotate || 0) % 360 + 360) % 360, feed = feedOf(s);
+  return r % 180 ? { w: s.height, h: s.width + feed, r } : { w: s.width, h: s.height + feed, r };
 }
 // CSS for the printed pages (and their screen view).
 export function printCss(s) {
   const { w, h, r } = paper(s);
   const turn = { 0: 'none', 90: `translateX(${s.height}mm) rotate(90deg)`, 180: `translate(${s.width}mm, ${s.height}mm) rotate(180deg)`, 270: `translateY(${s.width}mm) rotate(-90deg)` }[r] || 'none';
-  return `@page { size: ${w}mm ${h}mm; margin: 0; }
+  return `${fontFaceCss(s.assets)}
+    @page { size: ${w}mm ${h}mm; margin: 0; }
     html, body { margin: 0; padding: 0; background: #fff; }
     .cml-page { position: relative; width: ${w}mm; height: ${h}mm; overflow: hidden; break-after: page; page-break-after: always; }
     .cml-page:last-child { break-after: auto; page-break-after: auto; }
     .cml-page > .cml-label { position: absolute; left: 0; top: 0; transform-origin: 0 0; transform: ${turn}; }
-    .cml-cell { position: absolute; overflow: hidden; }`;
+    .cml-cell { position: absolute; overflow: hidden; }
+    .cml-label img[src^="data:image/png"] { image-rendering: pixelated; }`;
 }
 export const pageHtml = (fields, s) => `<div class="cml-page">${labelHtml(fields, s)}</div>`;
 
@@ -68,11 +77,11 @@ export function pages(orders, s, mark = null) {
 }
 export const pagesHtml = (orders, s, mark) => pages(orders, s, mark).join('');
 export const pageCount = (orders, s) => isSheet(s) ? Math.max(1, Math.ceil((Math.min(Math.max(1, +sheetOf(s).start || 1), perSheet(s)) - 1 + orders.length) / perSheet(s))) : orders.length;
-// What the print dialog needs: "3 label(s) on 1 sheet(s) of 210 x 297 mm" / "3 label(s) of 70 x 40 mm".
+// What the print dialog needs: "3 labels on 1 sheet of 210 x 297 mm" / "1 label of 70 x 40 mm".
 export function printSummary(orders, s) {
   const { w, h } = paper(s), e = effective(s);
   return isSheet(s) ? t('print.summarySheet', { n: orders.length, w: mm(e.width), h: mm(e.height), sheets: pageCount(orders, s), pw: mm(w), ph: mm(h) })
-    : t('print.summary', { n: orders.length, w: mm(s.width), h: mm(s.height) });
+    : isRoll(s) ? t('print.summaryRoll', { n: orders.length, w: mm(s.width), h: mm(s.height) }) : t('print.summary', { n: orders.length, w: mm(s.width), h: mm(s.height) });
 }
 
 // Opens the print dialog for these labels. Resolves when the dialog closes.

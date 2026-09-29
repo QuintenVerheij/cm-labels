@@ -1,11 +1,12 @@
 // Cardmarket: normal page loads in hidden tabs, read by content/cm.js. No fetch(): bulk fetches from an
 // extension got a profile blocked by Cloudflare's WAF, while page loads a few at a time look like browsing.
-// The list tab reads the list page(s); three worker tabs read the sale pages with a short pause between pages.
+// The list tab reads the list pages; three worker tabs read the sale pages with a short pause between pages.
 // At the first block or rate-limit page the whole run stops, and so does a run whose sale pages time out
 // three times in a row on a challenge or an unknown page.
 import { Tab, sleep } from './tabs.js';
 import { ext } from './ext.js';
 import { LANGS } from './locale.js';
+import { count } from './messages.js';
 const tabGone = async tab => { try { await ext.tabs.get(tab.id); return false; } catch { return true; } };
 
 // The hosts loading sales needs: the only ones the app page requires before Load (a cart asks for its shops).
@@ -84,7 +85,7 @@ export async function loadSales(list, { lang = 'en', log, onLogin = () => {}, wi
     let ids;
     if (only?.length) {
       ids = [...new Set(only)];
-      log(`${ids.length} chosen sale(s): ${ids.join(', ')}. Reading the sale pages, ${WORKERS} at a time...`);
+      log(`${count(ids.length, 'chosen sale')}: ${ids.join(', ')}. Reading the sale pages, ${WORKERS} at a time...`);
     } else {
       const first = await tab.call('list');
       ids = first.ids;
@@ -95,7 +96,7 @@ export async function loadSales(list, { lang = 'en', log, onLogin = () => {}, wi
         await loadPage(tab, listUrl(list, p, lang), st => st.url.includes(`site=${p}`));
         ids = [...new Set(ids.concat((await tab.call('list')).ids))];
       }
-      log(`${list}: ${ids.length} sale(s) on ${pages} page(s). Reading the sale pages, ${WORKERS} at a time...`);
+      log(`${list}: ${count(ids.length, 'sale')} on ${count(pages, 'page')}. Reading the sale pages, ${WORKERS} at a time...`);
     }
 
     const t = Date.now(), out = []; let next = 0, stop = null, stuck = 0;
@@ -122,7 +123,7 @@ export async function loadSales(list, { lang = 'en', log, onLogin = () => {}, wi
       }
     }));
     if (stop) throw stop;
-    log(`Read ${out.length} sale page(s) in ${((Date.now() - t) / 1000).toFixed(1)} s.`);
+    log(`Read ${count(out.length, 'sale page')} in ${((Date.now() - t) / 1000).toFixed(1)} s.`);
     const order = new Map(ids.map((id, i) => [id, i]));
     return out.sort((a, b) => order.get(a.id) - order.get(b.id));
   } finally {
