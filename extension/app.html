@@ -141,6 +141,29 @@
       <figure class="layoutpreview"><div class="frame" id="htmlpreview"></div><figcaption data-i18n="layout.preview">Preview with a sample address</figcaption></figure>
     </div>
     <div class="row"><button class="b" id="htmldefault" data-i18n="layout.default">Default layout for this size</button><span class="hint" id="htmlinfo"></span></div>
+    <h3 style="margin-top:18px" data-i18n="assets.title">Images and fonts</h3>
+    <p class="hint" data-i18n-html="assets.intro">Upload an image or a font for the layout.</p>
+    <div class="row">
+      <button class="b" id="addimg" data-i18n="assets.addImage">Add image</button><input type="file" id="imgfile" accept="image/*,.svg" hidden>
+      <button class="b" id="addfont" data-i18n="assets.addFont">Add font</button><input type="file" id="fontfile" accept=".ttf,.otf,.woff,.woff2" hidden>
+      <span class="hint" id="assetmsg"></span>
+    </div>
+    <div id="imgpanel" hidden>
+      <div class="row">
+        <label class="field"><span data-i18n="assets.name">Name</span><input type="text" id="imgname" class="short" maxlength="32" autocomplete="off"></label>
+        <label class="field"><span data-i18n="assets.widthMm">Width on the label (mm)</span><input type="text" id="imgw" inputmode="decimal" class="short"></label>
+        <label class="field"><span data-i18n="assets.dpi">Printer resolution (dpi)</span>
+          <select id="imgdpi" class="short" style="width:auto;min-width:0"><option value="203">203</option><option value="300">300</option></select>
+        </label>
+      </div>
+      <div class="row">
+        <label class="field"><span data-i18n="assets.threshold">Threshold</span><input type="range" id="imgthr" min="0" max="100" value="50"></label>
+        <label class="inline"><input type="checkbox" id="imgdither"><span data-i18n="assets.dither">Dither (grey as a pattern of dots)</span></label>
+      </div>
+      <div class="imgview"><canvas id="imgcanvas" width="1" height="1"></canvas></div>
+      <div class="row"><button class="b primary" id="imgadd" data-i18n="assets.add">Add</button><button class="b" id="imgcancel" data-i18n="assets.cancel">Cancel</button></div>
+    </div>
+    <div class="scroll"><table id="assetlist"></table></div>
     <details class="help">
       <summary data-i18n="help.summary">How the layout works: fields, fit, barcodes, printing</summary>
       <div class="helpbody">

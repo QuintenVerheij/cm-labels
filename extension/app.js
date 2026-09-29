@@ -7,6 +7,7 @@ import { planSales, orderRows } from './lib/plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, accessOrigins, hostOf, BRACKETS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
+import { initAssets } from './lib/assets-ui.js';
 import { sortedCountries } from './lib/locale.js';
 import { defaultTemplate } from './lib/template.js';
 import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadOwnData, DEFAULTS } from './lib/store.js';
@@ -170,7 +171,7 @@ function renderPlan() {
   $('#result').hidden = !p || $('nav button.on').dataset.tab !== 'run';
   $('#orders').hidden = $('#result').hidden || !state.sales;
   if (!p) return;
-  const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}|${state.sales?.length ?? -1}`;
+  const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}|${state.sales?.length ?? -1}|${(settings.assets || []).map(a => a.name)}`;
   if (key !== lastKey) {
     lastKey = key;
     $('#resulttitle').textContent = t('result.titleFull', { scope: runScope(state.only, t('scope.paid')), at: state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' }), age: runAge(state.loadedAt) });
@@ -300,13 +301,30 @@ function fillSettingsForm() {
   $('#uilang').value = settings.uiLang;
   showLayoutNote(!!settings.html);
   htmlPreview();
+  assets.refresh();
 }
 async function loadSettings() {
   settings = await getSettings();   // also migrates the old return-address setting once
   applyLang();
   fillSettingsForm();
 }
-async function saveSettings(patch) { settings = { ...settings, ...patch }; await ext.storage.local.set({ settings }); }
+async function saveSettings(patch) {
+  const before = settings;
+  settings = { ...settings, ...patch };
+  try { await ext.storage.local.set({ settings }); } catch (e) { settings = before; throw e; }
+}
+// Images and fonts of the layout: stored at once (not with Save), so an upload is never lost.
+const assets = initAssets({
+  get: () => settings.assets || [],
+  save: list => saveSettings({ assets: list }),
+  changed: () => { lastKey = ''; htmlPreview(); render(); },
+  insert: text => {   // on a line of its own
+    const ta = $('#html'), at = ta.selectionStart ?? ta.value.length, lead = at > 0 && ta.value[at - 1] !== '\n' ? '\n' : '';
+    ta.setRangeText(`${lead}${text}\n`, at, ta.selectionEnd ?? at, 'end');
+    ta.dispatchEvent(new Event('input')); ta.focus();
+  },
+  labelWidth: () => num('#lw'),
+});
 // a size change: a default layout follows the (cell) size while you type
 function sizeChanged() {
   const f = formSize();
