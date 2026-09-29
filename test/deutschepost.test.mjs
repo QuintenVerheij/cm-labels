@@ -157,7 +157,19 @@ test('the cookie banner is answered only through a visible refuse button', () =>
   assert.equal(DP().cookie(SHOP.cookieRefuse), true);
   btn.getClientRects = () => [];
   assert.equal(DP().cookie(SHOP.cookieRefuse), false);
-  assert.deepEqual(clicks, ['Alle ablehnen']);
+  at('/checkout');   // on the cart page too: only clicks that could pay are refused there
+  page = { [SHOP.cookieRefuse.sel]: [el('button', { text: 'Alle ablehnen' })] };
+  assert.equal(DP().cookie(SHOP.cookieRefuse), true);
+  assert.deepEqual(clicks, ['Alle ablehnen', 'Alle ablehnen']);
+});
+
+test('the cookie answer never clicks an element that speaks of paying, by its text or its aria-label', () => {
+  reset(); at('/digital-frankieren');
+  for (const e of [el('button', { text: 'Jetzt bezahlen' }), el('button', { attrs: { 'aria-label': 'Jetzt bezahlen' } }), el('button', { text: 'Alle ablehnen', attrs: { 'aria-label': 'Jetzt bezahlen' } })]) {
+    page = { [SHOP.cookieRefuse.sel]: [e] };
+    assert.equal(DP().cookie(SHOP.cookieRefuse), false);
+  }
+  assert.deepEqual(clicks, []);
 });
 
 test('stamp brackets map to the shop products; abroad only the 20 g letter', () => {
@@ -200,6 +212,35 @@ test('buildCart adds nothing when the page shows another product or a domestic d
   r = await run([g('FR-20', 1)]);
   assert.equal(shop.adds, 0);
   assert.match(r.items[0].error, /destination 'Deutschland', expected international/);
+});
+
+test('a quantity field that takes its value back fails loudly, and nothing is added', async () => {
+  reset();
+  // the field shows the typed number at first, then goes back to 1 (as a number field of the shop could)
+  shop.edit = (p, { count }) => {
+    Object.setPrototypeOf(count, { set value(v) { this._v = String(v); setTimeout(() => { this._v = '1'; }); }, get value() { return this._v ?? ''; } });
+    return p;
+  };
+  const r = await run([g('DE-20', 3)]);
+  assert.equal(shop.adds, 0);
+  assert.equal(r.merged, false);
+  assert.match(r.items[0].error, /Anzahl field holds '1', expected '3'/);
+});
+
+test('a cart with an extra line after In den Warenkorb fails the product, and the next one is not tried', async () => {
+  reset();
+  // the shop (or another tab) puts a second line in the cart with this product
+  shop.edit = (p, { count, name }) => ({ ...p, button: [el('button', { text: 'In den Warenkorb', onClick: () => {
+    shop.adds++;
+    shop.cart.push({ name, qty: +count.value, unit: 0.95 }, { name: 'Maxibrief', qty: 1, unit: 2.9 });
+    go('https://shop.deutschepost.de/checkout');
+  } })] });
+  const r = await run([g('DE-20', 2), g('DE-50', 1)]);
+  assert.equal(shop.adds, 1);
+  assert.deepEqual(r.items.map(i => i.ok), [false, false]);
+  assert.match(r.items[0].error, /the cart shows 2 line\(s\) after adding Standardbrief, expected 1: 2 x Standardbrief, Maxibrief/);
+  assert.match(r.items[1].error, /not tried: DE-20 x2 failed first/);
+  assert.equal(r.merged, false);
 });
 
 test('an unknown product page fails with the page it is on, before anything is filled', async () => {

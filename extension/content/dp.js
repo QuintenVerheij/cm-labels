@@ -9,7 +9,8 @@
   // or label speaks of paying, ordering or buying. The cart is left for the user.
   const NEVER_PATH = /\/(checkout|warenkorb|kasse|bezahl|zahlung)/i;
   const NEVER_TEXT = /bezahl|zahlung|kasse|\bkauf|bestell|checkout|pay|order/i;
-  const refused = e => NEVER_PATH.test(location.pathname) || NEVER_TEXT.test(`${e.getAttribute?.('aria-label') || ''} ${T(e)}`);
+  const paying = e => NEVER_TEXT.test(`${e.getAttribute?.('aria-label') || ''} ${T(e)}`);
+  const refused = e => NEVER_PATH.test(location.pathname) || paying(e);
 
   // All elements of a spec: the selector, then only those with this exact text or aria-label (text), whose label
   // starts with label, and, for input, the element when it is an input, else the one input inside it.
@@ -90,10 +91,11 @@
       e.click();
       return true;
     },
-    // The cookie banner's refuse button, when it shows: answered on any page, never a button that could pay.
+    // The cookie banner's refuse button, when it shows: answered on any page (the cart page too), never a button
+    // whose text or label speaks of paying.
     cookie: s => {
       const e = all(s).find(b => b.getClientRects().length > 0 && getComputedStyle(b).visibility !== 'hidden');
-      if (!e || NEVER_TEXT.test(T(e))) return false;
+      if (!e || paying(e)) return false;
       e.click();
       return true;
     },
