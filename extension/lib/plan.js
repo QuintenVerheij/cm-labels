@@ -1,5 +1,6 @@
 // What to do with each sale: stamp (70x40 label + postzegelcode), PostNL tracked label, or by hand.
 // Address rules: NL house number + suffix keys, street/extra split and PostNL's extra fields outside NL.
+import { plural } from './messages.js';
 
 export const Norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[^a-z0-9]/g, '');
 // House number suffix compare key: letters and digits only, upper case ("A-1", "a 1", "A/1" -> "A1"; "t/o" -> "TO").
@@ -104,7 +105,7 @@ function trackedPlan(s, m, cfg, origin) {
   if (!pcm) throw new Error(`line '${s.city}' does not start with a ${s.iso} postcode`);
   p.Postcode = pcm.groups.pc.toUpperCase(); p.Town = pcm.groups.town.trim();
   if (s.iso === 'NL') {
-    if (s.extras.length) p.warnings.push(`extra address line(s) '${s.extras.join(', ')}' are not sent: the NL form has no field for them`);
+    if (s.extras.length) p.warnings.push(`extra address ${plural(s.extras.length, 'line')} '${s.extras.join(', ')}' ${s.extras.length === 1 ? 'is' : 'are'} not sent: the NL form has no field for them`);
     Object.assign(p, splitNL(s.street));
     p.Postcode = p.Postcode.replace(/\s/g, '').toUpperCase();
     if (p.Phone) p.warnings.push('the NL form has no phone field; the phone number is not sent');

@@ -5,6 +5,7 @@
 import { ext } from './ext.js';
 import { Tab, sleep } from './tabs.js';
 import { Norm, SuffixKey } from './plan.js';
+import { count, plural } from './messages.js';
 
 export const NAME = 'PostNL';
 export const ORIGINS = ['https://jouw.postnl.nl/*'];
@@ -243,7 +244,7 @@ export async function buildCart({ stamps, tracked, fallbackEmail, conc = 6, wind
   const summary = { items: results.map(r => ({ kind: r.kind, key: r.key, ok: r.ok, error: r.error || null, manual: !!r.manual, total: r.total ?? null, ms: r.ms ?? null })) };
   if (!ok.length) { done = total; report(); return { ...summary, merged: false }; }   // failed tabs stay open to look at
   const base = ok[0];
-  const holding = () => `tab(s) still holding items: ${ok.map(r => r.key).join(', ')}`;
+  const holding = () => `${plural(ok.length, 'tab')} still holding items: ${ok.map(r => r.key).join(', ')}`;
   let entities, sum, expected, lines;
   try {
     entities = await base.tab.call('mergeOrders', ok.slice(1).map(r => r.order));
@@ -266,6 +267,6 @@ export async function buildCart({ stamps, tracked, fallbackEmail, conc = 6, wind
   try { await ext.tabs.ungroup?.(base.tab.id); } catch { }   // tab groups: not in every Firefox
   await base.tab.activate();
   done = total; report();
-  log(`Cart: ${ok.length} line(s) (${entities} entities), total € ${sum?.toFixed(2)} (expected € ${expected.toFixed(2)}, ${lines} line(s) on the page)${check ? '' : ' - CHECK THE CART'}`);
+  log(`Cart: ${count(ok.length, 'line')} (${count(entities, 'entity', 'entities')}), total € ${sum?.toFixed(2)} (expected € ${expected.toFixed(2)}, ${count(lines, 'line')} on the page)${check ? '' : ' - CHECK THE CART'}`);
   return { ...summary, merged: true, count: ok.length, entities, total: sum, expected, check };
 }

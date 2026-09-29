@@ -4,6 +4,7 @@
 // Tracked labels (Einschreiben) are not in this cart; they stay manual.
 import { ext } from './ext.js';
 import { Tab, sleep } from './tabs.js';
+import { count } from './messages.js';
 
 export const NAME = 'Deutsche Post';
 export const ORIGINS = ['https://shop.deutschepost.de/*'];
@@ -108,7 +109,7 @@ async function addLine(tab, line, before, step) {
     await wait(tab, { count: SHOP.lineDelete, min: before + 1 }, `the ${what} line in the cart`);
   } catch (e) { throw new Error(`${e.message}. In den Warenkorb was clicked: the stamps may be in the cart, check its tab`); }
   const now = await tab.call('q', 'lines', SHOP.lineDelete);
-  if (now.length !== before + 1) throw new Error(`the cart shows ${now.length} line(s) after adding ${what}, expected ${before + 1}: ${now.map(l => l.title).join(', ')}`);
+  if (now.length !== before + 1) throw new Error(`the cart shows ${count(now.length, 'line')} after adding ${what}, expected ${before + 1}: ${now.map(l => l.title).join(', ')}`);
   step();   // in the cart
   return price[0];
 }
@@ -146,7 +147,7 @@ export async function buildCart({ stamps, tracked, windowId, log, onProgress = (
     await wait(tab, { exists: SHOP.productList }, 'the Deutsche Post shop');   // the shop opens its cart for this tab
     await tab.navigate(SHOP.cart);
     const held = await cartLines(tab);
-    if (held.length) throw new Error(`the Deutsche Post cart already holds ${held.length} line(s): ${held.map(l => l.title || l.text).join(', ')}. Nothing was added: pay or empty that cart first`);
+    if (held.length) throw new Error(`the Deutsche Post cart already holds ${count(held.length, 'line')}: ${held.map(l => l.title || l.text).join(', ')}. Nothing was added: pay or empty that cart first`);
     done++; report();
   } catch (e) {
     for (const it of open) fail(it, e.message);
@@ -194,7 +195,7 @@ export async function buildCart({ stamps, tracked, windowId, log, onProgress = (
   try { await ext.tabs.ungroup?.(tab.id); } catch { }   // tab groups: not in every Firefox
   await tab.activate();
   done = total; report();
-  log(`Cart: ${now.length} line(s) (${entities} stamps), total € ${Number.isNaN(sum) ? '?' : sum.toFixed(2)} (expected € ${expected.toFixed(2)} for ${added.length} line(s), ${stampsIn} stamps)${check ? '' : ' - CHECK THE CART'}`);
+  log(`Cart: ${count(now.length, 'line')} (${count(entities, 'stamp')}), total € ${Number.isNaN(sum) ? '?' : sum.toFixed(2)} (expected € ${expected.toFixed(2)} for ${count(added.length, 'line')}, ${count(stampsIn, 'stamp')})${check ? '' : ' - CHECK THE CART'}`);
   // count: the items in the cart, as PostNL reports it; the lines are one per product and are checked above.
   return { ...summary(), merged: true, count: ok.length, entities, total: Number.isNaN(sum) ? null : sum, expected, check };
 }

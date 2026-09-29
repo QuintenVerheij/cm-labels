@@ -68,7 +68,7 @@ export function pages(orders, s, mark = null) {
 }
 export const pagesHtml = (orders, s, mark) => pages(orders, s, mark).join('');
 export const pageCount = (orders, s) => isSheet(s) ? Math.max(1, Math.ceil((Math.min(Math.max(1, +sheetOf(s).start || 1), perSheet(s)) - 1 + orders.length) / perSheet(s))) : orders.length;
-// What the print dialog needs: "3 label(s) on 1 sheet(s) of 210 x 297 mm" / "3 label(s) of 70 x 40 mm".
+// What the print dialog needs: "3 labels on 1 sheet of 210 x 297 mm" / "1 label of 70 x 40 mm".
 export function printSummary(orders, s) {
   const { w, h } = paper(s), e = effective(s);
   return isSheet(s) ? t('print.summarySheet', { n: orders.length, w: mm(e.width), h: mm(e.height), sheets: pageCount(orders, s), pw: mm(w), ph: mm(h) })
