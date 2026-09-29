@@ -39,12 +39,10 @@ test('DE sales give a stamp or a manual label and never a PostNL cart item', () 
     sale('6', 'Virtual Delivery', 'Austria', 'Ringstraße 1', '1010 Wien', { grams: 0, tracked: true, value: 50 }),
   ], de, 'DE', BRACKETS);
   assert.deepEqual(p.tracked, []);
-  assert.deepEqual(p.stamps, []);
+  // the letters go to the Deutsche Post cart, by the brackets of its module: domestic first, then abroad
+  assert.deepEqual(p.stamps.map(g => [g.carrier, g.code, g.qty, g.ids]), [['deutschepost', 'DE-20', 1, ['1']], ['deutschepost', 'DE-500', 1, ['2']], ['deutschepost', 'FR-20', 1, ['3']]]);
   assert.deepEqual(p.print.map(x => x.Id), ['1', '2', '3']);
   assert.deepEqual(p.skipped.map(x => [x.id, x.reason]), [
-    ['1', "label printed, stamp by hand: carrier 'deutschepost' has no stamp weights in cm-labels yet; buy its stamp by hand"],
-    ['2', "label printed, stamp by hand: carrier 'deutschepost' has no stamp weights in cm-labels yet; buy its stamp by hand"],
-    ['3', "label printed, stamp by hand: carrier 'deutschepost' has no stamp weights in cm-labels yet; buy its stamp by hand"],
     ['4', "manual method 'Kompaktbrief + Einschreiben EINWURF': Einschreiben Einwurf is not in a cart yet"],
     ['5', "manual method 'DHL Paket': DHL labels are not in a cart yet"],
     ['6', "manual method 'Virtual Delivery': nothing to ship: deliver it digitally"],

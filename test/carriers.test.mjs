@@ -8,6 +8,7 @@ const opened = [];
 globalThis.chrome = { tabs: { async create(o) { opened.push(o.url); return { id: 1 }; } }, runtime: {} };
 const { buildCart, carrierModule, abortedError, cartTitle, carrierName, methodCarriers, CARRIERS, BRACKETS, ORIGINS } = await import('../extension/lib/carriers.js');
 const postnl = await import('../extension/lib/postnl.js');
+const deutschepost = await import('../extension/lib/deutschepost.js');
 const { planSales } = await import('../extension/lib/plan.js');
 const { sales: nlSales } = await import('./fixtures/nl-sales.mjs');
 
@@ -56,7 +57,7 @@ test('NL plans unchanged: the fixture plans exactly as before carriers, apart fr
 
 test('stamp brackets come from the carrier; each group keeps the grams of its sales', () => {
   assert.deepEqual(postnl.BRACKETS, [20, 50]);
-  assert.deepEqual(BRACKETS, { postnl: [20, 50] });
+  assert.deepEqual(BRACKETS, { postnl: [20, 50], deutschepost: [20, 50, 500, 1000] });
   const cfg = { ...nl, methods: { ...nl.methods, Brief: { Service: 'stamp', Carrier: 'deutschepost' }, Letter: { Service: 'stamp', Carrier: 'postnl' } } };
   const brackets = { postnl: [20, 50], deutschepost: [20, 50, 500, 1000] };
   const p = planSales([
@@ -75,9 +76,10 @@ test('stamp brackets come from the carrier; each group keeps the grams of its sa
     ['5', "label printed, stamp by hand: no stamp weight up to 1000 g in 'Brief max. 1200 g'; buy its stamp by hand"],
   ]);
   // a carrier without brackets (no module yet) leaves its stamps for buying by hand, the label still printed
-  const q = planSales([sale('6', 'Brief', 'Germany', 'Hauptstraße 12', '10623 Berlin', { tracked: false })], cfg, 'NL', BRACKETS);
+  const dhl = { ...cfg, methods: { ...cfg.methods, Brief: { Service: 'stamp', Carrier: 'dhl' } } };
+  const q = planSales([sale('6', 'Brief', 'Germany', 'Hauptstraße 12', '10623 Berlin', { tracked: false })], dhl, 'NL', BRACKETS);
   assert.deepEqual([q.stamps, q.print.length], [[], 1]);
-  assert.match(q.skipped[0].reason, /carrier 'deutschepost' has no stamp weights in cm-labels yet/);
+  assert.match(q.skipped[0].reason, /carrier 'dhl' has no stamp weights in cm-labels yet/);
 });
 
 test('Service tracked is a tracked method for any carrier; postnl is the same', () => {
@@ -189,7 +191,8 @@ test('carrier names, cart titles and host origins come from the modules', () => 
   assert.equal(cartTitle([]), 'cart');
   assert.equal(cartTitle(['postnl', 'dhl'], { postnl: { NAME: 'PostNL' }, dhl: { NAME: 'DHL' } }), 'PostNL and DHL carts');
   assert.deepEqual(methodCarriers(nl.methods), ['postnl']);
-  assert.deepEqual(ORIGINS, ['https://jouw.postnl.nl/*']);
+  assert.equal(carrierName('deutschepost'), 'Deutsche Post');
+  assert.deepEqual(ORIGINS, ['https://jouw.postnl.nl/*', 'https://shop.deutschepost.de/*']);
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'extension', 'manifest.json'), 'utf8'));
   for (const o of ORIGINS) assert.ok(manifest.host_permissions.includes(o), o);
 });
@@ -198,6 +201,8 @@ test('the known carriers are the ones the methods files may name', () => {
   assert.deepEqual(CARRIERS, ['postnl', 'deutschepost', 'dhl', 'none']);
 });
 
-test('carrierModule gives the PostNL module for postnl', async () => {
+test('carrierModule gives the PostNL module for postnl and the Deutsche Post module for deutschepost', async () => {
   assert.equal(carrierModule('postnl', 'x'), postnl);
+  assert.equal(carrierModule('deutschepost', 'x'), deutschepost);
+  assert.equal(deutschepost.CONC, 1);
 });

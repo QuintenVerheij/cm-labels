@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "cm-labels",
   "version": "2.4.0",
-  "description": "Cardmarket sales to shipping labels and a PostNL cart: stamp codes, tracked labels, address labels. Never pays.",
+  "description": "Cardmarket sales to shipping labels and a PostNL or Deutsche Post cart: stamp codes, tracked labels, address labels. Never pays.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -18,7 +18,8 @@
   ],
   "host_permissions": [
     "https://www.cardmarket.com/*",
-    "https://jouw.postnl.nl/*"
+    "https://jouw.postnl.nl/*",
+    "https://shop.deutschepost.de/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -49,6 +50,7 @@
     {
       "resources": [
         "lib/cardmarket.js",
+        "lib/deutschepost.js",
         "lib/esc.js",
         "lib/carriers.js",
         "lib/ext.js",

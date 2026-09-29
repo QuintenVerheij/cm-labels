@@ -43,9 +43,10 @@
 // (stamp groups first). A module that throws gives { carrier, items: [], merged: false, error, aborted: true }
 // and the next carrier still runs; tabs it opened stay open.
 import * as postnl from './postnl.js';
+import * as deutschepost from './deutschepost.js';
 
 export const CARRIERS = ['postnl', 'deutschepost', 'dhl', 'none'];
-const MODULES = { postnl };
+const MODULES = { postnl, deutschepost };
 
 // For planSales: carrier -> its stamp weights. For the permission request: every carrier's shop.
 export const BRACKETS = Object.fromEntries(Object.entries(MODULES).map(([name, m]) => [name, m.BRACKETS]));
