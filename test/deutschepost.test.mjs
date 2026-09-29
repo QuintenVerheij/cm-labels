@@ -185,7 +185,8 @@ test('buildCart fills one cart in one tab, one line per product, and ends on the
   assert.equal(shop.opened.length, 1);
   assert.deepEqual(shop.cart.map(l => [l.name, l.qty]), [['Standardbrief', 2], ['Großbrief', 1], ['Standardbrief International', 3]]);
   assert.deepEqual(r.items.map(i => [i.key, i.ok, i.total]), [['DE-20 x2', true, 1.9], ['DE-500 x1', true, 1.8], ['FR-20 x1', true, 1.25], ['AT-20 x2', true, 2.5]]);
-  assert.deepEqual([r.merged, r.count, r.entities, r.total, r.expected, r.check], [true, 3, 6, 7.45, 7.45, true]);
+  // count is the items (4: the UI says "4 item(s)"), though FR-20 and AT-20 share one of the 3 lines
+  assert.deepEqual([r.merged, r.count, r.entities, r.total, r.expected, r.check], [true, 4, 6, 7.45, 7.45, true]);
   assert.equal(location.pathname, '/checkout');
 });
 

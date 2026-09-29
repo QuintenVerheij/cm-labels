@@ -10,10 +10,10 @@ export const ORIGINS = ['https://shop.deutschepost.de/*'];
 export const BRACKETS = [20, 50, 500, 1000];   // Standardbrief, Kompaktbrief, Großbrief, Maxibrief (SHOP.letters)
 export const CONC = 1;   // one cart per session: parallel tabs would race on it
 
-// THE SHOP'S PAGES: every address, selector and text this module relies on. A shop change is a fix here.
+// THE SHOP'S PAGES: every address, selector and text this module relies on.
 // Read on 2026-09-29 from the shop's public pages, its deep links and its page scripts (the "oneof" product
-// widget and the checkout widget). UNVERIFIED against the live shop with a cart being filled: a manual run in
-// Firefox and in Chrome has to confirm each row. Specs: sel = CSS selector; text = exact text or aria-label;
+// widget and the checkout widget). UNVERIFIED against the live shop with a cart being filled.
+// Specs: sel = CSS selector; text = exact text or aria-label;
 // label = the start of the field's label; input = the element, or the one input inside it; what = its name in
 // an error. Every action needs exactly one match (content/dp.js).
 export const SHOP = {
@@ -195,5 +195,6 @@ export async function buildCart({ stamps, tracked, windowId, log, onProgress = (
   await tab.activate();
   done = total; report();
   log(`Cart: ${now.length} line(s) (${entities} stamps), total € ${Number.isNaN(sum) ? '?' : sum.toFixed(2)} (expected € ${expected.toFixed(2)} for ${added.length} line(s), ${stampsIn} stamps)${check ? '' : ' - CHECK THE CART'}`);
-  return { ...summary(), merged: true, count: now.length, entities, total: Number.isNaN(sum) ? null : sum, expected, check };
+  // count: the items in the cart, as PostNL reports it; the lines are one per product and are checked above.
+  return { ...summary(), merged: true, count: ok.length, entities, total: Number.isNaN(sum) ? null : sum, expected, check };
 }

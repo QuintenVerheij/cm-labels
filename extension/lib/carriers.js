@@ -31,12 +31,13 @@
 //     items    one per stamp group (kind 'stamp') or tracked label ('tracked'), key names it in the UI; ok or the
 //              error (null when ok); manual = the address was typed in by hand; total = its price in euro, ms =
 //              time taken (both null when it failed)
-//     merged   true when the items are in one cart, in a tab in front to check and pay; then count = its lines,
-//              entities (the carrier's own count), total = the cart's price, expected = the sum of the items and
-//              check = the two agree and there is one line per item. error: why the cart could not be made.
+//     merged   true when the items are in one cart, in a tab in front to check and pay; then count = the items in
+//              it, entities (the carrier's own count), total = the cart's price, expected = the sum of the items and
+//              check = the two agree and there is one line per product (PostNL: one per item; Deutsche Post puts
+//              the items of one product on one line). error: why the cart could not be made.
 //   A cart that lives on the shop's server (per cookie) can already hold lines from an earlier run or from the
 //   user. The module must refuse to add to such a cart (the items fail with the reason), or report those lines
-//   in its result (count and check then show them): never add to them silently, or the user pays twice.
+//   in its result (check is then false): never add to them silently, or the user pays twice.
 // Nothing pays: the cart is left for the user.
 //
 // buildCart here returns { carts: [{ carrier, ...result }] }, one per carrier in the order of first appearance
