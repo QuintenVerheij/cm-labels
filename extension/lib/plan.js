@@ -189,3 +189,23 @@ export function planSales(sales, cfg, origin = 'NL', brackets = {}) {
     print, tracked, skipped, count: sales.length,
   };
 }
+
+// A last name starts at the first name particle after the first word ("David Adriaan Van Ameijde" -> "Van Ameijde"),
+// else after the first word. A one-word name is its own last name.
+const PARTICLES = new Set(['van', 'von', 'de', 'der', 'den', 'del', 'della', 'di', 'da', 'dos', 'du', 'la', 'le', 'ter', 'te', 'ten', 'el', 'al', 'bin']);
+export function lastName(name) {
+  const w = String(name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (w.length < 2) return w[0] || '';
+  const i = w.findIndex((x, k) => k >= 1 && PARTICLES.has(x.toLowerCase()));
+  return w.slice(i >= 1 ? i : 1).join(' ');
+}
+
+// One row per loaded sale for the orders table (the sales as loadSales gives them, before planSales). A sale that could
+// not be read has an error and no more fields. qty is the number of articles (cards) in the sale.
+export function orderRows(sales) {
+  return sales.map(r => {
+    if (r.error) return { id: r.id, error: r.error };
+    const text = kind => (r.lines || []).find(l => l.kind === kind)?.text || '';
+    return { id: r.id, lastName: lastName(text('Name')), country: text('Country'), qty: r.articles ?? null, value: r.value ?? null, total: r.total ?? null };
+  });
+}

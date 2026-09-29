@@ -22,6 +22,7 @@
       trackingCode: /^Tracking Code$/i,
       phone: /^Phone Number$/i,
       saleNo: ['Sale #'],
+      summary: /Article Value\s*(\d[\d.]*,\d{2})\s*€\s*Shipping\s*(\d[\d.]*,\d{2})\s*€\s*Total\s*(\d[\d.]*,\d{2})\s*€/i,
     },
     de: {
       block: /Attention Required|Sorry, you have been blocked|Access denied|Error 10\d\d/i,   // as served on /de/
@@ -35,6 +36,7 @@
       trackingCode: /^(?:Sendungsnummer|Tracking-?Code)$/i,                              // (guess)
       phone: /^Telefonnummer$/i,                                                         // (guess)
       saleNo: ['Verkauf #', 'Bestellung #'],                                             // (guess)
+      summary: /Artikelwert\s*(\d[\d.]*,\d{2})\s*€\s*Versand\s*(\d[\d.]*,\d{2})\s*€\s*(?:Gesamtsumme|Gesamt|Summe)\s*(\d[\d.]*,\d{2})\s*€/i,   // (guess)
     },
   };
   const lang = () => (location.href.match(/cardmarket\.com\/(en|de)\//) || [])[1] || 'en';
@@ -92,7 +94,11 @@
     const mail = /[^@\s:<>()]+@[^@\s:<>()]+\.[A-Za-z]{2,}/;
     const email = (T(mailDd).match(mail) || all.match(mail) || [])[0] || null;
     const sum = doc.querySelector('[data-item-value]');
+    // The Summary block reads "Article Value 10,95 € Shipping 1,70 € Total 12,65 €": found by its texts, not its markup.
+    const money = s => +s.replace(/\./g, '').replace(',', '.');
+    const totals = firstMatch('summary', doc.body?.textContent || '');
     return {
+      shipping: totals ? money(totals[2]) : null, total: totals ? money(totals[3]) : null,
       id, lines, methodName, method: (methodName + max).trim(), grams: grams ? +grams : null,
       tracked: md ? !firstMatch('noTracking', flags) : null, trackingCode: T(byLabel('trackingCode')) || null,
       phone: T(byLabel('phone')) || null, email,
