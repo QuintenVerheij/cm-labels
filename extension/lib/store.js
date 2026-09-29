@@ -75,7 +75,7 @@ export async function loadData(origin) {
   if (data[origin]) return data[origin];
   const get = async n => (await fetch(ext.runtime.getURL(`data/${n}${origin === 'NL' ? '' : '.' + origin}.json`))).json();
   const [methods, countries, rates] = await Promise.all([get('methods'), get('countries'), get('rates')]);
-  return data[origin] = { methods, countries, rates, byName: byNameOf(countries) };
+  return data[origin] = { origin, methods, countries, rates, byName: byNameOf(countries) };
 }
 // The countries that have data files (the origins tools/build-data.mjs emits).
 const ORIGINS_WITH_DATA = ['NL', 'DE'];

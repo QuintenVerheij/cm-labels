@@ -11,7 +11,7 @@ import { planSales } from './plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, hostOf, BRACKETS } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadOwnData, saveLang } from './store.js';
 import { esc } from './esc.js';
-import { t, cartName, cartVars, setLang, resolveLang } from './messages.js';
+import { t, cartVars, setLang, resolveLang } from './messages.js';
 
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = d => d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
@@ -76,7 +76,7 @@ export async function start({ saleId, list }) {
   // Cardmarket's button: the deepest element whose text contains the label (any element type, any case), then
   // up to its clickable element (a, button, role=button, .btn). The visible one wins: there can be a hidden copy.
   const REFS = pageText('refButton', langFromPath(location.pathname));
-  const isRef = t => REFS.some(r => r.test(t));
+  const isRef = x => REFS.some(r => r.test(x));
   const norm = e => e.textContent.replace(/\s+/g, ' ').trim();
   const leaves = [...document.querySelectorAll('main *')].filter(e => isRef(norm(e)) && ![...e.children].some(c => isRef(norm(c))));
   const refs = [...new Set(leaves.map(e => e.closest('a, button, [role=button], .btn, label') || e))];
@@ -170,11 +170,11 @@ export async function start({ saleId, list }) {
     state.job = name; state.error = null; state.progress = null; render();
     try { await fn(); } catch (e) { state.error = e.message; } finally { state.job = null; render(); }
   };
-  const nLabels = p => p.tracked.filter(t => !t.error).length;
+  const nLabels = p => p.tracked.filter(x => !x.error).length;
   const issues = p => [
     ...p.skipped.map(x => ({ id: x.id, text: x.reason })),
-    ...p.tracked.filter(t => t.error).map(t => ({ id: t.Id, text: t.error })),
-    ...p.tracked.filter(t => !t.error && t.warnings?.some(w => /guess|no street/.test(w))).map(t => ({ id: t.Id, text: t.warnings.join('; ') })),
+    ...p.tracked.filter(x => x.error).map(x => ({ id: x.Id, text: x.error })),
+    ...p.tracked.filter(x => !x.error && x.warnings?.some(w => /guess|no street/.test(w))).map(x => ({ id: x.Id, text: x.warnings.join('; ') })),
   ];
 
   async function load() {
@@ -215,7 +215,7 @@ export async function start({ saleId, list }) {
     const what = p.stamps.length ? t('sale.stamp', { code: p.stamps[0].code }) : nLabels(p) ? t('sale.label', { product: p.tracked[0].Product, option: p.tracked[0].Option }) : null;
     if (!what) throw new Error(issues(p)[0]?.text || t('err.nothing', { carriers: originCarriers.map(c => carrierName(c)).join(t('list.or')) || t('err.aCart') }));
     log(t('log.sale', { id: saleId, what }));
-    await cart(p.stamps, p.tracked.filter(t => !t.error));
+    await cart(p.stamps, p.tracked.filter(x => !x.error));
   }
 
   // Single sale page: read this page, plan it, open the print dialog for its address label.
@@ -242,7 +242,7 @@ export async function start({ saleId, list }) {
   }
   // The cart the Paid page's button fills: the chosen items' carriers, else all items', else the origin's.
   const pickedCart = p => {
-    const ok = p.tracked.filter(t => !t.error);
+    const ok = p.tracked.filter(x => !x.error);
     const names = carriersOf(state.pick?.codes ? p.stamps : [], state.pick?.labels ? ok : []);
     const all = carriersOf(p.stamps, ok);
     return names.length ? cartOf(names) : all.length ? cartOf(all) : originCart;
@@ -291,7 +291,7 @@ export async function start({ saleId, list }) {
     $('#cart')?.addEventListener('click', () => {
       if (state.list !== 'Paid') return;
       if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(t('confirm.again'))) return;
-      const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(t => !t.error) : [];
+      const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(x => !x.error) : [];
       run(t('job.cartThe', pickedCart(p)), () => cart(stamps, tracked));
     });
   }

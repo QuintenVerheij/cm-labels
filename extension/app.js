@@ -24,7 +24,7 @@ const log = (m, cls) => { state.log.push({ line: `${new Date().toLocaleTimeStrin
 const cartOf = ids => cartName(ids.map(c => carrierName(c)));
 const cartOfVars = ids => cartVars(ids.map(c => carrierName(c)));
 const andList = names => names.join(t('list.and'));
-const applyLang = () => { setLang(resolveLang(settings.uiLang, navigator.language)); applyI18n(document); };
+const applyLang = () => { setLang(resolveLang(settings.uiLang, navigator.language)); applyI18n(document); if (methodsData && own) drawMethods(); };
 
 // The data of the seller's country setting (NL when there are no files for it), as last loaded.
 let own = null;
@@ -53,14 +53,14 @@ async function load(list, only) {
   state.plan = planSales(sales, cfg, settings.country, BRACKETS);
   state.list = list; state.only = only; state.loadedAt = new Date();
   $('#pickcodes').checked = state.plan.stamps.length > 0;
-  $('#picklabels').checked = state.plan.tracked.some(t => !t.error);
+  $('#picklabels').checked = state.plan.tracked.some(x => !x.error);
   await saveRun(list, state.plan, only);   // the panel in the Cardmarket page shows it too
   const p = state.plan;
   log(t('log.plan', { stamps: p.stampLine || '-', labels: p.print.length, tracked: p.tracked.length, byHand: p.skipped.length }));
 }
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
-const picked = (withCodes, withLabels) => ({ stamps: withCodes ? state.plan.stamps : [], tracked: withLabels ? state.plan.tracked.filter(t => !t.error) : [] });
+const picked = (withCodes, withLabels) => ({ stamps: withCodes ? state.plan.stamps : [], tracked: withLabels ? state.plan.tracked.filter(x => !x.error) : [] });
 async function cart({ stamps, tracked }) {
   settings = await getSettings();
   const me = await ext.tabs.getCurrent();
@@ -78,7 +78,7 @@ async function cart({ stamps, tracked }) {
 }
 // The carriers the cart button is for: the chosen items', else all items', else the ones the seller's methods name.
 function cartCarriers(p, withCodes, withLabels) {
-  const ok = p ? p.tracked.filter(t => !t.error) : [];
+  const ok = p ? p.tracked.filter(x => !x.error) : [];
   const picked = p ? carriersOf(withCodes ? p.stamps : [], withLabels ? ok : []) : [];
   if (picked.length) return picked;
   const all = p ? carriersOf(p.stamps, ok) : [];
@@ -137,6 +137,7 @@ async function setStart(n) {
   await saveSettings({ sheet: { ...sheetOf(settings), start } });
   lastKey = ''; render();
 }
+const trackedCarriers = p => carriersOf([], p.tracked).filter(c => c !== 'none').map(c => carrierName(c)).join(' / ') || t('tbl.carrier');
 function renderPlan() {
   const p = state.plan;
   $('#result').hidden = !p || $('nav button.on').dataset.tab !== 'run';
@@ -148,7 +149,7 @@ function renderPlan() {
     const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0);
     $('#chips').innerHTML = [t('chip.sales', { n: p.count }), t('chip.labels', { n: p.print.length }), t('chip.stamps', { n: nStamps }), t('chip.tracked', { n: p.tracked.length }), t('chip.byHand', { n: p.skipped.length })].map(c => `<span class="chip">${c}</span>`).join('');
     $('#stamps').innerHTML = p.stamps.length ? `<thead><tr><th>${t('tbl.code')}</th><th>${t('tbl.country')}</th><th class="num">${t('tbl.weight')}</th><th class="num">${t('tbl.qty')}</th><th>${t('tbl.sales')}</th></tr></thead><tbody>${p.stamps.map(g => `<tr><td class="mono">${g.code}</td><td>${esc(g.country)}</td><td class="num">${g.weight} g</td><td class="num">${g.qty}</td><td class="mono">${g.ids.join(', ')}</td></tr>`).join('')}</tbody>` : `<tbody><tr><td class="hint">${t('tbl.none')}</td></tr></tbody>`;
-    $('#tracked').innerHTML = p.tracked.length ? `<thead><tr><th>${t('tbl.sale')}</th><th>${t('tbl.to')}</th><th>PostNL</th><th>${t('tbl.recipient')}</th><th>${t('tbl.address')}</th><th>${t('tbl.phone')}</th><th>${t('tbl.email')}</th><th>${t('tbl.notes')}</th></tr></thead><tbody>${p.tracked.map(r => `<tr>
+    $('#tracked').innerHTML = p.tracked.length ? `<thead><tr><th>${t('tbl.sale')}</th><th>${t('tbl.to')}</th><th>${trackedCarriers(p)}</th><th>${t('tbl.recipient')}</th><th>${t('tbl.address')}</th><th>${t('tbl.phone')}</th><th>${t('tbl.email')}</th><th>${t('tbl.notes')}</th></tr></thead><tbody>${p.tracked.map(r => `<tr>
       <td class="mono">${r.Id}<br><span class="hint">${eur(r.value)}</span></td><td>${esc(r.Iso)}</td>
       <td>${esc(r.Product)}<br>${esc(r.Option)}${r.Grams ? `<br><span class="hint">${t('tbl.max', { g: r.Grams })}</span>` : ''}${r.Seen === 'guess' ? ` <span class="tag bad">${t('tbl.guess')}</span>` : ''}</td>
       <td>${r.error ? esc(r.address?.[0]) : `${esc(r.First)} ${esc(r.Last)}`}</td><td>${addressText(r)}</td>
@@ -156,7 +157,7 @@ function renderPlan() {
       <td>${r.error ? `<span class="bad">${esc(r.error)}</span><br><span class="hint">${esc((r.address || []).join(' | '))}</span>` : ''}${(r.warnings || []).map(w => `<div class="warn">${esc(w)}</div>`).join('')}</td></tr>`).join('')}</tbody>` : `<tbody><tr><td class="hint">${t('tbl.none')}</td></tr></tbody>`;
     $('#skippedwrap').hidden = !p.skipped.length;
     $('#skipped').innerHTML = `<tbody>${p.skipped.map(x => `<tr><td class="mono">${x.id}</td><td>${esc(x.iso || '')}</td><td>${esc(x.method || '')}</td><td class="warn">${esc(x.reason)}</td><td class="hint">${esc((x.address || []).join(' | '))}</td></tr>`).join('')}</tbody>`;
-    const nCodes = p.stamps.length, nLabels = p.tracked.filter(t => !t.error).length, nBad = p.tracked.length - nLabels;
+    const nCodes = p.stamps.length, nLabels = p.tracked.filter(x => !x.error).length, nBad = p.tracked.length - nLabels;
     $('#codesinfo').textContent = nCodes ? t('info.codes', { stamps: nStamps, codes: nCodes, line: p.stampLine }) : t('info.none');
     $('#labelsinfo').textContent = nLabels ? nBad ? t('info.labelsBad', { n: nLabels, bad: nBad }) : t('info.labels', { n: nLabels }) : t('info.none');
     renderPreviews();
@@ -164,7 +165,7 @@ function renderPlan() {
   const busy = !!state.job, paid = state.list === 'Paid';
   $('#print').disabled = busy || !paid || !p.print.length;
   $('#print').title = paid ? t('print.title', { summary: printSummary(p.print, settings) }) : t('print.onlyPaid');
-  const nCodes = p.stamps.length, nLabels = p.tracked.filter(t => !t.error).length;
+  const nCodes = p.stamps.length, nLabels = p.tracked.filter(x => !x.error).length;
   $('#pickcodes').disabled = busy || !nCodes; if (!nCodes) $('#pickcodes').checked = false;
   $('#picklabels').disabled = busy || !nLabels; if (!nLabels) $('#picklabels').checked = false;
   $('#cart').disabled = busy || !paid || !($('#pickcodes').checked || $('#picklabels').checked);
@@ -331,8 +332,11 @@ async function loadMethods() {
   drawMethods();
 }
 function drawMethods() {
+  const nl = own.origin === 'NL';
+  $('#methodstitle').textContent = nl ? t('methods.title') : t('methods.titleOther');
+  $('#methodshint').textContent = t('methods.hint', { origin: own.origin, carrier: nl ? 'PostNL' : t('methods.carrierAny') });
   const iso = $('#country').value, rates = methodsData.rates.filter(r => r.Iso === iso);
-  $('#mtable').innerHTML = `<thead><tr><th>${t('mt.method')}</th><th>${t('mt.service')}</th><th>${t('mt.carrier')}</th><th>${t('mt.product')}</th><th>${t('mt.seen')}</th><th class="num">${t('mt.maxValue')}</th><th class="num">${t('mt.maxWeight')}</th><th class="num">${t('mt.price')}</th><th class="num">${t('mt.days')}</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
+  $('#mtable').innerHTML = `<thead><tr><th>${t('mt.method')}</th><th>${t('mt.service')}</th><th>${t('mt.carrier')}</th><th>${own.origin === 'NL' ? t('mt.product') : t('mt.productOther')}</th><th>${t('mt.seen')}</th><th class="num">${t('mt.maxValue')}</th><th class="num">${t('mt.maxWeight')}</th><th class="num">${t('mt.price')}</th><th class="num">${t('mt.days')}</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
     const m = methodsData.methods[name] || { Service: '?', Carrier: '?' }, rs = rates.filter(r => r.Method === name);
     return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td><span class="tag">${esc(m.Carrier)}</span></td><td>${m.Service === 'tracked' || m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen === 'guess' ? t('tbl.guess') : m.Seen}</span>` : ''}</td>
       <td class="num">${eur(rs[0].MaxValue)}</td><td class="num">${rs.map(r => r.MaxWeight + ' g').join('<br>')}</td><td class="num">${rs.map(r => eur(r.Price)).join('<br>')}</td><td class="num">${rs[0].Days}</td></tr>`;
@@ -418,7 +422,7 @@ const last = await getRun();
 if (last) {
   Object.assign(state, { plan: last.plan, list: last.list, only: last.only || null, loadedAt: last.loadedAt });
   $('#pickcodes').checked = last.plan.stamps.length > 0;
-  $('#picklabels').checked = last.plan.tracked.some(t => !t.error);
+  $('#picklabels').checked = last.plan.tracked.some(x => !x.error);
 }
 render();
 await checkAccess();
