@@ -8,6 +8,8 @@ import { ext } from './ext.js';
 import { LANGS } from './locale.js';
 const tabGone = async tab => { try { await ext.tabs.get(tab.id); return false; } catch { return true; } };
 
+// The hosts loading sales needs: the only ones the app page requires before Load (a cart asks for its shops).
+export const ORIGINS = ['https://www.cardmarket.com/*'];
 const baseFor = lang => `https://www.cardmarket.com/${lang}/Magic`;
 // Language and game base of a Cardmarket path ('/de/Pokemon/Orders/1' -> '.../de/Pokemon'); null for any other path.
 export const baseFromPath = path => {

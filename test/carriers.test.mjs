@@ -6,7 +6,9 @@ import { fileURLToPath } from 'node:url';
 
 const opened = [];
 globalThis.chrome = { tabs: { async create(o) { opened.push(o.url); return { id: 1 }; } }, runtime: {} };
-const { buildCart, carrierModule, abortedError, cartTitle, carrierName, methodCarriers, CARRIERS, BRACKETS, ORIGINS } = await import('../extension/lib/carriers.js');
+const { buildCart, carrierModule, abortedError, carrierName, carriersOf, methodCarriers, originsFor, accessOrigins, hostOf, CARRIERS, BRACKETS } = await import('../extension/lib/carriers.js');
+const { ORIGINS: LOAD_ORIGINS } = await import('../extension/lib/cardmarket.js');
+const { t, setLang } = await import('../extension/lib/messages.js');
 const postnl = await import('../extension/lib/postnl.js');
 const deutschepost = await import('../extension/lib/deutschepost.js');
 const { planSales } = await import('../extension/lib/plan.js');
@@ -183,18 +185,48 @@ test('a carrier whose module throws does not stop the next one', async () => {
   assert.equal(abortedError(await buildCart({ stamps: [], tracked: [{ Id: '1', carrier: 'postnl' }] }, modules), modules), 'tab closed');
 });
 
-test('carrier names, cart titles and host origins come from the modules', () => {
+test('carrier names come from the modules', () => {
   assert.equal(postnl.NAME, 'PostNL');
   assert.equal(carrierName('postnl'), 'PostNL');
   assert.equal(carrierName('dhl'), 'dhl');
-  assert.equal(cartTitle(['postnl']), 'PostNL cart');
-  assert.equal(cartTitle([]), 'cart');
-  assert.equal(cartTitle(['postnl', 'dhl'], { postnl: { NAME: 'PostNL' }, dhl: { NAME: 'DHL' } }), 'PostNL and DHL carts');
   assert.deepEqual(methodCarriers(nl.methods), ['postnl']);
   assert.equal(carrierName('deutschepost'), 'Deutsche Post');
-  assert.deepEqual(ORIGINS, ['https://jouw.postnl.nl/*', 'https://shop.deutschepost.de/*']);
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, 'extension', 'manifest.json'), 'utf8'));
-  for (const o of ORIGINS) assert.ok(manifest.host_permissions.includes(o), o);
+});
+
+const CM = 'https://www.cardmarket.com/*', PNL = 'https://jouw.postnl.nl/*', DPOST = 'https://shop.deutschepost.de/*';
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'extension', 'manifest.json'), 'utf8'));
+
+test('a cart asks only for the shops of the carriers in it', () => {
+  const stamp = carrier => ({ code: 'DE-20', carrier }), label = carrier => ({ Id: '1', carrier });
+  const asked = (stamps, tracked) => originsFor(carriersOf(stamps, tracked));
+  assert.deepEqual(asked([stamp('deutschepost')], []), [DPOST]);
+  assert.deepEqual(asked([stamp('postnl')], [label('postnl')]), [PNL]);
+  assert.deepEqual(asked([stamp('deutschepost')], [label('postnl')]), [DPOST, PNL]);
+  assert.deepEqual(asked([stamp('postnl'), stamp('deutschepost')], [label('deutschepost')]), [PNL, DPOST]);
+  assert.deepEqual(asked([], []), []);
+  assert.deepEqual(originsFor(['dhl', 'none']), []);   // no module: buildCart refuses these before any request matters
+});
+
+test('Load requires only Cardmarket; the manifest grants Cardmarket and PostNL, every other shop is optional', () => {
+  assert.deepEqual(LOAD_ORIGINS, [CM]);
+  assert.deepEqual(manifest.host_permissions, [CM, PNL]);   // as before Deutsche Post: nothing changes for NL
+  assert.deepEqual(manifest.optional_host_permissions, [DPOST]);
+  // every shop a module needs can be asked for: the browser refuses a request for an undeclared host
+  for (const o of originsFor(CARRIERS)) assert.ok([...manifest.host_permissions, ...manifest.optional_host_permissions].includes(o), o);
+});
+
+test('the access button asks for Cardmarket and the seller\'s own shops, and its text names them (NL as before)', () => {
+  const grant = methods => t('access.grant', { hosts: accessOrigins(LOAD_ORIGINS, methods).map(hostOf).join(t('list.and')) });
+  assert.deepEqual(accessOrigins(LOAD_ORIGINS, nl.methods), [CM, PNL]);
+  assert.deepEqual(accessOrigins(LOAD_ORIGINS, read('methods.DE')), [CM, DPOST]);   // dhl has no shop in cm-labels
+  assert.deepEqual(accessOrigins(LOAD_ORIGINS, undefined), [CM]);
+  setLang('en');
+  assert.equal(grant(nl.methods), 'Allow access to cardmarket.com and jouw.postnl.nl');
+  setLang('de');
+  try {
+    assert.equal(grant(read('methods.DE')), 'Zugriff auf cardmarket.com und shop.deutschepost.de erlauben');
+    assert.equal(grant(nl.methods), 'Zugriff auf cardmarket.com und jouw.postnl.nl erlauben');
+  } finally { setLang('en'); }
 });
 
 test('the known carriers are the ones the methods files may name', () => {

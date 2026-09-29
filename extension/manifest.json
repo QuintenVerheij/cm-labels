@@ -18,7 +18,9 @@
   ],
   "host_permissions": [
     "https://www.cardmarket.com/*",
-    "https://jouw.postnl.nl/*",
+    "https://jouw.postnl.nl/*"
+  ],
+  "optional_host_permissions": [
     "https://shop.deutschepost.de/*"
   ],
   "background": {

@@ -2,9 +2,9 @@
 // The jobs run in this page, so keep it open while one runs.
 import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';
-import { loadSales } from './lib/cardmarket.js';
+import { loadSales, ORIGINS as LOAD_ORIGINS } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
-import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, BRACKETS, ORIGINS as CARRIER_ORIGINS } from './lib/carriers.js';
+import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, accessOrigins, hostOf, BRACKETS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
@@ -60,10 +60,9 @@ async function load(list, only) {
 }
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
-async function cart(withCodes, withLabels) {
+const picked = (withCodes, withLabels) => ({ stamps: withCodes ? state.plan.stamps : [], tracked: withLabels ? state.plan.tracked.filter(t => !t.error) : [] });
+async function cart({ stamps, tracked }) {
   settings = await getSettings();
-  const stamps = withCodes ? state.plan.stamps : [];
-  const tracked = withLabels ? state.plan.tracked.filter(t => !t.error) : [];
   const me = await ext.tabs.getCurrent();
   state.cart = { running: true }; render();
   for (const c of carriersOf(stamps, tracked)) log(t('log.cartStart', { carrier: carrierName(c), codes: stamps.filter(g => g.carrier === c).length, labels: tracked.filter(p => p.carrier === c).length }));
@@ -197,6 +196,7 @@ function render() {
   $('#statustext').textContent = state.job ? t('status.running', { job: state.job }) : state.error ? t('status.failed', { error: state.error }) : state.plan ? t('status.ready') : t('status.idle');
   $('#load').disabled = !!state.job || !$('#access').hidden;
   $('#login').hidden = !state.login;
+  renderAccess();
   renderProgress();
   renderLog();
   renderPlan();
@@ -377,24 +377,38 @@ $('#previews').addEventListener('click', e => {
   setStart(cell.dataset.cell);
 });
 for (const id of ['#pickcodes', '#picklabels']) $(id).onchange = () => render();
-$('#cart').onclick = () => {
+$('#cart').onclick = async () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
   if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
+  // The shops of this cart's carriers, and no others. Asked for first, before any await, while the click still
+  // counts as the user's (Firefox and Chrome require that); already granted, the browser answers without a prompt.
+  const items = picked(withCodes, withLabels), origins = originsFor(carriersOf(items.stamps, items.tracked));
+  if (origins.length) {
+    let granted = false;
+    try { granted = await ext.permissions.request({ origins }); } catch (e) { state.error = t('log.permFailed', { message: e.message }); log(state.error, 'e'); return; }
+    if (!granted) { state.error = t('log.permDenied', { hosts: andList(origins.map(hostOf)) }); log(state.error, 'e'); return; }
+  }
   if ((state.cart?.error || state.cart?.carts?.some(c => c.merged || c.error)) && !confirm(t('confirm.again'))) return;
-  run('cart', t('job.cart', cartOfVars(cartCarriers(state.plan, withCodes, withLabels))), () => cart(withCodes, withLabels));
+  run('cart', t('job.cart', cartOfVars(cartCarriers(state.plan, withCodes, withLabels))), () => cart(items));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
 
-// Host permissions can be missing (Firefox lets the user turn them off): ask for them, from a click. The prompt
-// stays hidden while they are granted.
-const ORIGINS = ['https://www.cardmarket.com/*', ...CARRIER_ORIGINS];
+// Host permissions can be missing (Firefox lets the user turn them off). Load needs only Cardmarket's: the banner
+// shows while that one is missing, and its button asks for it with the shops of the seller's own carriers, from a
+// click. A cart asks for its own carriers' shops from the cart click.
+const grantOrigins = () => accessOrigins(LOAD_ORIGINS, own?.methods);
+function renderAccess() {
+  const shops = methodCarriers(own?.methods).filter(c => originsFor([c]).length);
+  $('#accessnote').textContent = shops.length ? t('access.notice', { carriers: andList(shops.map(c => carrierName(c))) }) : t('access.noticeLoad');
+  $('#grant').textContent = t('access.grant', { hosts: andList(grantOrigins().map(hostOf)) });
+}
 async function checkAccess() {
-  const ok = await ext.permissions.contains({ origins: ORIGINS }).catch(() => true);
+  const ok = await ext.permissions.contains({ origins: LOAD_ORIGINS }).catch(() => true);
   $('#access').hidden = ok;
   render();
   return ok;
 }
-$('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(t('log.permFailed', { message: e.message })); } await checkAccess(); };
+$('#grant').onclick = async () => { try { await ext.permissions.request({ origins: grantOrigins() }); } catch (e) { log(t('log.permFailed', { message: e.message })); } await checkAccess(); };
 
 await loadSettings();
 await loadOwn().catch(() => {});   // the carriers of the methods name the cart button before any load

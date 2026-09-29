@@ -40,3 +40,6 @@ export async function injectFile(tabId, file) {
   await raw.scripting.executeScript({ target: { tabId }, files: [file] });
 }
 export const openPage = (page, { reuse = true } = {}) => rpc('openPage', page, reuse);
+// Whether the extension may open these hosts. A content script asks the background script; it cannot ask the user
+// for them (only an extension page can, from a click).
+export const hasOrigins = origins => isContentScript ? rpc('permissions.contains', origins) : raw.permissions.contains({ origins });

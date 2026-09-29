@@ -46,6 +46,7 @@ const OPS = {
   'tabs.getCurrent': s => s.tab,
   'tabGroups.update': (s, a) => ext.tabGroups.update(...a),
   'windows.update': (s, a) => ext.windows.update(...a),
+  'permissions.contains': (s, [origins]) => ext.permissions.contains({ origins }),
   callInTab: async (s, [tabId, ns, name, args]) => (await ext.scripting.executeScript({ target: { tabId }, func: inTab, args: [ns, name, args] }))[0]?.result,
   injectFile: async (s, [tabId, file]) => { if (!FILES.includes(file)) throw new Error(`not an injectable file: ${file}`); await ext.scripting.executeScript({ target: { tabId }, files: [file] }); },
   openPage: (s, [page, reuse]) => { if (!/^(app|print)\.html(\?|$)/.test(page)) throw new Error(`not an extension page: ${page}`); return openPage(page, reuse); },

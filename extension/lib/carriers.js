@@ -2,8 +2,10 @@
 //
 // A carrier module exports:
 //   NAME       its display name ('PostNL'): the UI says "Add to PostNL cart", "3 item(s) in the PostNL cart".
-//   ORIGINS    the host patterns of its shop (['https://jouw.postnl.nl/*']): the app asks for them with Cardmarket's
-//              where the browser treats host permissions as optional. The manifest lists them too.
+//   ORIGINS    the host patterns of its shop (['https://jouw.postnl.nl/*']). The hosts a carrier module needs are
+//              requested at cart time, from the cart click, unless already granted (the browser then answers
+//              without a prompt): a host in the manifest's host_permissions is granted at install (PostNL's), any
+//              other must be in its optional_host_permissions (Deutsche Post's). Loading sales needs none of them.
 //   BRACKETS   its stamp weights in g, ascending ([20, 50]). planSales takes them from BRACKETS here: a stamp goes in
 //              the smallest bracket that holds the sale's grams; heavier, or a carrier without brackets, is bought
 //              by hand. A carrier with no stamps exports [].
@@ -49,9 +51,8 @@ import * as deutschepost from './deutschepost.js';
 export const CARRIERS = ['postnl', 'deutschepost', 'dhl', 'none'];
 const MODULES = { postnl, deutschepost };
 
-// For planSales: carrier -> its stamp weights. For the permission request: every carrier's shop.
+// For planSales: carrier -> its stamp weights.
 export const BRACKETS = Object.fromEntries(Object.entries(MODULES).map(([name, m]) => [name, m.BRACKETS]));
-export const ORIGINS = Object.values(MODULES).flatMap(m => m.ORIGINS);
 
 // The display name of a carrier ('PostNL'), or its id when it has no module.
 export const carrierName = (name, modules = MODULES) => modules[name]?.NAME ?? String(name);
@@ -59,11 +60,15 @@ export const carrierName = (name, modules = MODULES) => modules[name]?.NAME ?? S
 export const carriersOf = (stamps = [], tracked = []) => [...new Set([...stamps, ...tracked].map(x => x.carrier))];
 // The carriers an origin's methods name (none left out): for text before any sale is planned.
 export const methodCarriers = methods => [...new Set(Object.values(methods || {}).filter(m => m.Service !== 'manual').map(m => m.Carrier || 'none'))].filter(c => c !== 'none');
-// 'PostNL cart', 'PostNL and DHL carts', or 'cart' when no carrier is known.
-export function cartTitle(names, modules = MODULES) {
-  const n = names.map(c => carrierName(c, modules));
-  return !n.length ? 'cart' : n.length === 1 ? `${n[0]} cart` : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]} carts`;
-}
+
+// The shops of these carriers, for the permission request of a cart: only the carriers in it. A carrier without
+// a module has none (buildCart refuses it).
+export const originsFor = (carriers, modules = MODULES) => [...new Set(carriers.flatMap(c => modules[c]?.ORIGINS ?? []))];
+// What the access banner asks for: load (Cardmarket's hosts) with the shops of the carriers the seller's methods
+// name (NL: PostNL), so that one prompt covers a usual run.
+export const accessOrigins = (load, methods, modules = MODULES) => [...new Set([...load, ...originsFor(methodCarriers(methods), modules)])];
+// A host as the texts name it: 'https://www.cardmarket.com/*' -> 'cardmarket.com'.
+export const hostOf = origin => String(origin).replace(/^[a-z*]+:\/\/(www\.)?/i, '').replace(/\/.*$/, '');
 
 // The errors of the carriers whose module threw, as one message, or null: the callers show the run as failed.
 export function abortedError({ carts }, modules = MODULES) {

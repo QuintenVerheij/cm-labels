@@ -12,7 +12,7 @@ May at some point support other postal services.
 
 Load `extension/` unpacked (Chromium: `chrome://extensions`, Developer mode; Firefox: `about:debugging`, Load Temporary Add-on), or install a packed build from `dist/` (see Build).
 
-Firefox lets the user switch off the host permissions for Cardmarket and PostNL. When they are missing, the extension page shows a banner with a button that asks for them again.
+Firefox lets the user switch off the host permissions for Cardmarket and PostNL. When Cardmarket's is missing, the extension page shows a banner with a button that asks for it again, together with the shop of the seller's own carrier. The Deutsche Post shop is an optional permission in both browsers. A carrier's shop is asked for when you click the cart button, and only the shops of the carriers in that cart are asked for. The panel in the Cardmarket page cannot ask for a permission: when a shop is missing there, add to the cart once from the full page.
 
 ## Layout
 

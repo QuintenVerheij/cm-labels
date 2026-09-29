@@ -4,11 +4,11 @@
 //            The full tables and previews are on the full page ("Open full page" at the top of the panel).
 // Sale page: an "Add to PostNL cart" button at the same place puts this one sale in its carrier's cart.
 // The run lives in this page: keep it open while a run goes. Tab work goes through the background script.
-import { ext, openPage } from './ext.js';
+import { ext, openPage, hasOrigins } from './ext.js';
 import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { langFromPath, pageText } from './locale.js';
 import { planSales } from './plan.js';
-import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, BRACKETS } from './carriers.js';
+import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, hostOf, BRACKETS } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadOwnData, saveLang } from './store.js';
 import { esc } from './esc.js';
 import { t, cartName, cartVars, setLang, resolveLang } from './messages.js';
@@ -188,6 +188,9 @@ export async function start({ saleId, list }) {
     await saveRun(list, state.plan);
   }
   async function cart(stamps, tracked) {
+    // This page cannot ask for a shop's access (only an extension page can): without it, send the user there.
+    const origins = originsFor(carriersOf(stamps, tracked));
+    if (origins.length && !(await hasOrigins(origins))) throw new Error(t('err.access', { hosts: origins.map(hostOf).join(t('list.and')) }));
     const me = await ext.tabs.getCurrent();
     state.cart = null;
     const { fallbackEmail } = await getSettings();
