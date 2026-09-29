@@ -27,6 +27,14 @@ const out = option('--out') ?? dataDir;
 const csvOverride = option('--csv');
 const origins = ['NL', ...fs.readdirSync(root).map(f => /^methods\.([A-Z]{2})\.psd1$/.exec(f)?.[1]).filter(Boolean).sort()];
 
+// PowerShell's hashtable order differs between Windows PowerShell and pwsh (and between pwsh runs): sort the keys
+// so every platform writes the same JSON. Arrays keep their order.
+function sortKeys(v) {
+  if (Array.isArray(v)) return v.map(sortKeys);
+  if (v && typeof v === 'object') return Object.fromEntries(Object.keys(v).sort().map(k => [k, sortKeys(v[k])]));
+  return v;
+}
+
 function rateKey(r) { return [r.Iso, r.Method, r.MaxWeight, r.MaxValue].join(' | '); }
 
 function findDuplicates(rates) {
@@ -37,7 +45,7 @@ function findDuplicates(rates) {
 
 function build(origin) {
   const sfx = origin === 'NL' ? '' : '.' + origin;
-  const { methods, countries } = loadConfig(root, origin);
+  const { methods, countries } = sortKeys(loadConfig(root, origin));
   const csvPath = (origin === 'NL' && csvOverride) || path.join(root, `shipping-costs${sfx}.csv`);
   const csv = fs.readFileSync(csvPath, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter(Boolean).map(line => {
     const cells = []; let cur = '', q = false;

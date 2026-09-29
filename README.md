@@ -38,10 +38,12 @@ npm run pack    # node tools/pack.mjs: write dist/cm-labels-<version>.zip and .x
 
 ### What each tool needs
 
-- `build-data.mjs` needs Windows PowerShell: `cdp/config.mjs` runs `powershell.exe` to read the `.psd1` files.
-- `pack.mjs` needs Windows: it calls `tar.exe` from the Windows System32 folder (Windows 10 1803 or later).
-- `icons.mjs` needs Windows and Google Chrome in `%ProgramFiles%\Google\Chrome\Application`.
-- `ext-test.mjs` is a manual driver, not part of `npm test`. It needs the same Chrome install, and Cardmarket and PostNL logged in in the profile `%LOCALAPPDATA%\cm-labels\chrome-cdp`.
+The tools run on Windows and macOS.
+
+- `build-data.mjs` needs PowerShell: `cdp/config.mjs` runs `powershell.exe` on Windows and `pwsh` elsewhere to read the `.psd1` files. On macOS: `brew install powershell`. The JSON keys are sorted, so every platform writes the same files. The data tests in `npm test` run it too.
+- `pack.mjs` needs the system's own bsdtar: `tar.exe` from the Windows System32 folder (Windows 10 1803 or later) or `/usr/bin/tar` on macOS.
+- `icons.mjs` needs Google Chrome in its default place: `%ProgramFiles%\Google\Chrome\Application` on Windows, `/Applications/Google Chrome.app` on macOS.
+- `ext-test.mjs` is a manual driver, not part of `npm test`. It needs the same Chrome install, and Cardmarket and PostNL logged in in the profile `cm-labels/chrome-cdp` under `%LOCALAPPDATA%` (Windows) or `~/Library/Application Support` (macOS).
 - `sign.mjs` runs on any platform with Node and npm; it fetches `web-ext` through `npx`.
 
 The `.xpi` from `pack.mjs` is unsigned and is the same archive as the `.zip`. Release Firefox refuses an unsigned add-on except as a temporary add-on. To get a signed `.xpi`, set `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` (from the addons.mozilla.org API key page), then run `node tools/sign.mjs`. It signs as an unlisted add-on and writes the signed file to `dist/`; each upload needs a new `version` in `extension/manifest.json`.
