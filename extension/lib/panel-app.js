@@ -11,7 +11,7 @@ import { planSales } from './plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, BRACKETS } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadOwnData, saveLang } from './store.js';
 import { esc } from './esc.js';
-import { t, cartName, setLang, resolveLang } from './messages.js';
+import { t, cartName, cartVars, setLang, resolveLang } from './messages.js';
 
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = d => d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
@@ -58,7 +58,7 @@ const CSS = `
 .ok { color: #5cc98a; }
 `;
 
-const cartOf = ids => cartName(ids.map(c => carrierName(c)));
+const cartOf = ids => cartVars(ids.map(c => carrierName(c)));
 
 export async function start({ saleId, list }) {
   setLang(resolveLang((await getSettings()).uiLang, navigator.language));
@@ -86,7 +86,8 @@ export async function start({ saleId, list }) {
   // Before a sale is planned, the cart is named by the carriers of the origin's methods (NL: PostNL).
   const originCarriers = methodCarriers((await loadOwnData().catch(() => null))?.methods);
   const originCart = cartOf(originCarriers);
-  const labelText = saleId ? t('cart.add', { cart: originCart }) : 'cm-labels';
+  const escCart = v => ({ ...v, cart: esc(v.cart) });
+  const labelText = saleId ? t('cart.add', originCart) : 'cm-labels';
   const ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h7.2l6.3 6.3v7.2A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/></svg>';
   const PRINT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2"/><path d="M7 14h10v6H7z"/></svg>';
   // One builder for every button, so they all get the same design.
@@ -255,8 +256,8 @@ export async function start({ saleId, list }) {
       html = `<div class="sum">${esc(state.job)}…${it ? ` ${it.items}/${it.of}` : of ? ` ${n}/${of}` : ''}</div>${of ? `<div class="bar"><i style="width:${Math.round(100 * n / of)}%"></i></div>` : '<div class="bar"><i style="width:0%"></i></div>'}
         <div class="log">${esc(last || '')}</div><div class="muted">${t('panel.keepOpen')}</div>`;
     } else if (saleId) {
-      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}${cartLine()}${!state.error && !state.cart ? `<div class="muted">${t('panel.putSale', { cart: esc(originCart) })}</div>` : ''}
-        <div class="actions"><button class="btn" id="again">${state.cart || state.error ? t('panel.retry') : t('cart.add', { cart: esc(originCart) })}</button></div>`;
+      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}${cartLine()}${!state.error && !state.cart ? `<div class="muted">${t('panel.putSale', escCart(originCart))}</div>` : ''}
+        <div class="actions"><button class="btn" id="again">${state.cart || state.error ? t('panel.retry') : t('cart.add', escCart(originCart))}</button></div>`;
     } else if (!p) {
       const rows = document.querySelectorAll('div[data-url*="/Orders/"]').length;
       const pages = +((pageText('pages', langFromPath(location.pathname)).map(r => document.body.textContent.match(r)).find(Boolean) || [])[1] || 1);
@@ -288,7 +289,7 @@ export async function start({ saleId, list }) {
       if (state.list !== 'Paid') return;
       if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(t('confirm.again'))) return;
       const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(t => !t.error) : [];
-      run(t('job.cartThe', { cart: pickedCart(p) }), () => cart(stamps, tracked));
+      run(t('job.cartThe', pickedCart(p)), () => cart(stamps, tracked));
     });
   }
 

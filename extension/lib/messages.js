@@ -152,7 +152,7 @@ export const MESSAGES = {
   },
   de: {
     'nav.run': 'Ausführen', 'nav.settings': 'Einstellungen', 'nav.methods': 'Versandarten',
-    'status.idle': 'bereit', 'status.ready': 'fertig', 'status.running': 'läuft: {job}', 'status.failed': 'fehlgeschlagen: {error}',
+    'status.idle': 'bereit', 'status.ready': 'geladen', 'status.running': 'läuft: {job}', 'status.failed': 'fehlgeschlagen: {error}',
     'access.notice': 'Firefox fragt zuerst nach der Erlaubnis: Dieses Add-on liest Cardmarket und füllt PostNL aus.',
     'access.grant': 'Zugriff auf cardmarket.com und jouw.postnl.nl erlauben',
     'run.title': 'Bestellungen von Cardmarket laden', 'run.load': 'Bezahlte Bestellungen laden',
@@ -162,10 +162,10 @@ export const MESSAGES = {
     'result.title': 'Übersicht',
     'result.titleFull': 'Übersicht: {scope}, geladen {at} ({age})',
     'result.stamps': 'Zu besorgende Briefmarken (Postzegelcodes)', 'result.tracked': 'Versandlabels mit Tracking (PostNL)', 'result.byHand': 'Von Hand',
-    'labels.title': 'Adressetiketten', 'labels.startAt': 'Beginnen bei Position', 'labels.print': 'Drucken',
+    'labels.title': 'Adressetiketten', 'labels.startAt': 'Start bei Position', 'labels.print': 'Drucken',
     'pick.codes': 'Codes', 'pick.labels': 'Versandlabels',
-    'cart.addPostnl': 'Zum PostNL-Warenkorb hinzufügen', 'cart.add': 'Zum {cart} hinzufügen', 'cart.resultTitle': 'PostNL-Warenkorb',
-    'cart.name.none': 'Warenkorb', 'cart.name.one': '{a}-Warenkorb', 'cart.name.many': '{hlist} und {last}-Warenkorb',
+    'cart.addPostnl': 'Zum PostNL-Warenkorb hinzufügen', 'cart.add': '{carts:Zum|Zu den} {cart} hinzufügen', 'cart.resultTitle': 'PostNL-Warenkorb',
+    'cart.name.none': 'Warenkorb', 'cart.name.one': '{a}-Warenkorb', 'cart.name.many': '{hlist} und {last}-Warenkörben',
     'paper.title': 'Papier', 'paper.printer': 'Etikettendrucker', 'paper.printerSub': 'Ein Etikett pro Seite',
     'paper.sheet': 'Bogen', 'paper.sheetSub': 'Mehrere Etiketten auf einer Seite, in Spalten × Zeilen',
     'paper.lw': 'Etikettenbreite (mm)', 'paper.lh': 'Etikettenhöhe (mm)',
@@ -219,7 +219,7 @@ export const MESSAGES = {
     'methods.title': 'Cardmarket-Versandart → PostNL', 'methods.destination': 'Zielland',
     'methods.hint': 'Preise von help.cardmarket.com, Herkunft NL. Ein rotes „Vermutung“ heißt: vor der ersten Bestellung bei PostNL prüfen.',
     'log.title': 'Protokoll', 'log.empty': 'Noch nichts.',
-    'log.failed': '{name} FEHLGESCHLAGEN: {message}',
+    'log.failed': 'Fehlgeschlagen: {name}: {message}',
     'log.plan': 'Briefmarken: {stamps} | Adressetiketten: {labels} | mit Tracking: {tracked} | von Hand: {byHand}',
     'log.cartStart': '{carrier}: {codes} {codes:Briefmarkencode-Gruppe|Briefmarkencode-Gruppen} + {labels} {labels:Versandlabel|Versandlabels}, in parallelen Tabs...',
     'log.cartDone': '{names} fertig in {seconds} s.',
@@ -236,7 +236,7 @@ export const MESSAGES = {
     'cart.failedKeep': 'Es wurde nichts hinzugefügt. Fehlgeschlagene Artikel behalten ihren Tab.',
     'cart.doneMulti': 'Fertig in {seconds} s. Jeder Warenkorb liegt in einem eigenen Tab: prüfen und dort bezahlen.',
     'cartrow.in': 'im Warenkorb', 'cartrow.manual': 'Adresse von Hand',
-    'addr.manual': 'falls von Hand:',
+    'addr.manual': 'Bei Bedarf von Hand:',
     'sheet.caption': 'Bogen {i} von {n}', 'sheet.captionFirst': 'Bogen {i} von {n}: Klicke auf eine Position, um dort zu beginnen',
     'sheet.info': 'Etikettengröße: {w} × {h} mm, {n} Etiketten pro Bogen.',
     'prev.sheet': '{w}×{h} mm, {cols}×{rows} pro Bogen, {sheets} Bogen',
@@ -245,7 +245,7 @@ export const MESSAGES = {
     'chip.sales': '{n} {n:Verkauf|Verkäufe}', 'chip.labels': '{n} {n:Adressetikett|Adressetiketten}', 'chip.stamps': '{n} {n:Briefmarke|Briefmarken}',
     'chip.tracked': '{n} mit Tracking', 'chip.byHand': '{n} von Hand',
     'tbl.code': 'Code', 'tbl.country': 'Land', 'tbl.weight': 'Gewicht', 'tbl.qty': 'Anzahl', 'tbl.sales': 'Verkäufe',
-    'tbl.sale': 'Verkauf', 'tbl.to': 'Nach', 'tbl.recipient': 'Empfänger', 'tbl.address': 'Einzugebende Adresse',
+    'tbl.sale': 'Verkauf', 'tbl.to': 'Ziel', 'tbl.recipient': 'Empfänger', 'tbl.address': 'Einzugebende Adresse',
     'tbl.phone': 'Telefon', 'tbl.email': 'E-Mail', 'tbl.notes': 'Hinweise',
     'tbl.none': 'Keine.', 'tbl.max': 'max. {g} g', 'tbl.guess': 'Vermutung',
     'tbl.item': 'Artikel', 'tbl.result': 'Ergebnis', 'tbl.price': 'Preis', 'tbl.time': 'Dauer',
@@ -257,7 +257,7 @@ export const MESSAGES = {
     'mt.method': 'Cardmarket-Versandart', 'mt.service': 'Dienst', 'mt.carrier': 'Versanddienstleister', 'mt.product': 'PostNL-Produkt · Option',
     'mt.seen': 'Gesehen', 'mt.maxValue': 'Max. Wert', 'mt.maxWeight': 'Max. Gewicht', 'mt.price': 'CM-Preis', 'mt.days': 'Tage',
     'job.load': 'Bezahlte Bestellungen werden geladen', 'job.loadN': '{n} {n:Bestellung wird|Bestellungen werden} geladen', 'job.print': 'Druckdialog',
-    'job.cart': 'Wird zum {cart} hinzugefügt', 'job.cartThe': 'Wird zum {cart} hinzugefügt',
+    'job.cart': 'Wird {carts:zum|zu den} {cart} hinzugefügt', 'job.cartThe': 'Wird {carts:zum|zu den} {cart} hinzugefügt',
     'job.loadSales': 'Bezahlte Verkäufe werden geladen', 'job.addSale': 'Dieser Verkauf wird hinzugefügt', 'job.openPrint': 'Druckdialog wird geöffnet',
     'only.only': 'Nur: {ids}', 'only.skipped': 'Keine 10 Ziffern, übersprungen: {ids}',
     'confirm.again': 'Aus diesem Ladevorgang wurde schon ein Warenkorb erstellt, und sein Tab ist vielleicht noch offen. Wenn du einen weiteren erstellst und beide bezahlst, zahlst du das Porto doppelt. Weiteren Warenkorb erstellen?',
@@ -269,10 +269,10 @@ export const MESSAGES = {
     'saved.printer': '{w}×{h} mm', 'saved.turned': '{w}×{h} mm, um {r}° gedreht auf einer Seite von {pageW}×{pageH} mm',
     'saved.default': 'Standardlayout', 'saved.own': 'eigenes Layout', 'saved.msg': 'Gespeichert: {where}, {kind}.',
     'postcode.bad': 'Das ist keine {country}-Postleitzahl (etwa {example}).',
-    'panel.printLabel': 'Label drucken', 'panel.fullPage': 'Vollständige Seite öffnen', 'panel.close': 'Schließen',
+    'panel.printLabel': 'Etikett drucken', 'panel.fullPage': 'Vollständige Seite öffnen', 'panel.close': 'Schließen',
     'panel.unreadable': 'cm-labels funktioniert nur auf den englischen und deutschen Magic-Seiten (cardmarket.com/en/Magic, cardmarket.com/de/Magic).',
     'panel.keepOpen': 'Lass diese Seite offen, bis der Lauf fertig ist.',
-    'panel.putSale': 'Legt diesen Verkauf in den {cart} (Briefmarkencode oder Versandlabel). Es wird nichts bezahlt.',
+    'panel.putSale': 'Fügt diesen Verkauf {carts:zum|zu den} {cart} hinzu (Briefmarkencode oder Versandlabel). Es wird nichts bezahlt.',
     'panel.retry': 'Erneut versuchen',
     'panel.rows': '{rows} bezahlte {rows:Verkauf|Verkäufe} auf dieser Seite.', 'panel.rowsPages': '{rows} bezahlte {rows:Verkauf|Verkäufe} auf dieser Seite, {pages} Seiten.',
     'panel.load': 'Bezahlte Verkäufe laden',
@@ -285,7 +285,7 @@ export const MESSAGES = {
     'panel.expected': '(erwartet {expected}: Warenkorb prüfen)',
     'panel.tabOpen': 'Sein Tab ist offen: dort bezahlen.', 'panel.tabFront': 'Der Warenkorb-Tab ist im Vordergrund: dort bezahlen.',
     'panel.noneCart': 'Es wurde nichts zum {name}-Warenkorb hinzugefügt.', 'panel.noneAdded': 'Es wurde nichts hinzugefügt.',
-    'err.readSale': 'Diese Verkaufsseite konnte nicht gelesen werden', 'err.nothing': 'nichts für {carriers} in diesem Verkauf', 'err.aCart': 'einen Warenkorb',
+    'err.readSale': 'diese Verkaufsseite konnte nicht gelesen werden', 'err.nothing': 'nichts für {carriers} in diesem Verkauf', 'err.aCart': 'einen Warenkorb',
     'err.noLabel': 'kein Etikett für diesen Verkauf',
     'sale.stamp': 'Briefmarkencode {code} ×1', 'sale.label': 'Versandlabel: {product} · {option}', 'log.sale': 'Verkauf {id}: {what}',
     'printpage.title': 'cm-labels: Drucken',
@@ -317,6 +317,8 @@ export function cartName(names) {
     : names.length === 1 ? t('cart.name.one', { a: names[0] })
     : t('cart.name.many', { list: names.slice(0, -1).join(', '), hlist: names.slice(0, -1).map(n => `${n}-`).join(', '), last: names[names.length - 1] });
 }
+// The parameters of a message that names carts: the name, and how many carts it names (1 when none, for German frames that inflect on it).
+export const cartVars = names => ({ cart: cartName(names), carts: Math.max(1, names.length) });
 
 // Fills the data-i18n attributes of a document or element.
 export function applyI18n(root = document) {

@@ -9,7 +9,7 @@ import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, is
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
 import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadOwnData, DEFAULTS } from './lib/store.js';
-import { t, cartName, setLang, resolveLang, applyI18n } from './lib/messages.js';
+import { t, cartName, cartVars, setLang, resolveLang, applyI18n } from './lib/messages.js';
 
 const $ = s => document.querySelector(s);
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -22,6 +22,7 @@ let settings = { ...DEFAULTS };
 // cls: the colour of the line ('e', 'g', 'y'); lines from the lib modules have none and get it from their text.
 const log = (m, cls) => { state.log.push({ line: `${new Date().toLocaleTimeString('nl-NL')}  ${m}`, cls }); if (state.log.length > 800) state.log.shift(); render(); };
 const cartOf = ids => cartName(ids.map(c => carrierName(c)));
+const cartOfVars = ids => cartVars(ids.map(c => carrierName(c)));
 const andList = names => names.join(t('list.and'));
 const applyLang = () => { setLang(resolveLang(settings.uiLang, navigator.language)); applyI18n(document); };
 
@@ -66,11 +67,11 @@ async function cart(withCodes, withLabels) {
   const me = await ext.tabs.getCurrent();
   state.cart = { running: true }; render();
   for (const c of carriersOf(stamps, tracked)) log(t('log.cartStart', { carrier: carrierName(c), codes: stamps.filter(g => g.carrier === c).length, labels: tracked.filter(p => p.carrier === c).length }));
-  const t = Date.now();
+  const started = Date.now();
   try {
     state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
   } catch (e) { state.cart = { carts: [], error: e.message, seconds: 0 }; throw e; }
-  state.cart.seconds = Math.round((Date.now() - t) / 100) / 10;
+  state.cart.seconds = Math.round((Date.now() - started) / 100) / 10;
   const failed = abortedError(state.cart);
   if (failed) throw new Error(failed);   // the run shows as failed; the carts that were made still show
   const merged = state.cart.carts.filter(c => c.merged).length;
@@ -105,12 +106,12 @@ function renderLog() {
   el.innerHTML = state.log.map(({ line: l, cls }) => { const e = esc(l), c = cls ?? (/FAILED|ERROR|CHECK THE CART/.test(l) ? 'e' : /in its cart|Cart:|done|Logged in/.test(l) ? 'g' : /manual address|suffix|guess|Not logged in|cookie/i.test(l) ? 'y' : ''); return c ? `<span class="${c}">${e}</span>` : e; }).join('\n') || t('log.empty');
   if (atEnd) el.scrollTop = el.scrollHeight;
 }
-function addressText(t) {
-  if (t.error) return '';
-  if (t.Iso === 'NL' || (t.Iso === settings.country && t.Manual)) return `${esc(t.Street)} ${esc(t.Number)}${t.Suffix ? ` <span class="tag">${esc(t.Suffix)}</span>` : ''}${t.Iso !== 'NL' && t.Extra ? `<br>${esc(t.Extra)}` : ''}<br>${esc(t.Postcode)} ${esc(t.Town)}`;
-  const m = t.Manual;
+function addressText(row) {
+  if (row.error) return '';
+  if (row.Iso === 'NL' || (row.Iso === settings.country && row.Manual)) return `${esc(row.Street)} ${esc(row.Number)}${row.Suffix ? ` <span class="tag">${esc(row.Suffix)}</span>` : ''}${row.Iso !== 'NL' && row.Extra ? `<br>${esc(row.Extra)}` : ''}<br>${esc(row.Postcode)} ${esc(row.Town)}`;
+  const m = row.Manual;
   const man = m ? `<br><span class="hint">${t('addr.manual')} ${esc(m.Street)} · ${esc(m.Nr)}${m.Ext ? ' ' + esc(m.Ext) : ''}${Object.entries(m.Fields || {}).map(([f, v]) => ` · ${esc(f)}: ${esc(v)}`).join('')}</span>` : '';
-  return `${esc(t.AddressLine)}<br>${esc(t.Postcode)} ${esc(t.Town)}${man}`;
+  return `${esc(row.AddressLine)}<br>${esc(row.Postcode)} ${esc(row.Town)}${man}`;
 }
 // Label preview: the label HTML at print size, scaled down to fit a box.
 function previewFigure(fields, caption, max = 240) {
@@ -169,7 +170,7 @@ function renderPlan() {
   $('#picklabels').disabled = busy || !nLabels; if (!nLabels) $('#picklabels').checked = false;
   $('#cart').disabled = busy || !paid || !($('#pickcodes').checked || $('#picklabels').checked);
   $('#cart').title = paid ? '' : t('print.onlyPaid');
-  $('#cart').textContent = t('cart.add', { cart: cartOf(cartCarriers(p, $('#pickcodes').checked, $('#picklabels').checked)) });
+  $('#cart').textContent = t('cart.add', cartOfVars(cartCarriers(p, $('#pickcodes').checked, $('#picklabels').checked)));
   const c = state.cart;
   $('#cartresult').hidden = !c || c.running;
   if (c && !c.running) {
@@ -380,7 +381,7 @@ $('#cart').onclick = () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
   if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
   if ((state.cart?.error || state.cart?.carts?.some(c => c.merged || c.error)) && !confirm(t('confirm.again'))) return;
-  run('cart', t('job.cart', { cart: cartOf(cartCarriers(state.plan, withCodes, withLabels)) }), () => cart(withCodes, withLabels));
+  run('cart', t('job.cart', cartOfVars(cartCarriers(state.plan, withCodes, withLabels))), () => cart(withCodes, withLabels));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
 

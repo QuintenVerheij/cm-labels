@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'extension');
 const { MESSAGES, t, cartName, setLang, currentLang, resolveLang, applyI18n } = await import('../extension/lib/messages.js');
+const { cartVars } = await import('../extension/lib/messages.js');
 globalThis.chrome ??= { tabs: {}, runtime: {}, storage: { local: {} } };
 const { DEFAULTS } = await import('../extension/lib/store.js');
 
@@ -36,7 +37,8 @@ test('en and de have the same keys, every key is used, and the parameters match'
   for (const k of Object.keys(MESSAGES.en)) {
     assert.ok(used.has(k), `${k} is not used anywhere`);
     if (k.startsWith('cart.name.')) continue;   // cartName passes both a plain and a hyphenated list
-    assert.deepEqual([...params(MESSAGES.de[k])].sort(), [...params(MESSAGES.en[k])].sort(), `parameters of ${k}`);
+    const dropCarts = s => [...params(s)].filter(p => p !== 'carts').sort();   // German frames inflect on the number of carts
+    assert.deepEqual(dropCarts(MESSAGES.de[k]), dropCarts(MESSAGES.en[k]), `parameters of ${k}`);
   }
 });
 
@@ -89,9 +91,10 @@ test('German output picks the plural and keeps the carrier names', () => {
     assert.equal(t('chip.sales', { n: 1 }), '1 Verkauf');
     assert.equal(t('chip.sales', { n: 4 }), '4 Verkäufe');
     assert.equal(cartName(['PostNL']), 'PostNL-Warenkorb');
-    assert.equal(cartName(['PostNL', 'DHL']), 'PostNL- und DHL-Warenkorb');
-    assert.equal(cartName(['A', 'B', 'C']), 'A-, B- und C-Warenkorb');
-    assert.equal(t('cart.add', { cart: cartName(['Deutsche Post']) }), 'Zum Deutsche Post-Warenkorb hinzufügen');
+    assert.equal(cartName(['PostNL', 'DHL']), 'PostNL- und DHL-Warenkörben');
+    assert.equal(cartName(['A', 'B', 'C']), 'A-, B- und C-Warenkörben');
+    assert.equal(t('cart.add', cartVars(['Deutsche Post'])), 'Zum Deutsche Post-Warenkorb hinzufügen');
+    assert.equal(t('cart.add', cartVars(['PostNL', 'DHL'])), 'Zu den PostNL- und DHL-Warenkörben hinzufügen');
     assert.equal(t('status.idle'), 'bereit');
     assert.equal(t('no.such.key'), 'no.such.key');
   } finally { setLang('en'); }
@@ -132,4 +135,26 @@ test('applyI18n fills text, markup and attributes and sets the document language
     assert.match(html.innerHTML, /<code>&lt;br&gt;<\/code>/);
     assert.equal(title.attrs.title, 'Schließen');
   } finally { setLang('en'); }
+});
+
+// A file that imports t must not declare its own t where it also calls t(...): the call would hit the local.
+const shadowing = src => {
+  const hits = [];
+  const bind = /\b(?:const|let|var)\s+t\b|\bfunction\s*\w*\s*\([^)]*\bt\b[^)]*\)|\(\s*(?:[^()]*,\s*)?t\s*(?:,[^()]*)?\)\s*=>|\bt\s*=>/g;
+  for (const m of src.matchAll(bind)) {
+    const rest = src.slice(m.index + m[0].length);
+    const scope = m[0].endsWith('=>') ? rest.split('\n')[0] : rest;
+    if (/(?<![\w.$'"])t\(/.test(scope)) hits.push(m[0]);
+  }
+  return hits;
+};
+
+test('no file that imports t declares its own t next to a call of t', () => {
+  const importing = sources.filter(([, src]) => /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*'[^']*messages\.js'/.test(src));
+  assert.ok(importing.length >= 5, `found ${importing.length} files`);
+  for (const [f, src] of importing) assert.deepEqual(shadowing(src), [], `${f} shadows t`);
+  assert.deepEqual(shadowing("const t = Date.now();\nlog(t('x'));"), ['const t']);
+  assert.deepEqual(shadowing("function addressText(t) {\n  return t('a');\n}"), ['function addressText(t)']);
+  assert.deepEqual(shadowing("rows.map(t => t('a'))"), ['t =>']);
+  assert.deepEqual(shadowing("rows.filter(t => !t.error);\nlog(t('a'));"), []);
 });
