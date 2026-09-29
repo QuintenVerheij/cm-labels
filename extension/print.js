@@ -2,11 +2,16 @@
 // the labels of the print job (one per page, or on sheets), opens the print dialog and closes itself afterwards.
 import { ext } from './lib/ext.js';
 import { pagesHtml, printCss, paper, fitLabels, isSheet, printSummary, mm } from './lib/labels.js';
+import { getSettings } from './lib/store.js';
+import { t, setLang, resolveLang, applyI18n } from './lib/messages.js';
+
+setLang(resolveLang((await getSettings()).uiLang, navigator.language));
+applyI18n(document);
 
 const { printJob: job } = await ext.storage.local.get('printJob');
 await ext.storage.local.remove('printJob');
 if (!job || Date.now() - job.at > 60000) {
-  document.body.textContent = 'No print job (or it is older than a minute). Click Print in the panel again.';
+  document.body.textContent = t('printpage.none');
 } else {
   const s = job.settings;
   const pg = paper(s);
@@ -18,10 +23,9 @@ if (!job || Date.now() - job.at > 60000) {
     @media print { .guide { display: none; } }`;
   // shown behind the print dialog, not printed: what to choose there
   const sheet = isSheet(s), size = `${mm(pg.w)} × ${mm(pg.h)} mm`;
-  const guide = `<div class="guide"><b>${printSummary(job.orders, s)}.</b> In the print dialog choose:
-    <ul><li>Destination: ${sheet ? 'your printer' : 'your label printer'}</li><li>Paper size: <b>${size}</b>${pg.r ? ` (the label is turned ${pg.r}° on it)` : ''}</li><li>Margins: <b>None</b>, Scale: <b>100%</b>, Headers and footers: <b>off</b></li></ul>
-    <p style="margin:8px 0 0">Is that paper size not in the list? The browser can only choose sizes that the printer driver offers: add a
-    ${size} paper size to the printer (printer preferences, or Windows "Print server properties" &gt; Forms), then print again.</p></div>`;
+  const guide = `<div class="guide">${t('printpage.choose', { summary: printSummary(job.orders, s) })}
+    <ul><li>${t(sheet ? 'printpage.destSheet' : 'printpage.destLabel')}</li><li>${t('printpage.paper', { size })}${pg.r ? t('printpage.turned', { r: pg.r }) : ''}</li><li>${t('printpage.margins')}</li></ul>
+    <p style="margin:8px 0 0">${t('printpage.missing', { size })}</p></div>`;
   document.title = `cm-labels ${mm(pg.w)}x${mm(pg.h)} mm`;
   document.body.innerHTML = guide + pagesHtml(job.orders, s);
   try { await document.fonts.ready; } catch { }

@@ -4,33 +4,38 @@ import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';
 import { loadSales } from './lib/cardmarket.js';
 import { planSales } from './lib/plan.js';
-import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS, ORIGINS as CARRIER_ORIGINS } from './lib/carriers.js';
+import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, BRACKETS, ORIGINS as CARRIER_ORIGINS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
 import { defaultTemplate } from './lib/template.js';
 import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadOwnData, DEFAULTS } from './lib/store.js';
+import { t, cartName, setLang, resolveLang, applyI18n } from './lib/messages.js';
 
 const $ = s => document.querySelector(s);
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const PX = 96 / 25.4;
 const SAMPLE = { NAME: 'Jan Jansen', ADDRESS: ['Voorbeeldstraat 12 B'], POSTCODE: '1234AB', CITY: 'Voorbeeldstad', COUNTRY: 'Netherlands', ID: '1234567890' };
 
-const state = { job: null, progress: null, list: null, only: null, loadedAt: null, login: false, plan: null, cart: null, printed: null, error: null, log: [] };
+const state = { job: null, kind: null, progress: null, list: null, only: null, loadedAt: null, login: false, plan: null, cart: null, printed: null, error: null, log: [] };
 let settings = { ...DEFAULTS };
 
-const log = m => { state.log.push(`${new Date().toLocaleTimeString('nl-NL')}  ${m}`); if (state.log.length > 800) state.log.shift(); render(); };
+// cls: the colour of the line ('e', 'g', 'y'); lines from the lib modules have none and get it from their text.
+const log = (m, cls) => { state.log.push({ line: `${new Date().toLocaleTimeString('nl-NL')}  ${m}`, cls }); if (state.log.length > 800) state.log.shift(); render(); };
+const cartOf = ids => cartName(ids.map(c => carrierName(c)));
+const andList = names => names.join(t('list.and'));
+const applyLang = () => { setLang(resolveLang(settings.uiLang, navigator.language)); applyI18n(document); };
 
 // The data of the seller's country setting (NL when there are no files for it), as last loaded.
 let own = null;
 const loadOwn = async () => own = await loadOwnData();
 
-async function run(name, fn) {
+async function run(kind, name, fn) {
   if (state.job) return;
-  state.job = name; state.error = null; state.progress = null; render();
+  state.job = name; state.kind = kind; state.error = null; state.progress = null; render();
   await ext.storage.session?.set({ runLive: Date.now() }).catch(() => {});   // background.js does not reload this page while set
   try { await fn(); }
-  catch (e) { state.error = e.message; log(`${name} FAILED: ${e.message}`); }
-  finally { state.job = null; state.progress = null; state.login = false; await ext.storage.session?.remove('runLive').catch(() => {}); render(); }
+  catch (e) { state.error = e.message; log(t('log.failed', { name, message: e.message }), 'e'); }
+  finally { state.job = null; state.kind = null; state.progress = null; state.login = false; await ext.storage.session?.remove('runLive').catch(() => {}); render(); }
 }
 
 // the order numbers in the "Specific order numbers" field (10 digits each), or null when it is empty
@@ -50,7 +55,7 @@ async function load(list, only) {
   $('#picklabels').checked = state.plan.tracked.some(t => !t.error);
   await saveRun(list, state.plan, only);   // the panel in the Cardmarket page shows it too
   const p = state.plan;
-  log(`Stamps: ${p.stampLine || '-'} | address labels: ${p.print.length} | tracked: ${p.tracked.length} | by hand: ${p.skipped.length}`);
+  log(t('log.plan', { stamps: p.stampLine || '-', labels: p.print.length, tracked: p.tracked.length, byHand: p.skipped.length }));
 }
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
@@ -60,7 +65,7 @@ async function cart(withCodes, withLabels) {
   const tracked = withLabels ? state.plan.tracked.filter(t => !t.error) : [];
   const me = await ext.tabs.getCurrent();
   state.cart = { running: true }; render();
-  for (const c of carriersOf(stamps, tracked)) log(`${carrierName(c)}: ${stamps.filter(g => g.carrier === c).length} stamp code group(s) + ${tracked.filter(p => p.carrier === c).length} shipping label(s), in parallel tabs...`);
+  for (const c of carriersOf(stamps, tracked)) log(t('log.cartStart', { carrier: carrierName(c), codes: stamps.filter(g => g.carrier === c).length, labels: tracked.filter(p => p.carrier === c).length }));
   const t = Date.now();
   try {
     state.cart = await buildCart({ stamps, tracked, fallbackEmail: settings.fallbackEmail, windowId: me.windowId, log, onProgress: (n, of, it) => { state.progress = [n, of, it]; renderProgress(); } });
@@ -69,7 +74,7 @@ async function cart(withCodes, withLabels) {
   const failed = abortedError(state.cart);
   if (failed) throw new Error(failed);   // the run shows as failed; the carts that were made still show
   const merged = state.cart.carts.filter(c => c.merged).length;
-  log(`${state.cart.carts.map(c => carrierName(c.carrier)).join(' and ')} done in ${state.cart.seconds} s.${merged === 1 ? ' The cart tab is in front: check it and pay there.' : merged ? ' Each cart is in a tab of its own: check them and pay there.' : ''}`);
+  log(`${t('log.cartDone', { names: andList(state.cart.carts.map(c => carrierName(c.carrier))), seconds: state.cart.seconds })}${merged === 1 ? ' ' + t('log.cartFront') : merged ? ' ' + t('log.cartEach') : ''}`, 'g');
 }
 // The carriers the cart button is for: the chosen items', else all items', else the ones the seller's methods name.
 function cartCarriers(p, withCodes, withLabels) {
@@ -81,30 +86,30 @@ function cartCarriers(p, withCodes, withLabels) {
 }
 // The line under the cart items: one per carrier when there are several.
 function cartSummary(c) {
-  if (c.error) return `${esc(c.error)} Nothing was added.`;
-  if (!c.carts.length) return 'Nothing was added.';
+  if (c.error) return `${esc(c.error)} ${t('cart.nothing')}`;
+  if (!c.carts.length) return t('cart.nothing');
   const multi = c.carts.length > 1;
   const one = k => {
     const name = carrierName(k.carrier);
-    const text = k.merged ? `${k.count} item(s) in one cart, total <b>${eur(k.total)}</b>${k.check ? '' : ` <span class="bad">expected ${eur(k.expected)}: check the cart</span>`}${multi ? '.' : `, in ${c.seconds} s. The cart tab is in front: check it and pay there.`}`
-      : k.error ? `${esc(k.error)} No tab was closed: check the ${esc(name)} tabs.` : 'Nothing was added. Failed items keep their tab open.';
+    const text = k.merged ? `${t('cart.merged', { count: k.count, total: eur(k.total) })}${k.check ? '' : ` <span class="bad">${t('cart.expected', { expected: eur(k.expected) })}</span>`}${multi ? '.' : t('cart.inSeconds', { seconds: c.seconds })}`
+      : k.error ? `${esc(k.error)} ${t('cart.noTabClosed', { name: esc(name) })}` : t('cart.failedKeep');
     return multi ? `<b>${esc(name)}</b>: ${text}` : text;
   };
-  return c.carts.map(one).join('<br>') + (multi && c.carts.some(k => k.merged) ? `<br>Done in ${c.seconds} s. Each cart is in a tab of its own: check them and pay there.` : '');
+  return c.carts.map(one).join('<br>') + (multi && c.carts.some(k => k.merged) ? `<br>${t('cart.doneMulti', { seconds: c.seconds })}` : '');
 }
 
 // ---------------------------------------------------------------- render
 let lastKey = '';
 function renderLog() {
   const el = $('#log'), atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
-  el.innerHTML = state.log.map(l => { const e = esc(l); return /FAILED|ERROR|CHECK THE CART/.test(l) ? `<span class="e">${e}</span>` : /in its cart|Cart:|done|Logged in/.test(l) ? `<span class="g">${e}</span>` : /manual address|suffix|guess|Not logged in|cookie/i.test(l) ? `<span class="y">${e}</span>` : e; }).join('\n') || 'Nothing yet.';
+  el.innerHTML = state.log.map(({ line: l, cls }) => { const e = esc(l), c = cls ?? (/FAILED|ERROR|CHECK THE CART/.test(l) ? 'e' : /in its cart|Cart:|done|Logged in/.test(l) ? 'g' : /manual address|suffix|guess|Not logged in|cookie/i.test(l) ? 'y' : ''); return c ? `<span class="${c}">${e}</span>` : e; }).join('\n') || t('log.empty');
   if (atEnd) el.scrollTop = el.scrollHeight;
 }
 function addressText(t) {
   if (t.error) return '';
   if (t.Iso === 'NL' || (t.Iso === settings.country && t.Manual)) return `${esc(t.Street)} ${esc(t.Number)}${t.Suffix ? ` <span class="tag">${esc(t.Suffix)}</span>` : ''}${t.Iso !== 'NL' && t.Extra ? `<br>${esc(t.Extra)}` : ''}<br>${esc(t.Postcode)} ${esc(t.Town)}`;
   const m = t.Manual;
-  const man = m ? `<br><span class="hint">manual if needed: ${esc(m.Street)} · ${esc(m.Nr)}${m.Ext ? ' ' + esc(m.Ext) : ''}${Object.entries(m.Fields || {}).map(([f, v]) => ` · ${esc(f)}: ${esc(v)}`).join('')}</span>` : '';
+  const man = m ? `<br><span class="hint">${t('addr.manual')} ${esc(m.Street)} · ${esc(m.Nr)}${m.Ext ? ' ' + esc(m.Ext) : ''}${Object.entries(m.Fields || {}).map(([f, v]) => ` · ${esc(f)}: ${esc(v)}`).join('')}</span>` : '';
   return `${esc(t.AddressLine)}<br>${esc(t.Postcode)} ${esc(t.Town)}${man}`;
 }
 // Label preview: the label HTML at print size, scaled down to fit a box.
@@ -116,13 +121,13 @@ function renderPreviews() {
   const p = state.plan;
   $('#prevcount').textContent = p.print.length;
   const sheet = isSheet(settings), e = effective(settings), g = sheetOf(settings);
-  $('#prevsize').textContent = sheet ? `${mm(e.width)}×${mm(e.height)} mm, ${g.cols}×${g.rows} per sheet, ${pageCount(p.print, settings)} sheet(s)` : `${settings.width}×${settings.height} mm`;
+  $('#prevsize').textContent = sheet ? t('prev.sheet', { w: mm(e.width), h: mm(e.height), cols: g.cols, rows: g.rows, sheets: pageCount(p.print, settings) }) : `${settings.width}×${settings.height} mm`;
   $('#startwrap').hidden = !sheet;
   if (sheet) { $('#start').max = perSheet(settings); $('#start').value = Math.min(Math.max(1, g.start || 1), perSheet(settings)); }
   $('#previews').classList.toggle('sheetview', sheet);
   $('#previews').classList.toggle('pick', sheet);
   $('#previews').innerHTML = sheet
-    ? sheetFigures(p.print, settings, 340, (i, n) => `Sheet ${i + 1} of ${n}${i === 0 ? ': click a position to start there' : ''}`)
+    ? sheetFigures(p.print, settings, 340, (i, n) => t(i === 0 ? 'sheet.captionFirst' : 'sheet.caption', { i: i + 1, n }))
     : p.print.map(o => previewFigure(o.Fields, o.Id)).join('');
   if (!$('#previews').hidden) fitLabels($('#previews'));
 }
@@ -139,47 +144,47 @@ function renderPlan() {
   const key = `${state.loadedAt}|${settings.width}|${settings.height}|${settings.html}|${JSON.stringify(settings.sheet || {})}`;
   if (key !== lastKey) {
     lastKey = key;
-    $('#resulttitle').textContent = `Breakdown: ${runScope(state.only, `${(state.list || 'Paid').toLowerCase()} orders`)}, loaded ${state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })} (${runAge(state.loadedAt)})`;
+    $('#resulttitle').textContent = t('result.titleFull', { scope: runScope(state.only, t('scope.paid')), at: state.loadedAt.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' }), age: runAge(state.loadedAt) });
     const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0);
-    $('#chips').innerHTML = [`${p.count} sale(s)`, `${p.print.length} address label(s)`, `${nStamps} stamp(s)`, `${p.tracked.length} tracked`, `${p.skipped.length} by hand`].map(c => `<span class="chip">${c}</span>`).join('');
-    $('#stamps').innerHTML = p.stamps.length ? `<thead><tr><th>Code</th><th>Country</th><th class="num">Weight</th><th class="num">Qty</th><th>Sales</th></tr></thead><tbody>${p.stamps.map(g => `<tr><td class="mono">${g.code}</td><td>${esc(g.country)}</td><td class="num">${g.weight} g</td><td class="num">${g.qty}</td><td class="mono">${g.ids.join(', ')}</td></tr>`).join('')}</tbody>` : '<tbody><tr><td class="hint">None.</td></tr></tbody>';
-    $('#tracked').innerHTML = p.tracked.length ? `<thead><tr><th>Sale</th><th>To</th><th>PostNL</th><th>Recipient</th><th>Address to enter</th><th>Phone</th><th>E-mail</th><th>Notes</th></tr></thead><tbody>${p.tracked.map(t => `<tr>
-      <td class="mono">${t.Id}<br><span class="hint">${eur(t.value)}</span></td><td>${esc(t.Iso)}</td>
-      <td>${esc(t.Product)}<br>${esc(t.Option)}${t.Grams ? `<br><span class="hint">max. ${t.Grams} g</span>` : ''}${t.Seen === 'guess' ? ' <span class="tag bad">guess</span>' : ''}</td>
-      <td>${t.error ? esc(t.address?.[0]) : `${esc(t.First)} ${esc(t.Last)}`}</td><td>${addressText(t)}</td>
-      <td class="mono">${esc(t.Phone || '')}</td><td class="mono">${esc(t.Email || '')}</td>
-      <td>${t.error ? `<span class="bad">${esc(t.error)}</span><br><span class="hint">${esc((t.address || []).join(' | '))}</span>` : ''}${(t.warnings || []).map(w => `<div class="warn">${esc(w)}</div>`).join('')}</td></tr>`).join('')}</tbody>` : '<tbody><tr><td class="hint">None.</td></tr></tbody>';
+    $('#chips').innerHTML = [t('chip.sales', { n: p.count }), t('chip.labels', { n: p.print.length }), t('chip.stamps', { n: nStamps }), t('chip.tracked', { n: p.tracked.length }), t('chip.byHand', { n: p.skipped.length })].map(c => `<span class="chip">${c}</span>`).join('');
+    $('#stamps').innerHTML = p.stamps.length ? `<thead><tr><th>${t('tbl.code')}</th><th>${t('tbl.country')}</th><th class="num">${t('tbl.weight')}</th><th class="num">${t('tbl.qty')}</th><th>${t('tbl.sales')}</th></tr></thead><tbody>${p.stamps.map(g => `<tr><td class="mono">${g.code}</td><td>${esc(g.country)}</td><td class="num">${g.weight} g</td><td class="num">${g.qty}</td><td class="mono">${g.ids.join(', ')}</td></tr>`).join('')}</tbody>` : `<tbody><tr><td class="hint">${t('tbl.none')}</td></tr></tbody>`;
+    $('#tracked').innerHTML = p.tracked.length ? `<thead><tr><th>${t('tbl.sale')}</th><th>${t('tbl.to')}</th><th>PostNL</th><th>${t('tbl.recipient')}</th><th>${t('tbl.address')}</th><th>${t('tbl.phone')}</th><th>${t('tbl.email')}</th><th>${t('tbl.notes')}</th></tr></thead><tbody>${p.tracked.map(r => `<tr>
+      <td class="mono">${r.Id}<br><span class="hint">${eur(r.value)}</span></td><td>${esc(r.Iso)}</td>
+      <td>${esc(r.Product)}<br>${esc(r.Option)}${r.Grams ? `<br><span class="hint">${t('tbl.max', { g: r.Grams })}</span>` : ''}${r.Seen === 'guess' ? ` <span class="tag bad">${t('tbl.guess')}</span>` : ''}</td>
+      <td>${r.error ? esc(r.address?.[0]) : `${esc(r.First)} ${esc(r.Last)}`}</td><td>${addressText(r)}</td>
+      <td class="mono">${esc(r.Phone || '')}</td><td class="mono">${esc(r.Email || '')}</td>
+      <td>${r.error ? `<span class="bad">${esc(r.error)}</span><br><span class="hint">${esc((r.address || []).join(' | '))}</span>` : ''}${(r.warnings || []).map(w => `<div class="warn">${esc(w)}</div>`).join('')}</td></tr>`).join('')}</tbody>` : `<tbody><tr><td class="hint">${t('tbl.none')}</td></tr></tbody>`;
     $('#skippedwrap').hidden = !p.skipped.length;
     $('#skipped').innerHTML = `<tbody>${p.skipped.map(x => `<tr><td class="mono">${x.id}</td><td>${esc(x.iso || '')}</td><td>${esc(x.method || '')}</td><td class="warn">${esc(x.reason)}</td><td class="hint">${esc((x.address || []).join(' | '))}</td></tr>`).join('')}</tbody>`;
     const nCodes = p.stamps.length, nLabels = p.tracked.filter(t => !t.error).length, nBad = p.tracked.length - nLabels;
-    $('#codesinfo').textContent = nCodes ? `${nStamps} stamp(s) in ${nCodes} code(s): ${p.stampLine}` : 'none in this run';
-    $('#labelsinfo').textContent = nLabels ? `${nLabels} tracked label(s)${nBad ? `, ${nBad} to do by hand` : ''}` : 'none in this run';
+    $('#codesinfo').textContent = nCodes ? t('info.codes', { stamps: nStamps, codes: nCodes, line: p.stampLine }) : t('info.none');
+    $('#labelsinfo').textContent = nLabels ? nBad ? t('info.labelsBad', { n: nLabels, bad: nBad }) : t('info.labels', { n: nLabels }) : t('info.none');
     renderPreviews();
   }
   const busy = !!state.job, paid = state.list === 'Paid';
   $('#print').disabled = busy || !paid || !p.print.length;
-  $('#print').title = paid ? `Print dialog for ${printSummary(p.print, settings)}` : 'Only after a load of the Paid list';
+  $('#print').title = paid ? t('print.title', { summary: printSummary(p.print, settings) }) : t('print.onlyPaid');
   const nCodes = p.stamps.length, nLabels = p.tracked.filter(t => !t.error).length;
   $('#pickcodes').disabled = busy || !nCodes; if (!nCodes) $('#pickcodes').checked = false;
   $('#picklabels').disabled = busy || !nLabels; if (!nLabels) $('#picklabels').checked = false;
   $('#cart').disabled = busy || !paid || !($('#pickcodes').checked || $('#picklabels').checked);
-  $('#cart').title = paid ? '' : 'Only after a load of the Paid list';
-  $('#cart').textContent = `Add to ${cartTitle(cartCarriers(p, $('#pickcodes').checked, $('#picklabels').checked))}`;
+  $('#cart').title = paid ? '' : t('print.onlyPaid');
+  $('#cart').textContent = t('cart.add', { cart: cartOf(cartCarriers(p, $('#pickcodes').checked, $('#picklabels').checked)) });
   const c = state.cart;
   $('#cartresult').hidden = !c || c.running;
   if (c && !c.running) {
-    const title = cartTitle(c.carts.length ? c.carts.map(k => k.carrier) : cartCarriers(p, true, true));
+    const title = cartOf(c.carts.length ? c.carts.map(k => k.carrier) : cartCarriers(p, true, true));
     $('#cartresult h3').textContent = title[0].toUpperCase() + title.slice(1);
-    const row = i => `<tr><td class="mono">${esc(i.key)}</td><td>${i.ok ? `<span class="ok">in the cart</span>${i.manual ? ' <span class="tag warn">manual address</span>' : ''}` : `<span class="bad">${esc(i.error)}</span>`}</td><td class="num">${eur(i.total)}</td><td class="num">${i.ms != null ? (i.ms / 1000).toFixed(1) + ' s' : ''}</td></tr>`;
+    const row = i => `<tr><td class="mono">${esc(i.key)}</td><td>${i.ok ? `<span class="ok">${t('cartrow.in')}</span>${i.manual ? ` <span class="tag warn">${t('cartrow.manual')}</span>` : ''}` : `<span class="bad">${esc(i.error)}</span>`}</td><td class="num">${eur(i.total)}</td><td class="num">${i.ms != null ? (i.ms / 1000).toFixed(1) + ' s' : ''}</td></tr>`;
     const multi = c.carts.length > 1;
-    $('#cartitems').innerHTML = `<thead><tr><th>Item</th><th>Result</th><th class="num">Price</th><th class="num">Time</th></tr></thead><tbody>${c.carts.map(k => (multi ? `<tr><th colspan="4">${esc(carrierName(k.carrier))}</th></tr>` : '') + k.items.map(row).join('')).join('')}</tbody>`;
+    $('#cartitems').innerHTML = `<thead><tr><th>${t('tbl.item')}</th><th>${t('tbl.result')}</th><th class="num">${t('tbl.price')}</th><th class="num">${t('tbl.time')}</th></tr></thead><tbody>${c.carts.map(k => (multi ? `<tr><th colspan="4">${esc(carrierName(k.carrier))}</th></tr>` : '') + k.items.map(row).join('')).join('')}</tbody>`;
     $('#cartsummary').innerHTML = cartSummary(c);
   }
 }
 // Progress bars while a job runs, as in the Cardmarket panel: loading under the load button (per sale), the
 // carrier carts under the cart row (per step; the text counts the finished items).
 function renderProgress() {
-  const el = /^Adding to /.test(state.job || '') ? $('#cartprogress') : /^Loading/.test(state.job || '') ? $('#loadprogress') : null;
+  const el = state.kind === 'cart' ? $('#cartprogress') : state.kind === 'load' ? $('#loadprogress') : null;
   for (const p of [$('#loadprogress'), $('#cartprogress')]) p.hidden = p !== el;
   if (!el) return;
   const [n, of, it] = state.progress || [0, 0];
@@ -188,7 +193,7 @@ function renderProgress() {
 }
 function render() {
   $('#dot').className = state.job ? 'run' : state.error ? 'bad' : state.plan ? 'ok' : '';
-  $('#statustext').textContent = state.job ? `running: ${state.job}` : state.error ? `failed: ${state.error}` : state.plan ? 'ready' : 'idle';
+  $('#statustext').textContent = state.job ? t('status.running', { job: state.job }) : state.error ? t('status.failed', { error: state.error }) : state.plan ? t('status.ready') : t('status.idle');
   $('#load').disabled = !!state.job || !$('#access').hidden;
   $('#login').hidden = !state.login;
   renderProgress();
@@ -207,14 +212,13 @@ const formSize = () => ({
 });
 // null = the form is valid; else the reason
 function sizeProblem(f) {
-  if (!f.sheet.on) return f.width >= 15 && f.width <= 300 && f.height >= 15 && f.height <= 300 ? null : 'Label width and height: 15-300 mm.';
+  if (!f.sheet.on) return f.width >= 15 && f.width <= 300 && f.height >= 15 && f.height <= 300 ? null : t('size.label');
   const g = f.sheet;
-  if (!(g.paperW >= 50 && g.paperW <= 1000 && g.paperH >= 50 && g.paperH <= 1000)) return 'Paper width and height: 50-1000 mm.';
-  if (!(g.cols >= 1 && g.cols <= 12 && g.rows >= 1 && g.rows <= 30)) return 'Columns: 1-12, rows: 1-30.';
-  if (g.paperW / g.cols < 10 || g.paperH / g.rows < 10) return 'A label must be at least 10 × 10 mm: use fewer columns or rows.';
+  if (!(g.paperW >= 50 && g.paperW <= 1000 && g.paperH >= 50 && g.paperH <= 1000)) return t('size.paper');
+  if (!(g.cols >= 1 && g.cols <= 12 && g.rows >= 1 && g.rows <= 30)) return t('size.grid');
+  if (g.paperW / g.cols < 10 || g.paperH / g.rows < 10) return t('size.cell');
   return null;
 }
-const OWN = 'Your own layout: it does not follow the label size.', DEF = 'Default layout: it follows the label size.';
 const defaultFor = f => { const e = effective(f); return defaultTemplate(e.width, e.height); };
 // Sheet preview: the pages at print size, scaled into a box. Numbers mark the positions (screen only).
 function sheetFigures(orders, s, max, caption) {
@@ -230,7 +234,7 @@ function renderSheetForm() {
   $('#pw').disabled = $('#ph').disabled = $('#paper').value !== 'custom';
   if (!sheet) return;
   const bad = sizeProblem(f), e = effective(f);
-  $('#sheetinfo').textContent = bad || `Label size: ${mm(e.width)} × ${mm(e.height)} mm, ${f.sheet.cols * f.sheet.rows} labels per sheet.`;
+  $('#sheetinfo').textContent = bad || t('sheet.info', { w: mm(e.width), h: mm(e.height), n: f.sheet.cols * f.sheet.rows });
   $('#sheetinfo').classList.toggle('bad', !!bad);
   if (!bad) $('#sheetgrid').innerHTML = sheetFigures([], { ...f, sheet: { ...f.sheet, start: 1 } }, 220);
 }
@@ -245,6 +249,8 @@ function htmlPreview() {
     fitLabels($('#htmlpreview'));
   } finally { settings = saved; }
 }
+// own: the layout is the user's own (it does not follow the label size)
+const showLayoutNote = own => { $('#htmlinfo').dataset.own = own ? '1' : ''; $('#htmlinfo').textContent = t(own ? 'layout.own' : 'layout.def'); };
 const paperName = g => Object.keys(PAPERS).find(k => PAPERS[k][0] === +g.paperW && PAPERS[k][1] === +g.paperH) || 'custom';
 function fillSettingsForm() {
   const g = sheetOf(settings);
@@ -252,18 +258,20 @@ function fillSettingsForm() {
   for (const r of document.querySelectorAll('input[name=papermode]')) r.checked = r.value === (g.on ? 'sheet' : 'printer');
   $('#paper').value = paperName(g); $('#pw').value = g.paperW; $('#ph').value = g.paperH; $('#cols').value = g.cols; $('#rows').value = g.rows;
   $('#html').value = settings.html || defaultFor(settings);
-  $('#htmlinfo').textContent = settings.html ? OWN : DEF;
+  $('#uilang').value = settings.uiLang;
+  showLayoutNote(!!settings.html);
   htmlPreview();
 }
 async function loadSettings() {
   settings = await getSettings();   // also migrates the old return-address setting once
+  applyLang();
   fillSettingsForm();
 }
 async function saveSettings(patch) { settings = { ...settings, ...patch }; await ext.storage.local.set({ settings }); }
 // a size change: a default layout follows the (cell) size while you type
 function sizeChanged() {
   const f = formSize();
-  if ($('#htmlinfo').textContent === DEF && !sizeProblem(f)) $('#html').value = defaultFor(f);
+  if (!$('#htmlinfo').dataset.own && !sizeProblem(f)) $('#html').value = defaultFor(f);
   htmlPreview();
 }
 for (const id of ['#lw', '#lh', '#pw', '#ph', '#cols', '#rows']) $(id).addEventListener('input', sizeChanged);
@@ -274,33 +282,36 @@ $('#paper').addEventListener('change', () => {
   sizeChanged();
 });
 $('#rotate').addEventListener('change', htmlPreview);
-$('#html').addEventListener('input', () => { $('#htmlinfo').textContent = OWN; htmlPreview(); });
+$('#html').addEventListener('input', () => { showLayoutNote(true); htmlPreview(); });
 $('#htmldefault').onclick = () => {
   const f = formSize();
   $('#html').value = sizeProblem(f) ? defaultTemplate(70, 40) : defaultFor(f);
-  $('#htmlinfo').textContent = DEF;
+  showLayoutNote(false);
   htmlPreview();
 };
 $('#savesettings').onclick = async () => {
   const f = formSize(), femail = $('#femail').value.trim(), html = $('#html').value.trim();
   const bad = sizeProblem(f);
   if (bad) { $('#settingsmsg').textContent = bad; return; }
-  if (femail && !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(femail)) { $('#settingsmsg').textContent = 'That is not an e-mail address.'; return; }
+  if (femail && !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(femail)) { $('#settingsmsg').textContent = t('msg.email'); return; }
   const pcBad = postcodeProblem($('#shopcountry').value, $('#shoppostcode').value.trim());
   if (pcBad) { $('#settingsmsg').textContent = pcBad; return; }
-  if (!html) { $('#settingsmsg').textContent = 'The layout is empty: click "Default layout for this size".'; return; }
+  if (!html) { $('#settingsmsg').textContent = t('msg.layoutEmpty'); return; }
   // the default layout is stored as '' so that it keeps following the label size
   const isDefault = html === defaultFor(f).trim();
   // a new grid: start again at position 1
   const old = sheetOf(settings);
   if (f.sheet.cols !== old.cols || f.sheet.rows !== old.rows) f.sheet.start = 1;
-  await saveSettings({ ...f, fallbackEmail: femail, country: $('#shopcountry').value, postcode: $('#shoppostcode').value.trim().toUpperCase(), html: isDefault ? '' : html });
+  await saveSettings({ ...f, uiLang: $('#uilang').value, fallbackEmail: femail, country: $('#shopcountry').value, postcode: $('#shoppostcode').value.trim().toUpperCase(), html: isDefault ? '' : html });
   const e = effective(f);
-  const where = f.sheet.on ? `${f.sheet.cols}×${f.sheet.rows} labels of ${mm(e.width)}×${mm(e.height)} mm on ${mm(f.sheet.paperW)}×${mm(f.sheet.paperH)} mm paper`
-    : `${f.width}×${f.height} mm${f.rotate ? `, turned ${f.rotate}° on a ${f.rotate % 180 ? `${f.height}×${f.width}` : `${f.width}×${f.height}`} mm page` : ''}`;
-  $('#settingsmsg').textContent = `Saved: ${where}, ${isDefault ? 'default' : 'own'} layout.`;
+  applyLang();
+  const where = f.sheet.on ? t('saved.sheet', { cols: f.sheet.cols, rows: f.sheet.rows, w: mm(e.width), h: mm(e.height), pw: mm(f.sheet.paperW), ph: mm(f.sheet.paperH) })
+    : f.rotate ? t('saved.turned', { w: f.width, h: f.height, r: f.rotate, pageW: f.rotate % 180 ? f.height : f.width, pageH: f.rotate % 180 ? f.width : f.height }) : t('saved.printer', { w: f.width, h: f.height });
+  $('#settingsmsg').textContent = t('saved.msg', { where, kind: t(isDefault ? 'saved.default' : 'saved.own') });
   await loadOwn().catch(() => {});
   fillSettingsForm();
+  onlyInfo();
+  if (methodsData) drawMethods();
   lastKey = '';
   render();
 };
@@ -320,9 +331,9 @@ async function loadMethods() {
 }
 function drawMethods() {
   const iso = $('#country').value, rates = methodsData.rates.filter(r => r.Iso === iso);
-  $('#mtable').innerHTML = `<thead><tr><th>Cardmarket method</th><th>Service</th><th>Carrier</th><th>PostNL product · option</th><th>Seen</th><th class="num">Max. value</th><th class="num">Max. weight</th><th class="num">CM price</th><th class="num">Days</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
+  $('#mtable').innerHTML = `<thead><tr><th>${t('mt.method')}</th><th>${t('mt.service')}</th><th>${t('mt.carrier')}</th><th>${t('mt.product')}</th><th>${t('mt.seen')}</th><th class="num">${t('mt.maxValue')}</th><th class="num">${t('mt.maxWeight')}</th><th class="num">${t('mt.price')}</th><th class="num">${t('mt.days')}</th></tr></thead><tbody>${[...new Set(rates.map(r => r.Method))].map(name => {
     const m = methodsData.methods[name] || { Service: '?', Carrier: '?' }, rs = rates.filter(r => r.Method === name);
-    return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td><span class="tag">${esc(m.Carrier)}</span></td><td>${m.Service === 'tracked' || m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen}</span>` : ''}</td>
+    return `<tr><td>${esc(name)}</td><td><span class="tag">${esc(m.Service)}</span></td><td><span class="tag">${esc(m.Carrier)}</span></td><td>${m.Service === 'tracked' || m.Service === 'postnl' ? `${esc(m.Product)} · ${esc(m.Option)}` : ''}</td><td>${m.Seen ? `<span class="tag ${m.Seen === 'guess' ? 'bad' : ''}">${m.Seen === 'guess' ? t('tbl.guess') : m.Seen}</span>` : ''}</td>
       <td class="num">${eur(rs[0].MaxValue)}</td><td class="num">${rs.map(r => r.MaxWeight + ' g').join('<br>')}</td><td class="num">${rs.map(r => eur(r.Price)).join('<br>')}</td><td class="num">${rs[0].Days}</td></tr>`;
   }).join('')}</tbody>`;
 }
@@ -335,10 +346,10 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
   if (b.dataset.tab === 'run') fitLabels($('#previews'));
   if (b.dataset.tab === 'settings') fillSettingsForm();
 });
-$('#load').onclick = () => { const only = onlyIds(); run(only ? `Loading ${only.length} order(s)` : 'Loading paid orders', () => load('Paid', only)); };
+$('#load').onclick = () => { const only = onlyIds(); run('load', only ? t('job.loadN', { n: only.length }) : t('job.load'), () => load('Paid', only)); };
 const onlyInfo = () => {
   const only = onlyIds(), extra = ($('#only').value.match(/\d+/g) || []).filter(n => n.length !== 10);
-  $('#onlyinfo').textContent = (only ? `Only: ${only.join(', ')}` : '') + (extra.length ? `${only ? '. ' : ''}Not 10 digits, skipped: ${extra.join(', ')}` : '');
+  $('#onlyinfo').textContent = (only ? t('only.only', { ids: only.join(', ') }) : '') + (extra.length ? `${only ? '. ' : ''}${t('only.skipped', { ids: extra.join(', ') })}` : '');
 };
 $('#only').addEventListener('input', onlyInfo);
 $('#prevtoggle').onclick = () => {
@@ -351,11 +362,11 @@ $('#prevtoggle').onclick = () => {
 // dialog opens; nothing prints until you confirm there.
 $('#print').onclick = () => {
   if (state.job || state.list !== 'Paid' || !state.plan?.print.length) return;
-  run('print dialog', async () => {
-    log(`Print dialog for ${printSummary(state.plan.print, settings)}.`);
+  run('print', t('job.print'), async () => {
+    log(t('log.print', { summary: printSummary(state.plan.print, settings) }));
     await printLabels(state.plan.print, settings);
     state.printed = new Date();
-    log('Print dialog closed.');
+    log(t('log.printClosed'));
   });
 };
 $('#start').addEventListener('change', () => setStart($('#start').value));
@@ -368,8 +379,8 @@ for (const id of ['#pickcodes', '#picklabels']) $(id).onchange = () => render();
 $('#cart').onclick = () => {
   const withCodes = $('#pickcodes').checked, withLabels = $('#picklabels').checked;
   if (state.job || state.list !== 'Paid' || (!withCodes && !withLabels)) return;
-  if ((state.cart?.error || state.cart?.carts?.some(c => c.merged || c.error)) && !confirm('A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?')) return;
-  run(`Adding to ${cartTitle(cartCarriers(state.plan, withCodes, withLabels))}`, () => cart(withCodes, withLabels));
+  if ((state.cart?.error || state.cart?.carts?.some(c => c.merged || c.error)) && !confirm(t('confirm.again'))) return;
+  run('cart', t('job.cart', { cart: cartOf(cartCarriers(state.plan, withCodes, withLabels)) }), () => cart(withCodes, withLabels));
 };
 window.addEventListener('beforeunload', e => { if (state.job) { e.preventDefault(); e.returnValue = ''; } });
 
@@ -382,7 +393,7 @@ async function checkAccess() {
   render();
   return ok;
 }
-$('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(`Permission request failed: ${e.message}`); } await checkAccess(); };
+$('#grant').onclick = async () => { try { await ext.permissions.request({ origins: ORIGINS }); } catch (e) { log(t('log.permFailed', { message: e.message })); } await checkAccess(); };
 
 await loadSettings();
 await loadOwn().catch(() => {});   // the carriers of the methods name the cart button before any load

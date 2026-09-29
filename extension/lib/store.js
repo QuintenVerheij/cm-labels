@@ -3,9 +3,11 @@
 import { ext } from './ext.js';
 import { esc } from './esc.js';
 import { byNameOf } from './locale.js';
+import { t } from './messages.js';
 
 // html '' = the default layout, made from the label size (so it scales when the size changes)
-export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL', postcode: '' };
+// uiLang: the interface language, 'auto' (the browser's), 'en' or 'de'
+export const DEFAULTS = { width: 70, height: 40, rotate: 0, html: '', fallbackEmail: '', country: 'NL', postcode: '', uiLang: 'auto' };
 
 // Migration of the old settings: a stored return address becomes part of an own HTML template (the default 4
 // lines, centred above a small return line); the keys of the old settings are dropped.
@@ -59,9 +61,9 @@ export async function purgeStale() {
 // Age and scope of a restored run, for the line above the breakdown.
 export function runAge(loadedAt, now = Date.now()) {
   const min = Math.max(0, Math.floor((now - +loadedAt) / 60000));
-  return min < 1 ? 'just now' : min < 60 ? `${min} min ago` : `${Math.floor(min / 60)} h ${min % 60} min ago`;
+  return min < 1 ? t('age.now') : min < 60 ? t('age.min', { min }) : t('age.hour', { h: Math.floor(min / 60), min: min % 60 });
 }
-export const runScope = (only, all) => only?.length ? `${only.length} chosen order${only.length === 1 ? '' : 's'}` : all;
+export const runScope = (only, all) => only?.length ? t('scope.chosen', { n: only.length }) : all;
 
 // The language of the Cardmarket pages the user browses; the app page has no Cardmarket page of its own to read it from.
 export const saveLang = lang => ext.storage.local.set({ cmLang: lang });

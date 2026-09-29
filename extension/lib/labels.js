@@ -8,6 +8,7 @@
 //   fill the cells row by row, from position `start` on the first sheet (so a sheet with used labels can be used
 //   again).
 import { defaultTemplate, labelHtml as oneLabel, fitLabels } from './template.js';
+import { t } from './messages.js';
 
 export const PAPERS = { 'A4': [210, 297], 'A4 landscape': [297, 210], 'A5': [148, 210], 'A5 landscape': [210, 148], 'Letter': [215.9, 279.4] };
 export const SHEET = { on: false, paperW: 210, paperH: 297, cols: 3, rows: 8, start: 1 };
@@ -70,8 +71,8 @@ export const pageCount = (orders, s) => isSheet(s) ? Math.max(1, Math.ceil((Math
 // What the print dialog needs: "3 label(s) on 1 sheet(s) of 210 x 297 mm" / "3 label(s) of 70 x 40 mm".
 export function printSummary(orders, s) {
   const { w, h } = paper(s), e = effective(s);
-  return isSheet(s) ? `${orders.length} label(s) of ${mm(e.width)}×${mm(e.height)} mm on ${pageCount(orders, s)} sheet(s) of ${mm(w)}×${mm(h)} mm`
-    : `${orders.length} label(s) of ${mm(s.width)}×${mm(s.height)} mm`;
+  return isSheet(s) ? t('print.summarySheet', { n: orders.length, w: mm(e.width), h: mm(e.height), sheets: pageCount(orders, s), pw: mm(w), ph: mm(h) })
+    : t('print.summary', { n: orders.length, w: mm(s.width), h: mm(s.height) });
 }
 
 // Opens the print dialog for these labels. Resolves when the dialog closes.

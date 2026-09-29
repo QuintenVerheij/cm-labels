@@ -8,11 +8,11 @@ import { ext, openPage } from './ext.js';
 import { loadSales, baseFromPath, isReadablePath } from './cardmarket.js';
 import { langFromPath, pageText } from './locale.js';
 import { planSales } from './plan.js';
-import { buildCart, abortedError, carrierName, carriersOf, cartTitle, methodCarriers, BRACKETS } from './carriers.js';
+import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, BRACKETS } from './carriers.js';
 import { getSettings, saveRun, getRun, clearRun, runAge, runScope, loadOwnData, saveLang } from './store.js';
 import { esc } from './esc.js';
+import { t, cartName, setLang, resolveLang } from './messages.js';
 
-const AGAIN_PROMPT = 'A cart was already built from this load and its tab may still be open. Building another one and paying both pays the postage twice. Build another cart?';
 const eur = v => v == null ? '' : '€ ' + Number(v).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const time = d => d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 
@@ -58,7 +58,10 @@ const CSS = `
 .ok { color: #5cc98a; }
 `;
 
+const cartOf = ids => cartName(ids.map(c => carrierName(c)));
+
 export async function start({ saleId, list }) {
+  setLang(resolveLang((await getSettings()).uiLang, navigator.language));
   const readable = isReadablePath(location.pathname);
   if (readable) saveLang(langFromPath(location.pathname)).catch(() => {});
   const state = { job: null, plan: null, list: null, loadedAt: null, cart: null, error: null, progress: null, lines: [] };
@@ -82,8 +85,8 @@ export async function start({ saleId, list }) {
   const anchor = document.createElement('div');
   // Before a sale is planned, the cart is named by the carriers of the origin's methods (NL: PostNL).
   const originCarriers = methodCarriers((await loadOwnData().catch(() => null))?.methods);
-  const originCart = cartTitle(originCarriers);
-  const labelText = saleId ? `Add to ${originCart}` : 'cm-labels';
+  const originCart = cartOf(originCarriers);
+  const labelText = saleId ? t('cart.add', { cart: originCart }) : 'cm-labels';
   const ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h7.2l6.3 6.3v7.2A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/></svg>';
   const PRINT_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2"/><path d="M7 14h10v6H7z"/></svg>';
   // One builder for every button, so they all get the same design.
@@ -123,7 +126,7 @@ export async function start({ saleId, list }) {
   return btn;
   };
   const btn = mk(labelText, ICON);
-  const printBtn = saleId ? mk('Print label', PRINT_ICON) : null;   // sale page: left of the cart button
+  const printBtn = saleId ? mk(t('panel.printLabel'), PRINT_ICON) : null;   // sale page: left of the cart button
   if (printBtn) anchor.append(printBtn);
   anchor.append(btn);
   if (h1?.parentElement) {
@@ -153,7 +156,7 @@ export async function start({ saleId, list }) {
   const dark = (bg[0] * 299 + bg[1] * 587 + bg[2] * 114) / 1000 < 128;
   const vars = dark ? '--bg:#1b1d21;--ink:#e6e7ea;--muted:#9aa0a8;--line:#353942' : '--bg:#ffffff;--ink:#1d1f23;--muted:#6b7078;--line:#dfe1e4';
   root.innerHTML = `<style>${CSS} .panel{${vars};${btnVars}} .btn.quiet{--ink:${dark ? '#e6e7ea' : '#1d1f23'}}</style><div class="panel" hidden>
-    <div class="head"><span class="dot"></span><b>cm-labels</b><span class="sp"></span><button class="icon" id="full" title="Open full page" aria-label="Open full page"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M11 5H7.5A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19h9a2.5 2.5 0 0 0 2.5-2.5V13" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.5 13.5l6.4-6.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 3h7v7z" fill="currentColor"/></svg></button><button class="icon" id="close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="head"><span class="dot"></span><b>cm-labels</b><span class="sp"></span><button class="icon" id="full" title="${t('panel.fullPage')}" aria-label="${t('panel.fullPage')}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M11 5H7.5A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19h9a2.5 2.5 0 0 0 2.5-2.5V13" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.5 13.5l6.4-6.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 3h7v7z" fill="currentColor"/></svg></button><button class="icon" id="close" title="${t('panel.close')}" aria-label="${t('panel.close')}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="body" id="body"></div></div>`;
   const panel = root.querySelector('.panel'), $ = s => root.querySelector(s);
   $('#close').onclick = () => { panel.hidden = true; };
@@ -202,12 +205,12 @@ export async function start({ saleId, list }) {
   async function addThisSale() {
     const cfg = await loadOwnData();
     const sale = globalThis.__cmlCM?.sale(saleId);
-    if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
+    if (!sale || sale.error) throw new Error(sale?.error || t('err.readSale'));
     const p = planSales([sale], cfg, (await getSettings()).country, BRACKETS);
     state.plan = p; state.list = 'sale';
-    const what = p.stamps.length ? `stamp code ${p.stamps[0].code} ×1` : nLabels(p) ? `shipping label: ${p.tracked[0].Product} · ${p.tracked[0].Option}` : null;
-    if (!what) throw new Error(issues(p)[0]?.text || `nothing for ${originCarriers.map(c => carrierName(c)).join(' or ') || 'a cart'} in this sale`);
-    log(`Sale ${saleId}: ${what}`);
+    const what = p.stamps.length ? t('sale.stamp', { code: p.stamps[0].code }) : nLabels(p) ? t('sale.label', { product: p.tracked[0].Product, option: p.tracked[0].Option }) : null;
+    if (!what) throw new Error(issues(p)[0]?.text || t('err.nothing', { carriers: originCarriers.map(c => carrierName(c)).join(t('list.or')) || t('err.aCart') }));
+    log(t('log.sale', { id: saleId, what }));
     await cart(p.stamps, p.tracked.filter(t => !t.error));
   }
 
@@ -215,10 +218,10 @@ export async function start({ saleId, list }) {
   async function printThisSale() {
     const cfg = await loadOwnData();
     const sale = globalThis.__cmlCM?.sale(saleId);
-    if (!sale || sale.error) throw new Error(sale?.error || 'could not read this sale page');
+    if (!sale || sale.error) throw new Error(sale?.error || t('err.readSale'));
     const s = await getSettings();
     const p = planSales([sale], cfg, s.country, BRACKETS);
-    if (!p.print.length) throw new Error(issues(p)[0]?.text || 'no label for this sale');
+    if (!p.print.length) throw new Error(issues(p)[0]?.text || t('err.noLabel'));
     await ext.storage.local.set({ printJob: { orders: p.print, settings: s, at: Date.now() } });
     await openPage('print.html', { reuse: false });
   }
@@ -229,7 +232,7 @@ export async function start({ saleId, list }) {
     const multi = carts.length > 1;
     return carts.map(c => {
       const name = carrierName(c.carrier), bad = c.items.filter(i => !i.ok);
-      return `<div>${c.merged ? `<span class="ok">${c.count} item(s) in the ${esc(name)} cart, ${eur(c.total)}${c.check ? '' : ` <span class="err">(expected ${eur(c.expected)}: check the cart)</span>`}.</span> ${multi ? 'Its tab is open: pay there.' : 'The cart tab is in front: pay there.'}` : `<span class="err">Nothing was added${multi ? ` to the ${esc(name)} cart` : ''}.</span>`}</div>
+      return `<div>${c.merged ? `<span class="ok">${t('panel.merged', { count: c.count, name: esc(name), total: eur(c.total) })}${c.check ? '' : ` <span class="err">${t('panel.expected', { expected: eur(c.expected) })}</span>`}.</span> ${multi ? t('panel.tabOpen') : t('panel.tabFront')}` : `<span class="err">${multi ? t('panel.noneCart', { name: esc(name) }) : t('panel.noneAdded')}</span>`}</div>
       ${bad.map(i => `<div class="err">${esc(i.key)}: ${esc(i.error)}</div>`).join('')}`;
     }).join('');
   }
@@ -238,7 +241,7 @@ export async function start({ saleId, list }) {
     const ok = p.tracked.filter(t => !t.error);
     const names = carriersOf(state.pick?.codes ? p.stamps : [], state.pick?.labels ? ok : []);
     const all = carriersOf(p.stamps, ok);
-    return names.length ? cartTitle(names) : all.length ? cartTitle(all) : originCart;
+    return names.length ? cartOf(names) : all.length ? cartOf(all) : originCart;
   };
   function render() {
     $('.dot').className = `dot ${state.job ? 'run' : state.error ? 'bad' : state.plan ? 'ok' : ''}`;
@@ -246,56 +249,56 @@ export async function start({ saleId, list }) {
     const p = state.plan, last = state.lines[state.lines.length - 1];
     let html = '';
     if (!readable) {
-      html = '<div>cm-labels works only on the English and German Magic pages (cardmarket.com/en/Magic, cardmarket.com/de/Magic).</div>';
+      html = `<div>${t('panel.unreadable')}</div>`;
     } else if (state.job) {
       const [n, of, it] = state.progress || [0, 0];
       html = `<div class="sum">${esc(state.job)}…${it ? ` ${it.items}/${it.of}` : of ? ` ${n}/${of}` : ''}</div>${of ? `<div class="bar"><i style="width:${Math.round(100 * n / of)}%"></i></div>` : '<div class="bar"><i style="width:0%"></i></div>'}
-        <div class="log">${esc(last || '')}</div><div class="muted">Keep this page open until the run is done.</div>`;
+        <div class="log">${esc(last || '')}</div><div class="muted">${t('panel.keepOpen')}</div>`;
     } else if (saleId) {
-      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}${cartLine()}${!state.error && !state.cart ? `<div class="muted">Puts this sale in the ${esc(originCart)} (stamp code or shipping label). Nothing is paid.</div>` : ''}
-        <div class="actions"><button class="btn" id="again">${state.cart || state.error ? 'Try again' : `Add to ${esc(originCart)}`}</button></div>`;
+      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}${cartLine()}${!state.error && !state.cart ? `<div class="muted">${t('panel.putSale', { cart: esc(originCart) })}</div>` : ''}
+        <div class="actions"><button class="btn" id="again">${state.cart || state.error ? t('panel.retry') : t('cart.add', { cart: esc(originCart) })}</button></div>`;
     } else if (!p) {
       const rows = document.querySelectorAll('div[data-url*="/Orders/"]').length;
       const pages = +((pageText('pages', langFromPath(location.pathname)).map(r => document.body.textContent.match(r)).find(Boolean) || [])[1] || 1);
-      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${rows} paid sale(s) on this page${pages > 1 ? `, ${pages} pages` : ''}.</div>
-        <div class="actions"><button class="btn" id="load">Load paid sales</button></div>`;
+      html = `${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}<div>${pages > 1 ? t('panel.rowsPages', { rows, pages }) : t('panel.rows', { rows })}</div>
+        <div class="actions"><button class="btn" id="load">${t('panel.load')}</button></div>`;
     } else {
       const nStamps = p.stamps.reduce((a, g) => a + g.qty, 0), is = issues(p);
-      html = `<div class="sum">${p.print.length} label(s) · ${nStamps} stamp(s) in ${p.stamps.length} code(s) · ${nLabels(p)} tracked${p.skipped.length ? ` · ${p.skipped.length} by hand` : ''}</div>
-        <div class="muted">${state.only ? `${runScope(state.only)}, loaded` : 'Loaded'} ${state.loadedAt.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} ${time(state.loadedAt)} (${runAge(state.loadedAt)}). <a href="#" id="reload" style="color:inherit">Load again</a></div>
-        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="${esc(baseFromPath(location.pathname))}/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${is.length - 5} more on the full page</li>` : ''}</ul>` : ''}
+      html = `<div class="sum">${t('panel.sum', { labels: p.print.length, stamps: nStamps, codes: p.stamps.length, tracked: nLabels(p) })}${p.skipped.length ? ` · ${t('chip.byHand', { n: p.skipped.length })}` : ''}</div>
+        <div class="muted">${state.only ? t('panel.loadedScope', { scope: runScope(state.only) }) : t('panel.loaded')} ${state.loadedAt.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} ${time(state.loadedAt)} (${runAge(state.loadedAt)}). <a href="#" id="reload" style="color:inherit">${t('panel.reload')}</a></div>
+        ${is.length ? `<ul class="issues">${is.slice(0, 5).map(x => `<li><a href="${esc(baseFromPath(location.pathname))}/Orders/${esc(x.id)}">${esc(x.id)}</a>: ${esc(x.text)}</li>`).join('')}${is.length > 5 ? `<li>${t('panel.more', { n: is.length - 5 })}</li>` : ''}</ul>` : ''}
         ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
         <div class="cards">
-          <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>Codes</b><small>${p.stamps.length ? `${nStamps} stamp(s), ${p.stamps.length} code(s)` : 'none'}</small></span></label>
-          <label class="card"><input type="checkbox" id="labels" ${state.pick?.labels ? 'checked' : ''} ${nLabels(p) ? '' : 'disabled'}><span><b>Shipping labels</b><small>${nLabels(p) ? `${nLabels(p)} tracked` : 'none'}</small></span></label>
+          <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>${t('pick.codes')}</b><small>${p.stamps.length ? t('panel.codesSmall', { stamps: nStamps, codes: p.stamps.length }) : t('panel.none')}</small></span></label>
+          <label class="card"><input type="checkbox" id="labels" ${state.pick?.labels ? 'checked' : ''} ${nLabels(p) ? '' : 'disabled'}><span><b>${t('pick.labels')}</b><small>${nLabels(p) ? t('chip.tracked', { n: nLabels(p) }) : t('panel.none')}</small></span></label>
         </div>
-        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? 'Opens the print dialog' : 'Only after a load of the Paid list'}">Print labels (${p.print.length})</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : 'Only after a load of the Paid list'}">Add to ${esc(pickedCart(p))}</button></div>
+        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? t('panel.printTitle') : t('print.onlyPaid')}">${t('panel.printLabels', { n: p.print.length })}</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : t('print.onlyPaid')}">${t('cart.add', { cart: esc(pickedCart(p)) })}</button></div>
         ${cartLine()}`;
     }
     $('#body').innerHTML = html + (state.job || !last ? '' : `<div class="log">${esc(last)}</div>`);
-    $('#load')?.addEventListener('click', () => run('Loading paid sales', load));
-    $('#reload')?.addEventListener('click', e => { e.preventDefault(); run('Loading paid sales', load); });
+    $('#load')?.addEventListener('click', () => run(t('job.loadSales'), load));
+    $('#reload')?.addEventListener('click', e => { e.preventDefault(); run(t('job.loadSales'), load); });
     $('#again')?.addEventListener('click', () => {
-      if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(AGAIN_PROMPT)) return;
-      run('Adding this sale', addThisSale);
+      if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(t('confirm.again'))) return;
+      run(t('job.addSale'), addThisSale);
     });
     for (const k of ['codes', 'labels']) $(`#${k}`)?.addEventListener('change', e => { state.pick = { ...state.pick, [k]: e.target.checked }; render(); });
-    $('#print')?.addEventListener('click', () => run('Opening the print dialog', print));
+    $('#print')?.addEventListener('click', () => run(t('job.openPrint'), print));
     $('#cart')?.addEventListener('click', () => {
       if (state.list !== 'Paid') return;
-      if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(AGAIN_PROMPT)) return;
+      if (state.cart?.carts?.some(c => c.merged || c.error) && !confirm(t('confirm.again'))) return;
       const stamps = state.pick?.codes ? p.stamps : [], tracked = state.pick?.labels ? p.tracked.filter(t => !t.error) : [];
-      run(`Adding to the ${pickedCart(p)}`, () => cart(stamps, tracked));
+      run(t('job.cartThe', { cart: pickedCart(p) }), () => cart(stamps, tracked));
     });
   }
 
   btn.onclick = () => {
     panel.hidden = false;
     if (!readable) render();
-    else if (saleId && !state.job && !state.cart) run('Adding this sale', addThisSale);
+    else if (saleId && !state.job && !state.cart) run(t('job.addSale'), addThisSale);
     else render();
   };
-  if (printBtn) printBtn.onclick = () => { if (!readable) { panel.hidden = false; render(); } else if (!state.job) { panel.hidden = false; run('Opening the print dialog', printThisSale); } };
+  if (printBtn) printBtn.onclick = () => { if (!readable) { panel.hidden = false; render(); } else if (!state.job) { panel.hidden = false; run(t('job.openPrint'), printThisSale); } };
   // Paid page: show the last Paid load (same as the full page), if it is recent.
   if (list && readable) {
     const last = await getRun();
