@@ -29,6 +29,7 @@ if (!job || Date.now() - job.at > 60000) {
   document.title = `cm-labels ${mm(pg.w)}x${mm(pg.h)} mm`;
   document.body.innerHTML = guide + pagesHtml(job.orders, s);
   try { await document.fonts.ready; } catch { }
+  await Promise.all([...document.images].map(i => i.decode().catch(() => {})));   // uploaded images: their size is known before the fit
   fitLabels(document);
   addEventListener('afterprint', () => window.close(), { once: true });
   print();

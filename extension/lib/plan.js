@@ -200,12 +200,19 @@ export function lastName(name) {
   return w.slice(i >= 1 ? i : 1).join(' ');
 }
 
+const fin = v => Number.isFinite(v) ? v : null;
+
+// The sales and the chosen order numbers after one sale is taken out (no chosen numbers left: null, so the scope reads paid orders).
 // One row per loaded sale for the orders table (the sales as loadSales gives them, before planSales). A sale that could
 // not be read has an error and no more fields. qty is the number of articles (cards) in the sale.
+export function dropSale({ sales, only }, id) {
+  const rest = only?.filter(x => x !== id);
+  return { sales: sales.filter(s => s.id !== id), only: rest?.length ? rest : null };
+}
 export function orderRows(sales) {
   return sales.map(r => {
     if (r.error) return { id: r.id, error: r.error };
     const text = kind => (r.lines || []).find(l => l.kind === kind)?.text || '';
-    return { id: r.id, lastName: lastName(text('Name')), country: text('Country'), qty: r.articles ?? null, value: r.value ?? null, total: r.total ?? null };
+    return { id: r.id, lastName: lastName(text('Name')), country: text('Country'), qty: fin(r.articles), value: fin(r.value), total: fin(r.total) };
   });
 }

@@ -34,7 +34,7 @@ export function initAssets({ get, save, changed, insert, labelWidth }) {
   }
 
   function renderList() {
-    const list = get();
+    const list = get().filter(a => validName(a.name));
     $('#assetlist').innerHTML = list.length
       ? `<tbody>${list.map(a => `<tr>
         <td>${a.kind === 'image' ? `<img class="assetthumb" src="${esc(a.data)}" alt="">` : `<span class="assetfont" style="font-family:'${esc(a.name)}'">Aa 123</span>`}</td>
@@ -58,7 +58,8 @@ export function initAssets({ get, save, changed, insert, labelWidth }) {
   async function addFont(file) {
     if (file.size > LIMITS.font) return msg(t('assets.errFileBig'), true);
     const name = uniqueName(slug(file.name), get());
-    try { await new FontFace(name, await file.arrayBuffer()).load(); } catch { return msg(t('assets.errFont'), true); }
+    // quoted: a name may start with a digit, which is no CSS identifier
+    try { await new FontFace(`"${name}"`, await file.arrayBuffer()).load();   } catch { return msg(t('assets.errFont'), true); }
     await store({ name, kind: 'font', data: await readDataUrl(file), format: FONT_FORMATS[extOf(file.name)] });
   }
 
@@ -121,7 +122,9 @@ export function initAssets({ get, save, changed, insert, labelWidth }) {
   };
   pick('#addimg', '#imgfile', 'image');
   pick('#addfont', '#fontfile', 'font');
-  for (const id of ['#imgw', '#imgthr', '#imgdither']) $(id).addEventListener('input', convert);
+  let timer;   // typing in the width and moving the slider convert a big image: wait for a pause
+  const later = () => { clearTimeout(timer); timer = setTimeout(convert, 150); };
+  for (const id of ['#imgw', '#imgthr', '#imgdither']) $(id).addEventListener('input', later);
   $('#imgdpi').addEventListener('change', convert);
   $('#imgadd').onclick = addImage;
   $('#imgcancel').onclick = () => { closeImage(); msg(''); };

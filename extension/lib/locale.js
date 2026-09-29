@@ -33,4 +33,4 @@ export const byNameOf = countries => Object.fromEntries(
 // The [iso, [name, ...]] entries of the countries that pass `have` (a Set of ISO codes), in alphabetical order of the English name.
 export const sortedCountries = (countries, have) => Object.entries(countries)
   .filter(([iso]) => have.has(iso))
-  .sort(([, a], [, b]) => a[0].localeCompare(b[0]));
+  .sort(([, a], [, b]) => a[0].localeCompare(b[0], 'en'));

@@ -3,7 +3,7 @@
 import { ext } from './lib/ext.js';
 import { esc } from './lib/esc.js';
 import { loadSales, ORIGINS as LOAD_ORIGINS } from './lib/cardmarket.js';
-import { planSales, orderRows } from './lib/plan.js';
+import { planSales, orderRows, dropSale } from './lib/plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, accessOrigins, hostOf, BRACKETS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
@@ -64,16 +64,19 @@ async function load(list, only) {
 
 // Delete on the orders table: the sale leaves this run, the run is planned again from the sales that remain, and the
 // breakdown, the label previews and the cart choices follow. The time of the load stays.
+let removing = false;   // a delete is under way: no second delete, load or cart meanwhile
 async function removeOrder(id) {
-  if (state.job || !state.sales) return;
-  state.sales = state.sales.filter(s => s.id !== id);
-  if (state.only) state.only = state.only.filter(x => x !== id);
-  state.plan = planSales(state.sales, await loadOwn(), settings.country, BRACKETS);
-  $('#pickcodes').checked = state.plan.stamps.length > 0;
-  $('#picklabels').checked = state.plan.tracked.some(x => !x.error);
-  await saveRun(state.list, state.plan, state.only, state.sales, state.loadedAt);
-  lastKey = '';
-  render();
+  if (state.job || removing || !state.sales) return;
+  removing = true; render();
+  try {
+    const cfg = await loadOwn();   // first: nothing changes when this fails
+    Object.assign(state, dropSale(state, id));
+    state.plan = planSales(state.sales, cfg, settings.country, BRACKETS);
+    $('#pickcodes').checked = state.plan.stamps.length > 0;
+    $('#picklabels').checked = state.plan.tracked.some(x => !x.error);
+    await saveRun(state.list, state.plan, state.only, state.sales, state.loadedAt);
+  } catch (e) { log(t('log.failed', { name: t('orders.delete'), message: e.message }), 'e'); }
+  finally { removing = false; lastKey = ''; render(); }
 }
 
 // Only the selected cards go into the cart: Codes (stamp groups), Shipping labels (tracked sales).
@@ -192,8 +195,8 @@ function renderPlan() {
     renderPreviews();
     if (state.sales) renderOrders(state.sales);
   }
-  for (const b of document.querySelectorAll('#orderstable button')) b.disabled = !!state.job;
-  const busy = !!state.job, paid = state.list === 'Paid';
+  for (const b of document.querySelectorAll('#orderstable button')) b.disabled = !!state.job || removing;
+  const busy = !!state.job || removing, paid = state.list === 'Paid';
   $('#print').disabled = busy || !paid || !p.print.length;
   $('#print').title = paid ? t('print.title', { summary: printSummary(p.print, settings) }) : t('print.onlyPaid');
   const nCodes = p.stamps.length, nLabels = p.tracked.filter(x => !x.error).length;
@@ -226,7 +229,7 @@ function renderProgress() {
 function render() {
   $('#dot').className = state.job ? 'run' : state.error ? 'bad' : state.plan ? 'ok' : '';
   $('#statustext').textContent = state.job ? t('status.running', { job: state.job }) : state.error ? t('status.failed', { error: state.error }) : state.plan ? t('status.ready') : t('status.idle');
-  $('#load').disabled = !!state.job || !$('#access').hidden;
+  $('#load').disabled = !!state.job || removing || !$('#access').hidden;
   $('#login').hidden = !state.login;
   renderAccess();
   renderProgress();

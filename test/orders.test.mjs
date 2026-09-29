@@ -13,7 +13,7 @@ globalThis.browser = {
   } },
   tabs: {}, runtime: {},
 };
-const { planSales, orderRows, lastName } = await import('../extension/lib/plan.js');
+const { planSales, orderRows, lastName, dropSale } = await import('../extension/lib/plan.js');
 const { BRACKETS } = await import('../extension/lib/carriers.js');
 const { saveRun, getRun } = await import('../extension/lib/store.js');
 const { sales } = await import('./fixtures/nl-sales.mjs');
@@ -70,4 +70,17 @@ test('a saved run keeps its sales and, when planned again, its load time', async
   db = {};
   await saveRun('Paid', { print: [] });
   assert.equal((await getRun()).sales, null);
+});
+
+test('dropSale takes one sale out and keeps the chosen numbers only while some are left', () => {
+  const run = { sales: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], only: ['a', 'b'] };
+  assert.deepEqual(dropSale(run, 'a'), { sales: [{ id: 'b' }, { id: 'c' }], only: ['b'] });
+  assert.deepEqual(dropSale({ sales: [{ id: 'a' }], only: ['a'] }, 'a'), { sales: [], only: null });
+  assert.deepEqual(dropSale({ sales: [{ id: 'a' }, { id: 'b' }], only: null }, 'b'), { sales: [{ id: 'a' }], only: null });
+  assert.equal(run.sales.length, 3);   // the run is not changed
+});
+
+test('a sale page without a readable article count gives an empty quantity, not NaN', () => {
+  const [row] = orderRows([{ id: '1', lines: [{ kind: 'Name', text: 'A B' }], articles: NaN, value: NaN, total: undefined }]);
+  assert.deepEqual([row.qty, row.value, row.total], [null, null, null]);
 });

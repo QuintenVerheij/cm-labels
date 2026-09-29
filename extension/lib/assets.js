@@ -36,4 +36,4 @@ export function fontFaceCss(assets) {
 }
 
 // What to put in the layout for an asset.
-export const snippet = a => a.kind === 'font' ? `font-family: "${a.name}", sans-serif;` : `<img src="asset:${a.name}" style="width:${a.mm}mm">`;
+export const snippet = a => a.kind === 'font' ? `font-family: "${a.name}", sans-serif;` : `<img src="asset:${a.name}" style="width:${a.mm}mm;height:${Math.round(a.mm * a.h / a.w * 100) / 100}mm">`;

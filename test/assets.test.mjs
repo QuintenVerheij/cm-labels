@@ -90,6 +90,6 @@ test('the label and the print CSS carry the assets', () => {
 });
 
 test('the text to insert in the layout', () => {
-  assert.equal(snippet(image), '<img src="asset:logo" style="width:30mm">');
+  assert.equal(snippet(image), '<img src="asset:logo" style="width:30mm;height:10mm">');
   assert.equal(snippet(font), 'font-family: "my-font", sans-serif;');
 });
