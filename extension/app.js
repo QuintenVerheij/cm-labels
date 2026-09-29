@@ -7,6 +7,7 @@ import { planSales } from './lib/plan.js';
 import { buildCart, abortedError, carrierName, carriersOf, methodCarriers, originsFor, accessOrigins, hostOf, BRACKETS } from './lib/carriers.js';
 import { labelHtml, printLabels, fitLabels, pages, paper, effective, sheetOf, isSheet, perSheet, pageCount, printSummary, mm, PAPERS } from './lib/labels.js';
 import { postcodeProblem } from './lib/postcode.js';
+import { sortedCountries } from './lib/locale.js';
 import { defaultTemplate } from './lib/template.js';
 import { saveRun, getRun, clearRun, purgeStale, runAge, runScope, getSettings, getLang, loadOwnData, DEFAULTS } from './lib/store.js';
 import { t, cartName, cartVars, setLang, resolveLang, applyI18n } from './lib/messages.js';
@@ -325,7 +326,7 @@ async function loadMethods() {
   if (methodsData !== d) {
     methodsData = d;
     const have = new Set(d.rates.map(r => r.Iso));
-    $('#country').innerHTML = Object.entries(d.countries).filter(([iso]) => have.has(iso)).sort().map(([iso, v]) => `<option value="${iso}">${esc(v[0])} (${iso})</option>`).join('');
+    $('#country').innerHTML = sortedCountries(d.countries, have).map(([iso, v]) => `<option value="${iso}">${esc(v[0])} (${iso})</option>`).join('');
     $('#country').value = 'DE';
     $('#country').onchange = drawMethods;
   }

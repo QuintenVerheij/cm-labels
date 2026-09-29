@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { byNameOf, COUNTRY_DE } from '../extension/lib/locale.js';
+import { byNameOf, COUNTRY_DE, sortedCountries } from '../extension/lib/locale.js';
 
 const el = (text, classes = [], extra = {}) => ({ textContent: text, classList: { contains: c => classes.includes(c) }, className: classes.join(' '), ...extra });
 
@@ -105,4 +105,10 @@ test('a German challenge or rate-limit phrase counts only on a German page', () 
   assert.equal(load(PAGES.en, { cf: 'Zu viele Anfragen' }).state().limited, false);
   assert.equal(load(PAGES.de, { cf: 'Just a moment' }).state().check, true);
   assert.equal(load(PAGES.en, { cf: 'Too Many Requests' }).state().limited, true);
+});
+
+test('the methods country list is in alphabetical order of the country name, not the ISO code', () => {
+  const countries = { AT: ['Austria'], DE: ['Germany'], CH: ['Switzerland'], BE: ['Belgium'], GB: ['United Kingdom'], CZ: ['Czech Republic'], NL: ['Netherlands'] };
+  const names = sortedCountries(countries, new Set(['GB', 'DE', 'AT', 'CH', 'BE', 'CZ'])).map(([iso, v]) => v[0]);
+  assert.deepEqual(names, ['Austria', 'Belgium', 'Czech Republic', 'Germany', 'Switzerland', 'United Kingdom']);
 });

@@ -29,3 +29,8 @@ export const COUNTRY_DE = {
 export const byNameOf = countries => Object.fromEntries(
   Object.entries(countries).flatMap(([iso, v]) => [[v[0], iso], ...(COUNTRY_DE[iso] ? [[COUNTRY_DE[iso], iso]] : [])]),
 );
+
+// The [iso, [name, ...]] entries of the countries that pass `have` (a Set of ISO codes), in alphabetical order of the English name.
+export const sortedCountries = (countries, have) => Object.entries(countries)
+  .filter(([iso]) => have.has(iso))
+  .sort(([, a], [, b]) => a[0].localeCompare(b[0]));
