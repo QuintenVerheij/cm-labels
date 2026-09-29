@@ -53,3 +53,7 @@ The `.xpi` from `pack.mjs` is unsigned and is the same archive as the `.zip`. Re
 - An untracked (stamp) sale with an article value of 25 or more is skipped and left for you to check. So is one whose value cannot be read from the page.
 - Stamp codes come in two weights: up to 20 g and up to 50 g. A sale over 50 g, or without a weight, gets its label printed and its stamp left to buy by hand.
 - Tracked sales are matched to a PostNL product and option through `methods.psd1`; the smallest PostNL weight band that holds the weight in the method name is chosen.
+
+## Licence
+
+MIT. See `LICENSE`. The bundled `extension/vendor/bwip-js` keeps its own licence in `extension/vendor/bwip-js/LICENSE`.
