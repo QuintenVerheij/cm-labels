@@ -1,7 +1,7 @@
 // Print page for the panel in the Cardmarket page (Cardmarket's own page cannot host our print frame): it shows
 // the labels of the print job (one per page, or on sheets), opens the print dialog and closes itself afterwards.
 import { ext } from './lib/ext.js';
-import { pagesHtml, printCss, paper, fitLabels, isSheet, printSummary, mm } from './lib/labels.js';
+import { pagesHtml, printCss, paper, fitLabels, isSheet, isRoll, feedOf, printSummary, mm } from './lib/labels.js';
 import { getSettings } from './lib/store.js';
 import { t, setLang, resolveLang, applyI18n } from './lib/messages.js';
 
@@ -24,7 +24,7 @@ if (!job || Date.now() - job.at > 60000) {
   // shown behind the print dialog, not printed: what to choose there
   const sheet = isSheet(s), size = `${mm(pg.w)} × ${mm(pg.h)} mm`;
   const guide = `<div class="guide">${t('printpage.choose', { summary: printSummary(job.orders, s) })}
-    <ul><li>${t(sheet ? 'printpage.destSheet' : 'printpage.destLabel')}</li><li>${t('printpage.paper', { size })}${pg.r ? t('printpage.turned', { r: pg.r }) : ''}</li><li>${t('printpage.margins')}</li></ul>
+    <ul><li>${sheet ? t('printpage.destSheet') : isRoll(s) ? t('printpage.destRoll') : t('printpage.destLabel')}</li><li>${t('printpage.paper', { size })}${pg.r ? t('printpage.turned', { r: pg.r }) : ''}${feedOf(s) ? t('printpage.feed', { feed: mm(feedOf(s)) }) : ''}</li><li>${t('printpage.margins')}</li></ul>
     <p style="margin:8px 0 0">${t('printpage.missing', { size })}</p></div>`;
   document.title = `cm-labels ${mm(pg.w)}x${mm(pg.h)} mm`;
   document.body.innerHTML = guide + pagesHtml(job.orders, s);

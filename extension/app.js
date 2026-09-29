@@ -239,11 +239,15 @@ function render() {
 const num = id => +$(id).value.replace(',', '.');
 const paperMode = () => document.querySelector('input[name=papermode]:checked')?.value || 'printer';
 const formSize = () => ({
-  width: num('#lw'), height: num('#lh'), rotate: +$('#rotate').value,
+  width: num('#lw'), height: num('#lh'), rotate: +$('#rotate').value, media: $('#media').value, feed: num('#feed') || 0,
   sheet: { ...sheetOf(settings), on: paperMode() === 'sheet', paperW: num('#pw'), paperH: num('#ph'), cols: Math.round(num('#cols')), rows: Math.round(num('#rows')) },
 });
 // null = the form is valid; else the reason
 function sizeProblem(f) {
+  if (!f.sheet.on && f.media === 'roll') {
+    if (!(f.width >= 15 && f.width <= 300 && f.height >= 15 && f.height <= 1000)) return t('size.roll');
+    return f.feed >= 0 && f.feed <= 50 ? null : t('size.feed');
+  }
   if (!f.sheet.on) return f.width >= 15 && f.width <= 300 && f.height >= 15 && f.height <= 300 ? null : t('size.label');
   const g = f.sheet;
   if (!(g.paperW >= 50 && g.paperW <= 1000 && g.paperH >= 50 && g.paperH <= 1000)) return t('size.paper');
@@ -263,6 +267,9 @@ function sheetFigures(orders, s, max, caption) {
 function renderSheetForm() {
   const f = formSize(), sheet = f.sheet.on;
   $('#printerfields').hidden = sheet; $('#sheetfields').hidden = !sheet;
+  const roll = !sheet && f.media === 'roll';
+  $('#feedwrap').hidden = !roll; $('#rollhint').hidden = !roll;
+  $('#lhlabel').textContent = t(roll ? 'paper.cut' : 'paper.lh');
   $('#pw').disabled = $('#ph').disabled = $('#paper').value !== 'custom';
   if (!sheet) return;
   const bad = sizeProblem(f), e = effective(f);
@@ -286,7 +293,7 @@ const showLayoutNote = own => { $('#htmlinfo').dataset.own = own ? '1' : ''; $('
 const paperName = g => Object.keys(PAPERS).find(k => PAPERS[k][0] === +g.paperW && PAPERS[k][1] === +g.paperH) || 'custom';
 function fillSettingsForm() {
   const g = sheetOf(settings);
-  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country; $('#shoppostcode').value = settings.postcode;
+  $('#lw').value = settings.width; $('#lh').value = settings.height; $('#rotate').value = String(settings.rotate || 0); $('#media').value = settings.media || 'label'; $('#feed').value = settings.feed || 0; $('#femail').value = settings.fallbackEmail; $('#shopcountry').value = settings.country; $('#shoppostcode').value = settings.postcode;
   for (const r of document.querySelectorAll('input[name=papermode]')) r.checked = r.value === (g.on ? 'sheet' : 'printer');
   $('#paper').value = paperName(g); $('#pw').value = g.paperW; $('#ph').value = g.paperH; $('#cols').value = g.cols; $('#rows').value = g.rows;
   $('#html').value = settings.html || defaultFor(settings);
@@ -306,7 +313,8 @@ function sizeChanged() {
   if (!$('#htmlinfo').dataset.own && !sizeProblem(f)) $('#html').value = defaultFor(f);
   htmlPreview();
 }
-for (const id of ['#lw', '#lh', '#pw', '#ph', '#cols', '#rows']) $(id).addEventListener('input', sizeChanged);
+for (const id of ['#lw', '#lh', '#pw', '#ph', '#cols', '#rows', '#feed']) $(id).addEventListener('input', sizeChanged);
+$('#media').addEventListener('change', sizeChanged);
 for (const r of document.querySelectorAll('input[name=papermode]')) r.addEventListener('change', sizeChanged);
 $('#paper').addEventListener('change', () => {
   const p = PAPERS[$('#paper').value];
@@ -338,6 +346,7 @@ $('#savesettings').onclick = async () => {
   const e = effective(f);
   applyLang();
   const where = f.sheet.on ? t('saved.sheet', { cols: f.sheet.cols, rows: f.sheet.rows, w: mm(e.width), h: mm(e.height), pw: mm(f.sheet.paperW), ph: mm(f.sheet.paperH) })
+    : f.media === 'roll' ? t('saved.roll', { w: f.width, h: f.height, feed: f.feed })
     : f.rotate ? t('saved.turned', { w: f.width, h: f.height, r: f.rotate, pageW: f.rotate % 180 ? f.height : f.width, pageH: f.rotate % 180 ? f.width : f.height }) : t('saved.printer', { w: f.width, h: f.height });
   $('#settingsmsg').textContent = t('saved.msg', { where, kind: t(isDefault ? 'saved.default' : 'saved.own') });
   await loadOwn().catch(() => {});

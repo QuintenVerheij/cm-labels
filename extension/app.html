@@ -82,10 +82,20 @@
     </div>
     <div id="printerfields">
       <div class="row">
+        <label class="field"><span data-i18n="media.label">Media</span>
+          <select id="media" class="short" style="width:auto;min-width:0">
+            <option value="label" data-i18n="media.die">Die-cut labels</option>
+            <option value="roll" data-i18n="media.roll">Continuous roll</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
         <label class="field"><span data-i18n="paper.lw">Label width (mm)</span><input type="text" id="lw" inputmode="decimal" class="short"></label>
-        <label class="field"><span data-i18n="paper.lh">Label height (mm)</span><input type="text" id="lh" inputmode="decimal" class="short"></label>
+        <label class="field"><span id="lhlabel" data-i18n="paper.lh">Label height (mm)</span><input type="text" id="lh" inputmode="decimal" class="short"></label>
+        <label class="field" id="feedwrap" hidden><span data-i18n="paper.feed">Feed after the cut (mm)</span><input type="text" id="feed" inputmode="decimal" class="short"></label>
         <span class="hint" data-i18n="paper.common">Common: 70×40, 50×30, 100×150 (A6), 102×76</span>
       </div>
+      <p class="hint" id="rollhint" data-i18n="media.rollHint" hidden>On a continuous roll the width is the width of the roll and the cut length is the height of each label. The feed is blank space after the label, so the cut does not touch the text. To cut along the other side, turn the label with the rotation below. The cut itself is a setting of the printer driver.</p>
       <div class="row">
         <label class="field"><span data-i18n="rotate.label">Rotation on the paper</span>
           <select id="rotate" class="short" style="width:auto;min-width:0">
@@ -189,6 +199,7 @@
             <li data-i18n="help.print.p3">Label printer: set the paper size to the label size. Sheet: set it to the sheet size (e.g. A4).</li>
             <li data-i18n="help.print.p4">Set the margins to "None" and the scale to 100%.</li>
             <li data-i18n="help.print.p5">Sheet: click a position on sheet 1 in the Run tab to start there (for a sheet with used labels).</li>
+            <li data-i18n="help.print.p6">Continuous roll: in the printer driver, choose the roll (not die-cut labels) and turn on the cut after each label.</li>
           </ul>
         </section>
       </div>

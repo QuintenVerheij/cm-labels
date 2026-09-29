@@ -28,11 +28,17 @@ export const template = s => { const e = effective(s); return (e.html && e.html.
 export const labelHtml = (fields, s) => { const e = effective(s); return oneLabel(template(e), fields, e.width, e.height); };
 export { fitLabels };
 
-// Paper size of one printed page: the sheet, or the label size (swapped for 90/270 degrees).
+// Continuous roll (label printer mode): the roll has one fixed width, the height of the label is the cut length, and
+// `feed` mm of blank space follows each label so the cut does not touch the text. The printer driver does the cutting.
+export const isRoll = s => !isSheet(s) && s.media === 'roll';
+export const feedOf = s => isRoll(s) ? Math.min(50, Math.max(0, +s.feed || 0)) : 0;
+
+// Paper size of one printed page: the sheet, or the label size (swapped for 90/270 degrees). The page is as long as
+// the label plus the feed, along the way the paper leaves the printer (the page height).
 export function paper(s) {
   if (isSheet(s)) { const g = sheetOf(s); return { w: g.paperW, h: g.paperH, r: 0 }; }
-  const r = ((+s.rotate || 0) % 360 + 360) % 360;
-  return r % 180 ? { w: s.height, h: s.width, r } : { w: s.width, h: s.height, r };
+  const r = ((+s.rotate || 0) % 360 + 360) % 360, feed = feedOf(s);
+  return r % 180 ? { w: s.height, h: s.width + feed, r } : { w: s.width, h: s.height + feed, r };
 }
 // CSS for the printed pages (and their screen view).
 export function printCss(s) {
@@ -72,7 +78,7 @@ export const pageCount = (orders, s) => isSheet(s) ? Math.max(1, Math.ceil((Math
 export function printSummary(orders, s) {
   const { w, h } = paper(s), e = effective(s);
   return isSheet(s) ? t('print.summarySheet', { n: orders.length, w: mm(e.width), h: mm(e.height), sheets: pageCount(orders, s), pw: mm(w), ph: mm(h) })
-    : t('print.summary', { n: orders.length, w: mm(s.width), h: mm(s.height) });
+    : isRoll(s) ? t('print.summaryRoll', { n: orders.length, w: mm(s.width), h: mm(s.height) }) : t('print.summary', { n: orders.length, w: mm(s.width), h: mm(s.height) });
 }
 
 // Opens the print dialog for these labels. Resolves when the dialog closes.
