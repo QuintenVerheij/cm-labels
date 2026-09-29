@@ -1,6 +1,6 @@
-// Manual test driver for the extension, not part of `npm test`. It needs Google Chrome installed at
-// %ProgramFiles%\Google\Chrome\Application\chrome.exe, and Cardmarket and PostNL must already be logged in
-// in the profile %LOCALAPPDATA%\cm-labels\chrome-cdp (log in once in a normal window of that profile).
+// Manual test driver for the extension, not part of `npm test`. It needs Google Chrome installed in its default
+// place (tools/chrome.mjs), and Cardmarket and PostNL must already be logged in in the profile cm-labels/chrome-cdp
+// under %LOCALAPPDATA% (Windows) or ~/Library/Application Support (macOS); log in once in a normal window of that profile.
 // It starts Chrome with a CDP pipe, loads extension/ unpacked (Extensions.loadUnpacked needs
 // --remote-debugging-pipe and --enable-unsafe-extension-debugging), opens app.html and runs the steps given on
 // the command line, in order (Chrome stays open):
@@ -14,10 +14,10 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { chromeExe as exe, appDataDir } from './chrome.mjs';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const exe = `${process.env.ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe`;
-const profile = path.join(process.env.LOCALAPPDATA, 'cm-labels', 'chrome-cdp');
+const profile = path.join(appDataDir, 'cm-labels', 'chrome-cdp');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const t0 = Date.now(); const say = m => console.log(`${((Date.now() - t0) / 1000).toFixed(1).padStart(6)}s  ${m}`);
 

@@ -5,12 +5,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { chromeExe as exe } from './chrome.mjs';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dir = path.join(root, 'extension', 'icons');
 const svg = fs.readFileSync(path.join(dir, 'icon.svg'), 'utf8');
-const exe = `${process.env.ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe`;
-if (!fs.existsSync(exe)) { console.error(`Chrome not found at ${exe}. Install Google Chrome, or run this on Windows with the default install path.`); process.exit(1); }
+if (!fs.existsSync(exe)) { console.error(`Chrome not found at ${exe}. Install Google Chrome in its default place (Windows or macOS).`); process.exit(1); }
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'cml-icons-'));
 const port = 9241;
 const chrome = spawn(exe, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--no-first-run', 'about:blank'], { stdio: 'ignore' });

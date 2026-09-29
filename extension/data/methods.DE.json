@@ -1,127 +1,127 @@
 {
- "Letter (Standardbrief)": {
-  "Carrier": "deutschepost",
-  "Service": "stamp"
- },
- "DHL Päckchen S": {
-  "Reason": "DHL labels are not in a cart yet",
+ "DHL Express": {
   "Carrier": "dhl",
-  "Service": "manual"
- },
- "DHL Paket (Online)": {
-  "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
-  "Service": "manual"
- },
- "Registered Parcel (DHL Paket Online)": {
-  "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
-  "Service": "manual"
- },
- "Kompaktbrief": {
-  "Carrier": "deutschepost",
-  "Service": "stamp"
- },
- "Virtual Delivery": {
-  "Reason": "nothing to ship: deliver it digitally",
-  "Carrier": "none",
-  "Service": "manual"
- },
- "DHL Päckchen M": {
-  "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
-  "Service": "manual"
- },
- "DHL Paket (Online) Versicherung bis 2.500€": {
-  "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
-  "Service": "manual"
- },
- "Grossbrief + Einschreiben EINWURF": {
-  "Reason": "Einschreiben Einwurf is not in a cart yet",
-  "Carrier": "deutschepost",
+  "Reason": "DHL Express is booked by hand",
   "Service": "manual"
  },
  "DHL Express Insurance 1.500 €": {
+  "Carrier": "dhl",
   "Reason": "DHL Express is booked by hand",
-  "Carrier": "dhl",
   "Service": "manual"
  },
- "Insured Parcel (DHL Wertpaket 2.000€)": {
-  "Reason": "DHL labels are not in a cart yet",
+ "DHL Express Insurance 2.500 €": {
   "Carrier": "dhl",
-  "Service": "manual"
- },
- "DHL Paket": {
-  "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
+  "Reason": "DHL Express is booked by hand",
   "Service": "manual"
  },
  "DHL Express Insurance 5.000 €": {
+  "Carrier": "dhl",
   "Reason": "DHL Express is booked by hand",
-  "Carrier": "dhl",
   "Service": "manual"
  },
- "Standardbrief": {
-  "Carrier": "deutschepost",
-  "Service": "stamp"
- },
- "Insured Parcel (DHL Wertpaket 1.000€)": {
+ "DHL Paket": {
+  "Carrier": "dhl",
   "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "DHL Paket (Online)": {
   "Carrier": "dhl",
-  "Service": "manual"
- },
- "Kompaktbrief + Einschreiben EINWURF": {
-  "Reason": "Einschreiben Einwurf is not in a cart yet",
-  "Carrier": "deutschepost",
-  "Service": "manual"
- },
- "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance": {
-  "Reason": "a courier estimate: find a courier and ship by hand",
-  "Carrier": "none",
-  "Service": "manual"
- },
- "Registered Parcel (DHL Paket Welt Online)": {
   "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
   "Service": "manual"
  },
- "Maxibrief": {
-  "Carrier": "deutschepost",
-  "Service": "stamp"
- },
- "Small Parcel (Päckchen XS)": {
-  "Reason": "DHL labels are not in a cart yet",
+ "DHL Paket (Online) Versicherung bis 2.500€": {
   "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "DHL Paket Versicherung bis 2.500€": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "DHL Päckchen M": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "DHL Päckchen S": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
   "Service": "manual"
  },
  "Grossbrief": {
   "Carrier": "deutschepost",
   "Service": "stamp"
  },
- "Small Parcel (Päckchen M)": {
-  "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
+ "Grossbrief + Einschreiben EINWURF": {
+  "Carrier": "deutschepost",
+  "Reason": "Einschreiben Einwurf is not in a cart yet",
   "Service": "manual"
+ },
+ "Insured Parcel (DHL Wertpaket 1.000€)": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "Insured Parcel (DHL Wertpaket 2.000€)": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "Kompaktbrief": {
+  "Carrier": "deutschepost",
+  "Service": "stamp"
+ },
+ "Kompaktbrief + Einschreiben EINWURF": {
+  "Carrier": "deutschepost",
+  "Reason": "Einschreiben Einwurf is not in a cart yet",
+  "Service": "manual"
+ },
+ "Letter (Standardbrief)": {
+  "Carrier": "deutschepost",
+  "Service": "stamp"
+ },
+ "Maxibrief": {
+  "Carrier": "deutschepost",
+  "Service": "stamp"
  },
  "Parcel (DHL Päckchen M Online)": {
+  "Carrier": "dhl",
   "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
   "Service": "manual"
  },
- "DHL Express Insurance 2.500 €": {
-  "Reason": "DHL Express is booked by hand",
+ "Registered Parcel (DHL Paket Online)": {
   "Carrier": "dhl",
-  "Service": "manual"
- },
- "DHL Paket Versicherung bis 2.500€": {
   "Reason": "DHL labels are not in a cart yet",
-  "Carrier": "dhl",
   "Service": "manual"
  },
- "DHL Express": {
-  "Reason": "DHL Express is booked by hand",
+ "Registered Parcel (DHL Paket Welt Online)": {
   "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance": {
+  "Carrier": "none",
+  "Reason": "a courier estimate: find a courier and ship by hand",
+  "Service": "manual"
+ },
+ "Small Parcel (Päckchen M)": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "Small Parcel (Päckchen XS)": {
+  "Carrier": "dhl",
+  "Reason": "DHL labels are not in a cart yet",
+  "Service": "manual"
+ },
+ "Standardbrief": {
+  "Carrier": "deutschepost",
+  "Service": "stamp"
+ },
+ "Virtual Delivery": {
+  "Carrier": "none",
+  "Reason": "nothing to ship: deliver it digitally",
   "Service": "manual"
  }
 }
