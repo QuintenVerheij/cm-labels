@@ -276,7 +276,7 @@ export async function start({ saleId, list }) {
           <label class="card"><input type="checkbox" id="codes" ${state.pick?.codes ? 'checked' : ''} ${p.stamps.length ? '' : 'disabled'}><span><b>${t('pick.codes')}</b><small>${p.stamps.length ? t('panel.codesSmall', { stamps: nStamps, codes: p.stamps.length }) : t('panel.none')}</small></span></label>
           <label class="card"><input type="checkbox" id="labels" ${state.pick?.labels ? 'checked' : ''} ${nLabels(p) ? '' : 'disabled'}><span><b>${t('pick.labels')}</b><small>${nLabels(p) ? t('chip.tracked', { n: nLabels(p) }) : t('panel.none')}</small></span></label>
         </div>
-        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? t('panel.printTitle') : t('print.onlyPaid')}">${t('panel.printLabels', { n: p.print.length })}</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : t('print.onlyPaid')}">${t('cart.add', { cart: esc(pickedCart(p)) })}</button></div>
+        <div class="actions"><button class="btn quiet" id="print" ${p.print.length && state.list === 'Paid' ? '' : 'disabled'} title="${state.list === 'Paid' ? t('panel.printTitle') : t('print.onlyPaid')}">${t('panel.printLabels', { n: p.print.length })}</button><button class="btn" id="cart" ${state.list === 'Paid' && (state.pick?.codes || state.pick?.labels) ? '' : 'disabled'} title="${state.list === 'Paid' ? '' : t('print.onlyPaid')}">${t('cart.add', escCart(pickedCart(p)))}</button></div>
         ${cartLine()}`;
     }
     $('#body').innerHTML = html + (state.job || !last ? '' : `<div class="log">${esc(last)}</div>`);
